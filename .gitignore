@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 HELP.md
 target/
 .mvn/wrapper/maven-wrapper.jar
@@ -31,3 +32,39 @@ build/
 
 ### VS Code ###
 .vscode/
+=======
+# Maven build output
+/target/
+*.class
+
+# Log files
+/logs/
+*.log
+
+# IntelliJ IDEA files
+.idea/
+*.iws
+*.iml
+*.ipr
+out/
+
+# Eclipse files
+.classpath
+.project
+.settings/
+.springBeans
+
+# NetBeans files
+/nbproject/private/
+/build/
+/dist/
+
+# VS Code files
+.vscode/
+
+# Operating System artifacts
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+$RECYCLE.BIN/
+>>>>>>> 2cdc6de83776c9369e6ae96f2a3fa2e0564485ab
