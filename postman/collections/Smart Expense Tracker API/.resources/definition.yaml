@@ -1,0 +1,6 @@
+$kind: collection
+name: Smart Expense Tracker API
+description: 'API collection for the Smart Expense Tracker Spring Boot application. Covers authentication, categories, expenses, incomes, budgets, savings goals, dashboard, and reports.'
+variables:
+  - key: baseUrl
+    value: 'http://localhost:8080'

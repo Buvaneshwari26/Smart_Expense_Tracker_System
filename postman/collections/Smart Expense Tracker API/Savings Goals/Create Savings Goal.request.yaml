@@ -1,0 +1,20 @@
+$kind: http-request
+name: Create Savings Goal
+method: POST
+url: '{{baseUrl}}/api/goals'
+order: 1000
+queryParams:
+  - key: userId
+    value: '1'
+headers:
+  - key: Content-Type
+    value: application/json
+body:
+  type: json
+  content: |-
+    {
+      "title": "Emergency Fund",
+      "targetAmount": 10000.00,
+      "currentAmount": 0.00,
+      "targetDate": "2026-12-31"
+    }

@@ -1,0 +1,19 @@
+$kind: http-request
+name: Update Category
+method: PUT
+url: '{{baseUrl}}/api/categories/{{categoryId}}'
+order: 3000
+queryParams:
+  - key: userId
+    value: '1'
+headers:
+  - key: Content-Type
+    value: application/json
+body:
+  type: json
+  content: |-
+    {
+      "name": "Groceries",
+      "type": "EXPENSE",
+      "description": "Grocery shopping"
+    }

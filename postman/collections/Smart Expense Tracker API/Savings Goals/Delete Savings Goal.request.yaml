@@ -1,0 +1,8 @@
+$kind: http-request
+name: Delete Savings Goal
+method: DELETE
+url: '{{baseUrl}}/api/goals/{{goalId}}'
+order: 5000
+queryParams:
+  - key: userId
+    value: '1'

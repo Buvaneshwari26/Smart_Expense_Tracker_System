@@ -1,0 +1,8 @@
+$kind: http-request
+name: Get Savings Goals
+method: GET
+url: '{{baseUrl}}/api/goals'
+order: 2000
+queryParams:
+  - key: userId
+    value: '1'

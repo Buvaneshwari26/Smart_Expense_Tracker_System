@@ -1,0 +1,8 @@
+$kind: http-request
+name: Get Income by ID
+method: GET
+url: '{{baseUrl}}/api/incomes/{{incomeId}}'
+order: 3000
+queryParams:
+  - key: userId
+    value: '1'

@@ -1,0 +1,10 @@
+$kind: http-request
+name: Update Goal Savings Amount
+method: PUT
+url: '{{baseUrl}}/api/goals/{{goalId}}/savings'
+order: 4000
+queryParams:
+  - key: userId
+    value: '1'
+  - key: amountChange
+    value: '200.00'

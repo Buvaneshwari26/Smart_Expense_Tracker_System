@@ -1,0 +1,20 @@
+$kind: http-request
+name: Update Budget
+method: PUT
+url: '{{baseUrl}}/api/budgets/{{budgetId}}'
+order: 3000
+queryParams:
+  - key: userId
+    value: '1'
+headers:
+  - key: Content-Type
+    value: application/json
+body:
+  type: json
+  content: |-
+    {
+      "amount": 600.00,
+      "startDate": "2026-06-01",
+      "endDate": "2026-06-30",
+      "categoryId": 1
+    }

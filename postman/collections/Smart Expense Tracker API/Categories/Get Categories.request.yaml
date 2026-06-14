@@ -1,0 +1,8 @@
+$kind: http-request
+name: Get Categories
+method: GET
+url: '{{baseUrl}}/api/categories'
+order: 2000
+queryParams:
+  - key: userId
+    value: '1'

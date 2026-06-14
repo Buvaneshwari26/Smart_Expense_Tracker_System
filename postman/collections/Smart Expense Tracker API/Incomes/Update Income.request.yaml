@@ -1,0 +1,20 @@
+$kind: http-request
+name: Update Income
+method: PUT
+url: '{{baseUrl}}/api/incomes/{{incomeId}}'
+order: 4000
+queryParams:
+  - key: userId
+    value: '1'
+headers:
+  - key: Content-Type
+    value: application/json
+body:
+  type: json
+  content: |-
+    {
+      "amount": 5500.00,
+      "date": "2026-06-01",
+      "description": "Monthly salary + bonus",
+      "categoryId": 2
+    }

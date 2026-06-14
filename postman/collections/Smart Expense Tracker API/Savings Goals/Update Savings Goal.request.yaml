@@ -1,0 +1,20 @@
+$kind: http-request
+name: Update Savings Goal
+method: PUT
+url: '{{baseUrl}}/api/goals/{{goalId}}'
+order: 3000
+queryParams:
+  - key: userId
+    value: '1'
+headers:
+  - key: Content-Type
+    value: application/json
+body:
+  type: json
+  content: |-
+    {
+      "title": "Emergency Fund",
+      "targetAmount": 12000.00,
+      "currentAmount": 500.00,
+      "targetDate": "2026-12-31"
+    }

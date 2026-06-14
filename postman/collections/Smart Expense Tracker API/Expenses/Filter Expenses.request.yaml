@@ -1,0 +1,17 @@
+$kind: http-request
+name: Filter Expenses
+method: GET
+url: '{{baseUrl}}/api/expenses/filter'
+order: 6000
+queryParams:
+  - key: userId
+    value: '1'
+  - key: categoryId
+    value: '1'
+    disabled: true
+  - key: startDate
+    value: '2026-01-01'
+    disabled: true
+  - key: endDate
+    value: '2026-12-31'
+    disabled: true
