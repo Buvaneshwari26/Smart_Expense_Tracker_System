@@ -1,120 +1,126 @@
 package com.tracker.service;
 
-import com.tracker.dto.MonthlyTrendDTO;
-import com.tracker.dto.SpendingReportDTO;
-import com.tracker.model.Expense;
-import com.tracker.model.Income;
-import com.tracker.repository.ExpenseRepository;
-import com.tracker.repository.IncomeRepository;
+import com.tracker.model.*;
+import com.tracker.repository.*;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
-import java.math.RoundingMode;
 import java.time.LocalDate;
-import java.time.Month;
-import java.time.format.TextStyle;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Locale;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
 
+@Slf4j
 @Service
+@RequiredArgsConstructor
 public class ReportService {
 
-    private final ExpenseRepository expenseRepository;
     private final IncomeRepository incomeRepository;
+    private final ExpenseRepository expenseRepository;
     private final UserService userService;
 
-    public ReportService(ExpenseRepository expenseRepository, IncomeRepository incomeRepository, UserService userService) {
-        this.expenseRepository = expenseRepository;
-        this.incomeRepository = incomeRepository;
-        this.userService = userService;
-    }
-
     @Transactional(readOnly = true)
-    public List<SpendingReportDTO> getSpendingReport(Long userId, LocalDate startDate, LocalDate endDate) {
+    public Map<String, Object> getMonthlyReport(Long userId, int month, int year) {
         userService.getUserEntity(userId);
+        BigDecimal totalIncome = Objects.requireNonNullElse(
+                incomeRepository.sumByUserIdAndMonthAndYear(userId, month, year), BigDecimal.ZERO);
+        BigDecimal totalExpense = Objects.requireNonNullElse(
+                expenseRepository.sumByUserIdAndMonthAndYear(userId, month, year), BigDecimal.ZERO);
+        BigDecimal balance = totalIncome.subtract(totalExpense);
 
-        // Fetch expenses in date range
-        List<Expense> expenses = expenseRepository.findByUserIdAndDateBetween(userId, startDate, endDate);
-
-        if (expenses.isEmpty()) {
-            return new ArrayList<>();
-        }
-
-        // Sum total spent in the range
-        BigDecimal totalSpentOverall = expenses.stream()
-                .map(Expense::getAmount)
-                .reduce(BigDecimal.ZERO, BigDecimal::add);
-
-        // Group by category name and sum amounts
-        Map<String, BigDecimal> spendingByCategory = expenses.stream()
-                .collect(Collectors.groupingBy(
-                        exp -> exp.getCategory().getName(),
-                        Collectors.mapping(Expense::getAmount, Collectors.reducing(BigDecimal.ZERO, BigDecimal::add))
-                ));
-
-        // Create SpendingReportDTOs
-        return spendingByCategory.entrySet().stream().map(entry -> {
-            BigDecimal categorySpent = entry.getValue();
-            BigDecimal percentage = BigDecimal.ZERO;
-            if (totalSpentOverall.compareTo(BigDecimal.ZERO) > 0) {
-                percentage = categorySpent.multiply(new BigDecimal("100"))
-                        .divide(totalSpentOverall, 2, RoundingMode.HALF_UP);
-            }
-
-            return SpendingReportDTO.builder()
-                    .categoryName(entry.getKey())
-                    .totalSpent(categorySpent)
-                    .percentageOfTotal(percentage)
-                    .build();
+        List<Object[]> categoryBreakdown = expenseRepository.findCategoryWiseTotals(userId, month, year);
+        List<Map<String, Object>> categories = categoryBreakdown.stream().map(row -> {
+            Map<String, Object> map = new HashMap<>();
+            map.put("category", row[0]);
+            map.put("amount", row[1]);
+            return map;
         }).collect(Collectors.toList());
+
+        Map<String, Object> report = new LinkedHashMap<>();
+        report.put("month", month);
+        report.put("year", year);
+        report.put("totalIncome", totalIncome);
+        report.put("totalExpense", totalExpense);
+        report.put("balance", balance);
+        report.put("categoryBreakdown", categories);
+        return report;
     }
 
     @Transactional(readOnly = true)
-    public List<MonthlyTrendDTO> getMonthlyTrend(Long userId, int year) {
+    public Map<String, Object> getYearlyReport(Long userId, int year) {
         userService.getUserEntity(userId);
+        Map<String, Object> report = new LinkedHashMap<>();
+        report.put("year", year);
 
-        LocalDate startOfYear = LocalDate.of(year, 1, 1);
-        LocalDate endOfYear = LocalDate.of(year, 12, 31);
+        List<Map<String, Object>> monthlyData = new ArrayList<>();
+        BigDecimal yearlyIncome = BigDecimal.ZERO;
+        BigDecimal yearlyExpense = BigDecimal.ZERO;
 
-        // Fetch incomes and expenses in the year
-        List<Income> incomes = incomeRepository.findByUserIdAndDateBetween(userId, startOfYear, endOfYear);
-        List<Expense> expenses = expenseRepository.findByUserIdAndDateBetween(userId, startOfYear, endOfYear);
+        for (int m = 1; m <= 12; m++) {
+            BigDecimal income = Objects.requireNonNullElse(
+                    incomeRepository.sumByUserIdAndMonthAndYear(userId, m, year), BigDecimal.ZERO);
+            BigDecimal expense = Objects.requireNonNullElse(
+                    expenseRepository.sumByUserIdAndMonthAndYear(userId, m, year), BigDecimal.ZERO);
+            yearlyIncome = yearlyIncome.add(income);
+            yearlyExpense = yearlyExpense.add(expense);
 
-        // Group by month
-        Map<Month, BigDecimal> monthlyIncome = incomes.stream()
-                .collect(Collectors.groupingBy(
-                        inc -> inc.getDate().getMonth(),
-                        Collectors.mapping(Income::getAmount, Collectors.reducing(BigDecimal.ZERO, BigDecimal::add))
-                ));
-
-        Map<Month, BigDecimal> monthlyExpense = expenses.stream()
-                .collect(Collectors.groupingBy(
-                        exp -> exp.getDate().getMonth(),
-                        Collectors.mapping(Expense::getAmount, Collectors.reducing(BigDecimal.ZERO, BigDecimal::add))
-                ));
-
-        List<MonthlyTrendDTO> trends = new ArrayList<>();
-
-        // Generate entry for each of the 12 months
-        for (int i = 1; i <= 12; i++) {
-            Month month = Month.of(i);
-            String monthName = month.getDisplayName(TextStyle.FULL, Locale.ENGLISH);
-
-            BigDecimal totalInc = monthlyIncome.getOrDefault(month, BigDecimal.ZERO);
-            BigDecimal totalExp = monthlyExpense.getOrDefault(month, BigDecimal.ZERO);
-
-            trends.add(MonthlyTrendDTO.builder()
-                    .monthValue(i)
-                    .monthName(monthName)
-                    .totalIncome(totalInc)
-                    .totalExpense(totalExp)
-                    .build());
+            Map<String, Object> monthData = new LinkedHashMap<>();
+            monthData.put("month", m);
+            monthData.put("income", income);
+            monthData.put("expense", expense);
+            monthData.put("balance", income.subtract(expense));
+            monthlyData.add(monthData);
         }
 
-        return trends;
+        report.put("totalIncome", yearlyIncome);
+        report.put("totalExpense", yearlyExpense);
+        report.put("balance", yearlyIncome.subtract(yearlyExpense));
+        report.put("monthlyData", monthlyData);
+        return report;
+    }
+
+    @Transactional(readOnly = true)
+    public Map<String, Object> getCategoryReport(Long userId, int month, int year) {
+        userService.getUserEntity(userId);
+        List<Object[]> categories = expenseRepository.findCategoryWiseTotals(userId, month, year);
+
+        List<Map<String, Object>> data = categories.stream().map(row -> {
+            Map<String, Object> map = new LinkedHashMap<>();
+            map.put("category", row[0]);
+            map.put("totalSpent", row[1]);
+            return map;
+        }).collect(Collectors.toList());
+
+        Map<String, Object> report = new LinkedHashMap<>();
+        report.put("month", month);
+        report.put("year", year);
+        report.put("categories", data);
+        return report;
+    }
+
+    @Transactional(readOnly = true)
+    public Map<String, Object> getIncomeVsExpenseReport(Long userId, int year) {
+        userService.getUserEntity(userId);
+        List<Map<String, Object>> comparison = new ArrayList<>();
+
+        for (int m = 1; m <= 12; m++) {
+            BigDecimal income = Objects.requireNonNullElse(
+                    incomeRepository.sumByUserIdAndMonthAndYear(userId, m, year), BigDecimal.ZERO);
+            BigDecimal expense = Objects.requireNonNullElse(
+                    expenseRepository.sumByUserIdAndMonthAndYear(userId, m, year), BigDecimal.ZERO);
+
+            Map<String, Object> monthData = new LinkedHashMap<>();
+            monthData.put("month", m);
+            monthData.put("income", income);
+            monthData.put("expense", expense);
+            comparison.add(monthData);
+        }
+
+        Map<String, Object> report = new LinkedHashMap<>();
+        report.put("year", year);
+        report.put("data", comparison);
+        return report;
     }
 }

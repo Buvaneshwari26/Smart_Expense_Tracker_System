@@ -1,0 +1,75 @@
+name: 🚀 Build & Test
+
+on:
+  push:
+    branches: [ "main", "develop" ]
+  pull_request:
+    branches: [ "main", "develop" ]
+
+jobs:
+  build-and-test:
+    name: Build & Run Tests
+    runs-on: ubuntu-latest
+
+    services:
+      mysql:
+        image: mysql:8.0
+        env:
+          MYSQL_ROOT_PASSWORD: root
+          MYSQL_DATABASE: smart_expense_tracker_test
+        ports:
+          - 3306:3306
+        options: >-
+          --health-cmd="mysqladmin ping"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=5
+
+    steps:
+      - name: ☁️ Checkout source code
+        uses: actions/checkout@v4
+
+      - name: ☕ Set up JDK 21
+        uses: actions/setup-java@v4
+        with:
+          java-version: '21'
+          distribution: 'temurin'
+          cache: maven
+
+      - name: 🔧 Wait for MySQL to be ready
+        run: |
+          until mysqladmin ping -h 127.0.0.1 -u root --password=root --silent; do
+            echo "Waiting for MySQL..."
+            sleep 2
+          done
+
+      - name: 📦 Build with Maven (skip tests first)
+        run: mvn clean package -DskipTests -B
+        env:
+          SPRING_DATASOURCE_URL: jdbc:mysql://127.0.0.1:3306/smart_expense_tracker_test?useSSL=false&serverTimezone=UTC&allowPublicKeyRetrieval=true
+          SPRING_DATASOURCE_USERNAME: root
+          SPRING_DATASOURCE_PASSWORD: root
+
+      - name: ✅ Run Unit & Integration Tests
+        run: mvn test -B
+        env:
+          SPRING_DATASOURCE_URL: jdbc:mysql://127.0.0.1:3306/smart_expense_tracker_test?useSSL=false&serverTimezone=UTC&allowPublicKeyRetrieval=true
+          SPRING_DATASOURCE_USERNAME: root
+          SPRING_DATASOURCE_PASSWORD: root
+          APP_JWT_SECRET: dGhpcyBpcyBhIHZlcnkgc2VjdXJlIHNlY3JldCBrZXkgZm9yIHNtYXJ0ZXhwZW5zZXRyYWNrZXI=
+          APP_JWT_EXPIRATION_MS: 86400000
+          APP_JWT_REFRESH_EXPIRATION_MS: 604800000
+
+      - name: 📊 Upload Test Results
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: test-results
+          path: target/surefire-reports/
+
+      - name: 📋 Upload Build Artifact
+        uses: actions/upload-artifact@v4
+        if: success()
+        with:
+          name: app-jar
+          path: target/smart-expense-tracker-*.jar

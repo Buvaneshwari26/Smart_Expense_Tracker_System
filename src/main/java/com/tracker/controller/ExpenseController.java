@@ -2,71 +2,117 @@ package com.tracker.controller;
 
 import com.tracker.dto.ExpenseDTO;
 import com.tracker.service.ExpenseService;
-import jakarta.validation.Valid;
+import com.tracker.service.ExportService;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
+import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
 import org.springframework.format.annotation.DateTimeFormat;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
+import org.springframework.http.*;
 import org.springframework.web.bind.annotation.*;
 
+import java.io.IOException;
 import java.time.LocalDate;
 import java.util.List;
 
 @RestController
 @RequestMapping("/api/expenses")
+@RequiredArgsConstructor
+@Tag(name = "Expenses", description = "Manage expenses with CRUD, search, filter, and export")
 public class ExpenseController {
 
     private final ExpenseService expenseService;
-
-    public ExpenseController(ExpenseService expenseService) {
-        this.expenseService = expenseService;
-    }
+    private final ExportService exportService;
 
     @PostMapping
-    public ResponseEntity<ExpenseDTO> addExpense(
-            @RequestParam Long userId,
-            @Valid @RequestBody ExpenseDTO expenseDTO) {
-        ExpenseDTO response = expenseService.addExpense(userId, expenseDTO);
-        return new ResponseEntity<>(response, HttpStatus.CREATED);
+    @Operation(summary = "Add a new expense")
+    public ResponseEntity<ExpenseDTO> addExpense(@RequestParam Long userId,
+                                                  @RequestBody ExpenseDTO expenseDTO) {
+        return new ResponseEntity<>(expenseService.addExpense(userId, expenseDTO), HttpStatus.CREATED);
     }
 
     @GetMapping
-    public ResponseEntity<List<ExpenseDTO>> getExpenses(@RequestParam Long userId) {
-        List<ExpenseDTO> response = expenseService.getExpensesByUserId(userId);
-        return ResponseEntity.ok(response);
+    @Operation(summary = "Get all expenses with pagination")
+    public ResponseEntity<Page<ExpenseDTO>> getExpenses(
+            @RequestParam Long userId,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(defaultValue = "date") String sortBy,
+            @RequestParam(defaultValue = "desc") String sortDir) {
+        Sort sort = sortDir.equalsIgnoreCase("asc") ? Sort.by(sortBy).ascending() : Sort.by(sortBy).descending();
+        return ResponseEntity.ok(expenseService.getExpensesByUserId(userId, PageRequest.of(page, size, sort)));
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<ExpenseDTO> getExpenseById(
-            @PathVariable Long id,
-            @RequestParam Long userId) {
-        ExpenseDTO response = expenseService.getExpenseById(userId, id);
-        return ResponseEntity.ok(response);
+    @Operation(summary = "Get a specific expense by ID")
+    public ResponseEntity<ExpenseDTO> getExpenseById(@RequestParam Long userId, @PathVariable Long id) {
+        return ResponseEntity.ok(expenseService.getExpenseById(userId, id));
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<ExpenseDTO> updateExpense(
-            @PathVariable Long id,
-            @RequestParam Long userId,
-            @Valid @RequestBody ExpenseDTO expenseDTO) {
-        ExpenseDTO response = expenseService.updateExpense(userId, id, expenseDTO);
-        return ResponseEntity.ok(response);
+    @Operation(summary = "Update an existing expense")
+    public ResponseEntity<ExpenseDTO> updateExpense(@RequestParam Long userId, @PathVariable Long id,
+                                                     @RequestBody ExpenseDTO expenseDTO) {
+        return ResponseEntity.ok(expenseService.updateExpense(userId, id, expenseDTO));
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<String> deleteExpense(
-            @PathVariable Long id,
-            @RequestParam Long userId) {
+    @Operation(summary = "Soft-delete an expense")
+    public ResponseEntity<Void> deleteExpense(@RequestParam Long userId, @PathVariable Long id) {
         expenseService.deleteExpense(userId, id);
-        return ResponseEntity.ok("Expense record deleted successfully.");
+        return ResponseEntity.noContent().build();
     }
 
-    @GetMapping("/filter")
-    public ResponseEntity<List<ExpenseDTO>> filterExpenses(
+    @GetMapping("/search")
+    @Operation(summary = "Search and filter expenses dynamically")
+    public ResponseEntity<Page<ExpenseDTO>> searchExpenses(
             @RequestParam Long userId,
+            @RequestParam(required = false) String keyword,
             @RequestParam(required = false) Long categoryId,
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate,
-            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate) {
-        List<ExpenseDTO> response = expenseService.filterExpenses(userId, categoryId, startDate, endDate);
-        return ResponseEntity.ok(response);
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size) {
+        return ResponseEntity.ok(expenseService.searchExpenses(userId, keyword, categoryId, startDate, endDate,
+                PageRequest.of(page, size, Sort.by("date").descending())));
+    }
+
+    @GetMapping("/category/{categoryId}")
+    @Operation(summary = "Get all expenses by category")
+    public ResponseEntity<List<ExpenseDTO>> getByCategory(@RequestParam Long userId,
+                                                           @PathVariable Long categoryId) {
+        return ResponseEntity.ok(expenseService.getExpensesByCategory(userId, categoryId));
+    }
+
+    @GetMapping("/export/excel")
+    @Operation(summary = "Export expenses to Excel (.xlsx)")
+    public ResponseEntity<byte[]> exportToExcel(@RequestParam Long userId) throws IOException {
+        byte[] data = exportService.exportExpensesToExcel(userId);
+        return ResponseEntity.ok()
+                .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=expenses.xlsx")
+                .contentType(MediaType.parseMediaType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"))
+                .body(data);
+    }
+
+    @GetMapping("/export/csv")
+    @Operation(summary = "Export expenses to CSV")
+    public ResponseEntity<byte[]> exportToCsv(@RequestParam Long userId) {
+        byte[] data = exportService.exportExpensesToCsv(userId);
+        return ResponseEntity.ok()
+                .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=expenses.csv")
+                .contentType(MediaType.parseMediaType("text/csv"))
+                .body(data);
+    }
+
+    @GetMapping("/export/pdf")
+    @Operation(summary = "Export expenses to PDF report")
+    public ResponseEntity<byte[]> exportToPdf(@RequestParam Long userId) throws Exception {
+        byte[] data = exportService.exportExpensesToPdf(userId);
+        return ResponseEntity.ok()
+                .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=expenses.pdf")
+                .contentType(MediaType.APPLICATION_PDF)
+                .body(data);
     }
 }

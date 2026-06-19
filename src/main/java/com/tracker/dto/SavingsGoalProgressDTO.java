@@ -1,22 +1,15 @@
 package com.tracker.dto;
 
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
-
+import lombok.*;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 
-@Data
-@NoArgsConstructor
-@AllArgsConstructor
-@Builder
+@Data @Builder @NoArgsConstructor @AllArgsConstructor
 public class SavingsGoalProgressDTO {
     private Long goalId;
-    private String title;
+    private String goalName;
     private BigDecimal targetAmount;
     private BigDecimal currentAmount;
-    private BigDecimal percentage; // e.g. 75.5%
+    private BigDecimal percentage;
     private LocalDate targetDate;
 }

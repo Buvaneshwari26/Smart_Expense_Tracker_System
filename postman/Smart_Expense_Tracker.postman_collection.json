@@ -1,0 +1,1141 @@
+{
+	"info": {
+		"_postman_id": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
+		"name": "Smart Expense Tracker API",
+		"description": "Complete API collection for the Smart Expense Tracker System.\n\n## Getting Started\n1. Start the backend server at http://localhost:8080\n2. Run the **Register** request to create an account\n3. Run the **Login** request — the access token is auto-saved\n4. All other requests use the saved token automatically\n\n## Variables\n- `baseUrl` — Backend server URL\n- `accessToken` — JWT access token (auto-set on login)\n- `refreshToken` — JWT refresh token (auto-set on login)\n- `userId` — Logged-in user ID (auto-set on login)",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"variable": [
+		{
+			"key": "baseUrl",
+			"value": "http://localhost:8080",
+			"type": "string"
+		},
+		{
+			"key": "accessToken",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "refreshToken",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "userId",
+			"value": "",
+			"type": "string"
+		}
+	],
+	"item": [
+		{
+			"name": "Authentication",
+			"description": "User registration, login, and token refresh endpoints.",
+			"item": [
+				{
+					"name": "Register",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"fullName\": \"Buvaneshwari\",\n  \"email\": \"buvaneshwari@example.com\",\n  \"password\": \"SecureP@ss123\",\n  \"confirmPassword\": \"SecureP@ss123\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/auth/register",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "auth", "register"]
+						},
+						"description": "Register a new user account."
+					},
+					"response": []
+				},
+				{
+					"name": "Login",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"if (pm.response.code === 200) {",
+									"    var jsonData = pm.response.json();",
+									"    pm.collectionVariables.set('accessToken', jsonData.accessToken);",
+									"    pm.collectionVariables.set('refreshToken', jsonData.refreshToken);",
+									"    if (jsonData.user && jsonData.user.id) {",
+									"        pm.collectionVariables.set('userId', jsonData.user.id);",
+									"    }",
+									"    console.log('Access token saved successfully');",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"email\": \"buvaneshwari@example.com\",\n  \"password\": \"SecureP@ss123\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/auth/login",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "auth", "login"]
+						},
+						"description": "Authenticate and receive JWT tokens. Access token is automatically saved to collection variables."
+					},
+					"response": []
+				},
+				{
+					"name": "Refresh Token",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"if (pm.response.code === 200) {",
+									"    var jsonData = pm.response.json();",
+									"    pm.collectionVariables.set('accessToken', jsonData.accessToken);",
+									"    pm.collectionVariables.set('refreshToken', jsonData.refreshToken);",
+									"    console.log('Tokens refreshed successfully');",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"refreshToken\": \"{{refreshToken}}\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/auth/refresh-token",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "auth", "refresh-token"]
+						},
+						"description": "Refresh an expired access token using the refresh token."
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Categories",
+			"description": "Manage income and expense categories.",
+			"item": [
+				{
+					"name": "Get All Categories",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{accessToken}}"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/api/categories",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "categories"]
+						},
+						"description": "Retrieve all categories for the authenticated user."
+					},
+					"response": []
+				},
+				{
+					"name": "Get Category by ID",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{accessToken}}"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/api/categories/1",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "categories", "1"]
+						},
+						"description": "Retrieve a single category by its ID."
+					},
+					"response": []
+				},
+				{
+					"name": "Create Category",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{accessToken}}"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"name\": \"Groceries\",\n  \"type\": \"EXPENSE\",\n  \"icon\": \"🛒\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/categories",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "categories"]
+						},
+						"description": "Create a new category."
+					},
+					"response": []
+				},
+				{
+					"name": "Update Category",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{accessToken}}"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"name\": \"Groceries & Essentials\",\n  \"type\": \"EXPENSE\",\n  \"icon\": \"🛒\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/categories/1",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "categories", "1"]
+						},
+						"description": "Update an existing category."
+					},
+					"response": []
+				},
+				{
+					"name": "Delete Category",
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{accessToken}}"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/api/categories/1",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "categories", "1"]
+						},
+						"description": "Delete a category by ID."
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Incomes",
+			"description": "Manage income records and exports.",
+			"item": [
+				{
+					"name": "Get All Incomes",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{accessToken}}"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/api/incomes?page=0&size=10&sortBy=date&sortDir=desc",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "incomes"],
+							"query": [
+								{ "key": "page", "value": "0" },
+								{ "key": "size", "value": "10" },
+								{ "key": "sortBy", "value": "date" },
+								{ "key": "sortDir", "value": "desc" }
+							]
+						},
+						"description": "Retrieve all incomes with pagination and sorting."
+					},
+					"response": []
+				},
+				{
+					"name": "Get Income by ID",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{accessToken}}"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/api/incomes/1",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "incomes", "1"]
+						},
+						"description": "Retrieve a single income record by ID."
+					},
+					"response": []
+				},
+				{
+					"name": "Create Income",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{accessToken}}"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"amount\": 75000.00,\n  \"description\": \"Monthly Salary - June 2026\",\n  \"date\": \"2026-06-01\",\n  \"categoryId\": 1\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/incomes",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "incomes"]
+						},
+						"description": "Create a new income record."
+					},
+					"response": []
+				},
+				{
+					"name": "Update Income",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{accessToken}}"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"amount\": 78000.00,\n  \"description\": \"Monthly Salary - June 2026 (revised)\",\n  \"date\": \"2026-06-01\",\n  \"categoryId\": 1\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/incomes/1",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "incomes", "1"]
+						},
+						"description": "Update an existing income record."
+					},
+					"response": []
+				},
+				{
+					"name": "Delete Income",
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{accessToken}}"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/api/incomes/1",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "incomes", "1"]
+						},
+						"description": "Delete an income record by ID."
+					},
+					"response": []
+				},
+				{
+					"name": "Export Incomes as PDF",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{accessToken}}"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/api/incomes/export/pdf",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "incomes", "export", "pdf"]
+						},
+						"description": "Export all incomes as a PDF file."
+					},
+					"response": []
+				},
+				{
+					"name": "Export Incomes as Excel",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{accessToken}}"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/api/incomes/export/excel",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "incomes", "export", "excel"]
+						},
+						"description": "Export all incomes as an Excel spreadsheet."
+					},
+					"response": []
+				},
+				{
+					"name": "Export Incomes as CSV",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{accessToken}}"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/api/incomes/export/csv",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "incomes", "export", "csv"]
+						},
+						"description": "Export all incomes as a CSV file."
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Expenses",
+			"description": "Manage expense records, search, filter, and exports.",
+			"item": [
+				{
+					"name": "Get All Expenses",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{accessToken}}"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/api/expenses?page=0&size=10&sortBy=date&sortDir=desc",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "expenses"],
+							"query": [
+								{ "key": "page", "value": "0" },
+								{ "key": "size", "value": "10" },
+								{ "key": "sortBy", "value": "date" },
+								{ "key": "sortDir", "value": "desc" }
+							]
+						},
+						"description": "Retrieve all expenses with pagination and sorting."
+					},
+					"response": []
+				},
+				{
+					"name": "Get Expense by ID",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{accessToken}}"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/api/expenses/1",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "expenses", "1"]
+						},
+						"description": "Retrieve a single expense record by ID."
+					},
+					"response": []
+				},
+				{
+					"name": "Create Expense",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{accessToken}}"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"amount\": 1250.00,\n  \"description\": \"Dinner at Italian restaurant\",\n  \"date\": \"2026-06-18\",\n  \"categoryId\": 3\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/expenses",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "expenses"]
+						},
+						"description": "Create a new expense record."
+					},
+					"response": []
+				},
+				{
+					"name": "Update Expense",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{accessToken}}"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"amount\": 1350.00,\n  \"description\": \"Dinner at Italian restaurant (tip included)\",\n  \"date\": \"2026-06-18\",\n  \"categoryId\": 3\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/expenses/1",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "expenses", "1"]
+						},
+						"description": "Update an existing expense record."
+					},
+					"response": []
+				},
+				{
+					"name": "Delete Expense",
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{accessToken}}"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/api/expenses/1",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "expenses", "1"]
+						},
+						"description": "Delete an expense record by ID."
+					},
+					"response": []
+				},
+				{
+					"name": "Search Expenses",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{accessToken}}"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/api/expenses/search?keyword=dinner&page=0&size=10",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "expenses", "search"],
+							"query": [
+								{ "key": "keyword", "value": "dinner" },
+								{ "key": "page", "value": "0" },
+								{ "key": "size", "value": "10" }
+							]
+						},
+						"description": "Search expenses by keyword in description."
+					},
+					"response": []
+				},
+				{
+					"name": "Filter Expenses",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{accessToken}}"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/api/expenses/filter?startDate=2026-06-01&endDate=2026-06-30&categoryId=3&minAmount=100&maxAmount=5000&page=0&size=10",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "expenses", "filter"],
+							"query": [
+								{ "key": "startDate", "value": "2026-06-01" },
+								{ "key": "endDate", "value": "2026-06-30" },
+								{ "key": "categoryId", "value": "3" },
+								{ "key": "minAmount", "value": "100" },
+								{ "key": "maxAmount", "value": "5000" },
+								{ "key": "page", "value": "0" },
+								{ "key": "size", "value": "10" }
+							]
+						},
+						"description": "Filter expenses by date range, category, and amount range."
+					},
+					"response": []
+				},
+				{
+					"name": "Get Expenses by Category",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{accessToken}}"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/api/expenses/category/3",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "expenses", "category", "3"]
+						},
+						"description": "Get all expenses for a specific category."
+					},
+					"response": []
+				},
+				{
+					"name": "Export Expenses as PDF",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{accessToken}}"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/api/expenses/export/pdf",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "expenses", "export", "pdf"]
+						},
+						"description": "Export expenses as a PDF file."
+					},
+					"response": []
+				},
+				{
+					"name": "Export Expenses as Excel",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{accessToken}}"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/api/expenses/export/excel",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "expenses", "export", "excel"]
+						},
+						"description": "Export expenses as an Excel spreadsheet."
+					},
+					"response": []
+				},
+				{
+					"name": "Export Expenses as CSV",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{accessToken}}"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/api/expenses/export/csv",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "expenses", "export", "csv"]
+						},
+						"description": "Export expenses as a CSV file."
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Budgets",
+			"description": "Manage monthly budgets per category.",
+			"item": [
+				{
+					"name": "Get All Budgets",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{accessToken}}"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/api/budgets",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "budgets"]
+						},
+						"description": "Retrieve all budgets for the authenticated user."
+					},
+					"response": []
+				},
+				{
+					"name": "Get Budget by ID",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{accessToken}}"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/api/budgets/1",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "budgets", "1"]
+						},
+						"description": "Retrieve a single budget by ID."
+					},
+					"response": []
+				},
+				{
+					"name": "Create Budget",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{accessToken}}"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"categoryId\": 3,\n  \"amount\": 10000.00,\n  \"month\": 6,\n  \"year\": 2026\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/budgets",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "budgets"]
+						},
+						"description": "Create a new monthly budget for a category."
+					},
+					"response": []
+				},
+				{
+					"name": "Update Budget",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{accessToken}}"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"categoryId\": 3,\n  \"amount\": 12000.00,\n  \"month\": 6,\n  \"year\": 2026\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/budgets/1",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "budgets", "1"]
+						},
+						"description": "Update an existing budget."
+					},
+					"response": []
+				},
+				{
+					"name": "Delete Budget",
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{accessToken}}"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/api/budgets/1",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "budgets", "1"]
+						},
+						"description": "Delete a budget by ID."
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Savings Goals",
+			"description": "Define and track savings goals.",
+			"item": [
+				{
+					"name": "Get All Goals",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{accessToken}}"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/api/goals",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "goals"]
+						},
+						"description": "Retrieve all savings goals for the authenticated user."
+					},
+					"response": []
+				},
+				{
+					"name": "Get Goal by ID",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{accessToken}}"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/api/goals/1",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "goals", "1"]
+						},
+						"description": "Retrieve a single savings goal by ID."
+					},
+					"response": []
+				},
+				{
+					"name": "Create Goal",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{accessToken}}"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"name\": \"Emergency Fund\",\n  \"description\": \"6 months of living expenses\",\n  \"targetAmount\": 300000.00,\n  \"targetDate\": \"2026-12-31\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/goals",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "goals"]
+						},
+						"description": "Create a new savings goal."
+					},
+					"response": []
+				},
+				{
+					"name": "Update Goal",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{accessToken}}"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"name\": \"Emergency Fund\",\n  \"description\": \"6 months of living expenses (revised)\",\n  \"targetAmount\": 350000.00,\n  \"targetDate\": \"2027-03-31\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/goals/1",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "goals", "1"]
+						},
+						"description": "Update an existing savings goal."
+					},
+					"response": []
+				},
+				{
+					"name": "Delete Goal",
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{accessToken}}"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/api/goals/1",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "goals", "1"]
+						},
+						"description": "Delete a savings goal by ID."
+					},
+					"response": []
+				},
+				{
+					"name": "Add Savings to Goal",
+					"request": {
+						"method": "PATCH",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{accessToken}}"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"amount\": 10000.00\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/goals/1/add-savings",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "goals", "1", "add-savings"]
+						},
+						"description": "Add a savings contribution to a goal."
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Dashboard",
+			"description": "Dashboard KPIs and summary data.",
+			"item": [
+				{
+					"name": "Get Dashboard",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{accessToken}}"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/api/dashboard",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "dashboard"]
+						},
+						"description": "Retrieve dashboard KPIs including total income, expenses, savings, budget status, recent transactions, and trends."
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Reports",
+			"description": "Financial reports and analytics.",
+			"item": [
+				{
+					"name": "Monthly Report",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{accessToken}}"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/api/reports/monthly?month=6&year=2026",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "reports", "monthly"],
+							"query": [
+								{ "key": "month", "value": "6" },
+								{ "key": "year", "value": "2026" }
+							]
+						},
+						"description": "Get monthly financial report with income, expense, and category breakdown."
+					},
+					"response": []
+				},
+				{
+					"name": "Yearly Report",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{accessToken}}"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/api/reports/yearly?year=2026",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "reports", "yearly"],
+							"query": [
+								{ "key": "year", "value": "2026" }
+							]
+						},
+						"description": "Get yearly financial summary with monthly breakdown."
+					},
+					"response": []
+				},
+				{
+					"name": "Category Report",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{accessToken}}"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/api/reports/category?startDate=2026-06-01&endDate=2026-06-30",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "reports", "category"],
+							"query": [
+								{ "key": "startDate", "value": "2026-06-01" },
+								{ "key": "endDate", "value": "2026-06-30" }
+							]
+						},
+						"description": "Get expense breakdown by category for a date range."
+					},
+					"response": []
+				},
+				{
+					"name": "Income vs Expense Report",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{accessToken}}"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/api/reports/income-vs-expense?startDate=2026-01-01&endDate=2026-06-30&granularity=MONTHLY",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "reports", "income-vs-expense"],
+							"query": [
+								{ "key": "startDate", "value": "2026-01-01" },
+								{ "key": "endDate", "value": "2026-06-30" },
+								{ "key": "granularity", "value": "MONTHLY" }
+							]
+						},
+						"description": "Compare income vs expense over a time range with configurable granularity."
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Notifications",
+			"description": "User notifications and alerts.",
+			"item": [
+				{
+					"name": "Get All Notifications",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{accessToken}}"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/api/notifications?page=0&size=20",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "notifications"],
+							"query": [
+								{ "key": "page", "value": "0" },
+								{ "key": "size", "value": "20" }
+							]
+						},
+						"description": "Retrieve all notifications for the authenticated user."
+					},
+					"response": []
+				},
+				{
+					"name": "Get Unread Count",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{accessToken}}"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/api/notifications/unread-count",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "notifications", "unread-count"]
+						},
+						"description": "Get the count of unread notifications."
+					},
+					"response": []
+				},
+				{
+					"name": "Mark Notification as Read",
+					"request": {
+						"method": "PATCH",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{accessToken}}"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/api/notifications/1/mark-read",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "notifications", "1", "mark-read"]
+						},
+						"description": "Mark a specific notification as read."
+					},
+					"response": []
+				}
+			]
+		}
+	]
+}

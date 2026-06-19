@@ -5,6 +5,8 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.hibernate.annotations.SQLDelete;
+import org.hibernate.annotations.SQLRestriction;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -15,7 +17,9 @@ import java.time.LocalDate;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class Expense {
+@SQLDelete(sql = "UPDATE expenses SET is_deleted = true WHERE id=?")
+@SQLRestriction("is_deleted = false")
+public class Expense extends Auditable {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

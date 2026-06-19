@@ -1,78 +1,80 @@
 package com.tracker.service;
 
-import com.tracker.dto.AuthResponse;
-import com.tracker.dto.UserLoginRequest;
-import com.tracker.dto.UserRegisterRequest;
+import com.tracker.dto.UserProfileDTO;
 import com.tracker.exception.BadRequestException;
 import com.tracker.exception.ResourceNotFoundException;
 import com.tracker.model.User;
 import com.tracker.repository.UserRepository;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.List;
+import java.util.stream.Collectors;
+
+@Slf4j
 @Service
+@RequiredArgsConstructor
 public class UserService {
 
     private final UserRepository userRepository;
-    private final BCryptPasswordEncoder passwordEncoder;
-
-    public UserService(UserRepository userRepository, BCryptPasswordEncoder passwordEncoder) {
-        this.userRepository = userRepository;
-        this.passwordEncoder = passwordEncoder;
-    }
-
-    @Transactional
-    public AuthResponse registerUser(UserRegisterRequest request) {
-        // 1. Check if email already exists
-        if (userRepository.existsByEmail(request.getEmail())) {
-            throw new BadRequestException("Email already registered: " + request.getEmail());
-        }
-
-        // 2. Hash the password
-        String hashedPassword = passwordEncoder.encode(request.getPassword());
-
-        // 3. Save User
-        User user = User.builder()
-                .username(request.getUsername())
-                .email(request.getEmail())
-                .password(hashedPassword)
-                .build();
-
-        User savedUser = userRepository.save(user);
-
-        return AuthResponse.builder()
-                .userId(savedUser.getId())
-                .username(savedUser.getUsername())
-                .email(savedUser.getEmail())
-                .token("MOCK_JWT_TOKEN_" + savedUser.getId()) // Optional mock token representation
-                .message("User registered successfully")
-                .build();
-    }
-
-    @Transactional(readOnly = true)
-    public AuthResponse loginUser(UserLoginRequest request) {
-        // 1. Fetch user by email
-        User user = userRepository.findByEmail(request.getEmail())
-                .orElseThrow(() -> new BadRequestException("Invalid email or password"));
-
-        // 2. Verify password
-        if (!passwordEncoder.matches(request.getPassword(), user.getPassword())) {
-            throw new BadRequestException("Invalid email or password");
-        }
-
-        return AuthResponse.builder()
-                .userId(user.getId())
-                .username(user.getUsername())
-                .email(user.getEmail())
-                .token("MOCK_JWT_TOKEN_" + user.getId())
-                .message("Login successful")
-                .build();
-    }
+    private final PasswordEncoder passwordEncoder;
 
     @Transactional(readOnly = true)
     public User getUserEntity(Long id) {
         return userRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("User not found with id: " + id));
+    }
+
+    @Transactional(readOnly = true)
+    public UserProfileDTO getProfile(Long userId) {
+        User user = getUserEntity(userId);
+        return mapToProfile(user);
+    }
+
+    @Transactional
+    public UserProfileDTO updateProfile(Long userId, UserProfileDTO dto) {
+        User user = getUserEntity(userId);
+        user.setFullName(dto.getFullName());
+        user.setUsername(dto.getUsername());
+        user.setPhoneNumber(dto.getPhoneNumber());
+        return mapToProfile(userRepository.save(user));
+    }
+
+    @Transactional
+    public void changePassword(Long userId, String currentPassword, String newPassword) {
+        User user = getUserEntity(userId);
+        if (!passwordEncoder.matches(currentPassword, user.getPassword())) {
+            throw new BadRequestException("Current password is incorrect");
+        }
+        user.setPassword(passwordEncoder.encode(newPassword));
+        userRepository.save(user);
+        log.info("Password changed for user {}", userId);
+    }
+
+    @Transactional(readOnly = true)
+    public List<UserProfileDTO> getAllUsers() {
+        return userRepository.findAll().stream().map(this::mapToProfile).collect(Collectors.toList());
+    }
+
+    @Transactional
+    public void deleteUser(Long userId) {
+        User user = getUserEntity(userId);
+        userRepository.delete(user); // Soft delete
+        log.info("User soft-deleted: {}", userId);
+    }
+
+    private UserProfileDTO mapToProfile(User user) {
+        return UserProfileDTO.builder()
+                .id(user.getId())
+                .fullName(user.getFullName())
+                .username(user.getUsername())
+                .email(user.getEmail())
+                .phoneNumber(user.getPhoneNumber())
+                .role(user.getRole())
+                .createdAt(user.getCreatedAt())
+                .build();
     }
 }

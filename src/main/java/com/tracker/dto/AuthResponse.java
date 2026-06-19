@@ -6,13 +6,16 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 @Data
+@Builder
 @NoArgsConstructor
 @AllArgsConstructor
-@Builder
 public class AuthResponse {
     private Long userId;
     private String username;
     private String email;
-    private String token; // Optional mock/real token field for internship requirements
+    private String role;
+    private String accessToken;
+    private String refreshToken;
+    private String tokenType;
     private String message;
 }

@@ -2,59 +2,52 @@ package com.tracker.controller;
 
 import com.tracker.dto.BudgetDTO;
 import com.tracker.service.BudgetService;
-import jakarta.validation.Valid;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
+import lombok.RequiredArgsConstructor;
+import org.springframework.http.*;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
 @RestController
 @RequestMapping("/api/budgets")
+@RequiredArgsConstructor
+@Tag(name = "Budgets", description = "Budget management and tracking")
 public class BudgetController {
 
     private final BudgetService budgetService;
 
-    public BudgetController(BudgetService budgetService) {
-        this.budgetService = budgetService;
-    }
-
     @PostMapping
-    public ResponseEntity<BudgetDTO> createBudget(
-            @RequestParam Long userId,
-            @Valid @RequestBody BudgetDTO budgetDTO) {
-        BudgetDTO response = budgetService.createBudget(userId, budgetDTO);
-        return new ResponseEntity<>(response, HttpStatus.CREATED);
+    @Operation(summary = "Create a new budget")
+    public ResponseEntity<BudgetDTO> createBudget(@RequestParam Long userId,
+                                                    @RequestBody BudgetDTO budgetDTO) {
+        return new ResponseEntity<>(budgetService.createBudget(userId, budgetDTO), HttpStatus.CREATED);
     }
 
     @GetMapping
+    @Operation(summary = "Get all budgets for a user")
     public ResponseEntity<List<BudgetDTO>> getBudgets(@RequestParam Long userId) {
-        List<BudgetDTO> response = budgetService.getBudgetsByUserId(userId);
-        return ResponseEntity.ok(response);
+        return ResponseEntity.ok(budgetService.getBudgetsByUserId(userId));
+    }
+
+    @GetMapping("/{id}")
+    @Operation(summary = "Get a budget by ID")
+    public ResponseEntity<BudgetDTO> getBudgetById(@RequestParam Long userId, @PathVariable Long id) {
+        return ResponseEntity.ok(budgetService.getBudgetById(userId, id));
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<BudgetDTO> updateBudget(
-            @PathVariable Long id,
-            @RequestParam Long userId,
-            @Valid @RequestBody BudgetDTO budgetDTO) {
-        BudgetDTO response = budgetService.updateBudget(userId, id, budgetDTO);
-        return ResponseEntity.ok(response);
+    @Operation(summary = "Update a budget")
+    public ResponseEntity<BudgetDTO> updateBudget(@RequestParam Long userId, @PathVariable Long id,
+                                                    @RequestBody BudgetDTO budgetDTO) {
+        return ResponseEntity.ok(budgetService.updateBudget(userId, id, budgetDTO));
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<String> deleteBudget(
-            @PathVariable Long id,
-            @RequestParam Long userId) {
+    @Operation(summary = "Soft-delete a budget")
+    public ResponseEntity<Void> deleteBudget(@RequestParam Long userId, @PathVariable Long id) {
         budgetService.deleteBudget(userId, id);
-        return ResponseEntity.ok("Budget limit deleted successfully.");
-    }
-
-    @GetMapping("/check")
-    public ResponseEntity<String> checkBudgetStatus(
-            @RequestParam Long userId,
-            @RequestParam Long categoryId) {
-        String status = budgetService.checkBudgetStatus(userId, categoryId);
-        return ResponseEntity.ok(status);
+        return ResponseEntity.noContent().build();
     }
 }

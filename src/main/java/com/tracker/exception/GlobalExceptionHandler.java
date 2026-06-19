@@ -13,34 +13,33 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+import com.tracker.dto.ApiResponse;
+
 @ControllerAdvice
 public class GlobalExceptionHandler {
 
-    // Handle specific resource not found exceptions
     @ExceptionHandler(ResourceNotFoundException.class)
-    public ResponseEntity<ErrorDetails> handleResourceNotFoundException(ResourceNotFoundException exception, WebRequest request) {
+    public ResponseEntity<ApiResponse<ErrorDetails>> handleResourceNotFoundException(ResourceNotFoundException exception, WebRequest request) {
         ErrorDetails errorDetails = new ErrorDetails(
                 LocalDateTime.now(),
                 exception.getMessage(),
                 request.getDescription(false)
         );
-        return new ResponseEntity<>(errorDetails, HttpStatus.NOT_FOUND);
+        return new ResponseEntity<>(new ApiResponse<>(false, exception.getMessage(), errorDetails), HttpStatus.NOT_FOUND);
     }
 
-    // Handle bad request exceptions (e.g. duplicate resource, wrong properties)
     @ExceptionHandler(BadRequestException.class)
-    public ResponseEntity<ErrorDetails> handleBadRequestException(BadRequestException exception, WebRequest request) {
+    public ResponseEntity<ApiResponse<ErrorDetails>> handleBadRequestException(BadRequestException exception, WebRequest request) {
         ErrorDetails errorDetails = new ErrorDetails(
                 LocalDateTime.now(),
                 exception.getMessage(),
                 request.getDescription(false)
         );
-        return new ResponseEntity<>(errorDetails, HttpStatus.BAD_REQUEST);
+        return new ResponseEntity<>(new ApiResponse<>(false, exception.getMessage(), errorDetails), HttpStatus.BAD_REQUEST);
     }
 
-    // Handle bean validation errors (@NotBlank, @Email, @Positive, etc.)
     @ExceptionHandler(MethodArgumentNotValidException.class)
-    public ResponseEntity<ErrorDetails> handleValidationException(MethodArgumentNotValidException exception, WebRequest request) {
+    public ResponseEntity<ApiResponse<ErrorDetails>> handleValidationException(MethodArgumentNotValidException exception, WebRequest request) {
         String validationErrors = exception.getBindingResult()
                 .getFieldErrors()
                 .stream()
@@ -52,17 +51,16 @@ public class GlobalExceptionHandler {
                 "Validation Failed",
                 validationErrors
         );
-        return new ResponseEntity<>(errorDetails, HttpStatus.BAD_REQUEST);
+        return new ResponseEntity<>(new ApiResponse<>(false, "Validation Failed", errorDetails), HttpStatus.BAD_REQUEST);
     }
 
-    // Handle global / internal server exceptions
     @ExceptionHandler(Exception.class)
-    public ResponseEntity<ErrorDetails> handleGlobalException(Exception exception, WebRequest request) {
+    public ResponseEntity<ApiResponse<ErrorDetails>> handleGlobalException(Exception exception, WebRequest request) {
         ErrorDetails errorDetails = new ErrorDetails(
                 LocalDateTime.now(),
                 exception.getMessage(),
                 request.getDescription(false)
         );
-        return new ResponseEntity<>(errorDetails, HttpStatus.INTERNAL_SERVER_ERROR);
+        return new ResponseEntity<>(new ApiResponse<>(false, exception.getMessage(), errorDetails), HttpStatus.INTERNAL_SERVER_ERROR);
     }
 }

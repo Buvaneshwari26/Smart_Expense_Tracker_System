@@ -1,0 +1,517 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Smart Expense Tracker</title>
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+    <!-- Toast Notification Container -->
+    <div id="toast-container" class="toast-container"></div>
+
+    <!-- Authentication View -->
+    <div id="auth-view" class="view-container active">
+        <div class="auth-box glass-panel">
+            <div class="auth-header">
+                <h2><i class="fa-solid fa-wallet"></i> Smart Tracker</h2>
+                <p>Manage your finances with clarity.</p>
+            </div>
+            
+            <div class="auth-toggle">
+                <button id="btn-show-login" class="active">Login</button>
+                <button id="btn-show-register">Register</button>
+            </div>
+
+            <!-- Login Form -->
+            <form id="login-form" class="auth-form active">
+                <div class="form-group">
+                    <label for="login-email">Email</label>
+                    <input type="email" id="login-email" required placeholder="you@example.com">
+                </div>
+                <div class="form-group">
+                    <label for="login-password">Password</label>
+                    <input type="password" id="login-password" required placeholder="••••••••">
+                </div>
+                <button type="submit" class="btn btn-primary">Login</button>
+            </form>
+
+            <!-- Register Form -->
+            <form id="register-form" class="auth-form">
+                <div class="form-group">
+                    <label for="register-username">Username</label>
+                    <input type="text" id="register-username" required minlength="3" maxlength="50" placeholder="Username">
+                </div>
+                <div class="form-group">
+                    <label for="register-email">Email</label>
+                    <input type="email" id="register-email" required placeholder="you@example.com">
+                </div>
+                <div class="form-group">
+                    <label for="register-password">Password</label>
+                    <input type="password" id="register-password" required minlength="8" placeholder="Min 8 chars, 1 letter, 1 number">
+                </div>
+                <button type="submit" class="btn btn-primary">Create Account</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Main Application View (Hidden by default) -->
+    <div id="app-view" class="view-container">
+        
+        <!-- Sidebar Navigation -->
+        <nav class="sidebar glass-panel">
+            <div class="sidebar-header">
+                <h3><i class="fa-solid fa-wallet"></i> Smart Tracker</h3>
+            </div>
+            <ul class="nav-links">
+                <li><a href="#" data-target="dashboard-section" class="active"><i class="fa-solid fa-chart-pie"></i> Dashboard</a></li>
+                <li><a href="#" data-target="categories-section"><i class="fa-solid fa-tags"></i> Categories</a></li>
+                <li><a href="#" data-target="incomes-section"><i class="fa-solid fa-arrow-trend-up"></i> Incomes</a></li>
+                <li><a href="#" data-target="expenses-section"><i class="fa-solid fa-arrow-trend-down"></i> Expenses</a></li>
+                <li><a href="#" data-target="budgets-section"><i class="fa-solid fa-scale-balanced"></i> Budgets</a></li>
+                <li><a href="#" data-target="goals-section"><i class="fa-solid fa-bullseye"></i> Savings Goals</a></li>
+                <li><a href="#" data-target="reports-section"><i class="fa-solid fa-file-invoice"></i> Reports</a></li>
+            </ul>
+            <div class="sidebar-footer">
+                <div class="user-info">
+                    <div class="avatar"><i class="fa-solid fa-user"></i></div>
+                    <span id="display-username">User</span>
+                </div>
+                <button id="btn-logout" class="btn-icon"><i class="fa-solid fa-right-from-bracket"></i></button>
+            </div>
+        </nav>
+
+        <!-- Main Content Area -->
+        <main class="main-content">
+            
+            <!-- Dashboard Section -->
+            <section id="dashboard-section" class="app-section active">
+                <header class="section-header">
+                    <h2>Dashboard Overview</h2>
+                    <p>Welcome back! Here is your financial summary.</p>
+                </header>
+                
+                <div class="summary-cards">
+                    <div class="card glass-panel stat-card">
+                        <div class="stat-icon"><i class="fa-solid fa-scale-unbalanced"></i></div>
+                        <div class="stat-details">
+                            <h3>Total Balance</h3>
+                            <p id="dash-balance" class="amount">$0.00</p>
+                        </div>
+                    </div>
+                    <div class="card glass-panel stat-card income">
+                        <div class="stat-icon"><i class="fa-solid fa-arrow-trend-up"></i></div>
+                        <div class="stat-details">
+                            <h3>Total Income</h3>
+                            <p id="dash-income" class="amount">$0.00</p>
+                        </div>
+                    </div>
+                    <div class="card glass-panel stat-card expense">
+                        <div class="stat-icon"><i class="fa-solid fa-arrow-trend-down"></i></div>
+                        <div class="stat-details">
+                            <h3>Total Expenses</h3>
+                            <p id="dash-expense" class="amount">$0.00</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="dashboard-grid">
+                    <!-- Recent Transactions -->
+                    <div class="card glass-panel flex-2">
+                        <h3>Recent Transactions</h3>
+                        <div class="table-responsive">
+                            <table class="table" id="dash-transactions-table">
+                                <thead>
+                                    <tr>
+                                        <th>Date</th>
+                                        <th>Description</th>
+                                        <th>Category</th>
+                                        <th>Amount</th>
+                                        <th>Type</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <!-- Populated via JS -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <!-- Budget Status -->
+                    <div class="card glass-panel flex-1">
+                        <h3>Active Budgets Status</h3>
+                        <div id="dash-budgets-list" class="budget-progress-list">
+                            <!-- Populated via JS -->
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Categories Section -->
+            <section id="categories-section" class="app-section">
+                <header class="section-header">
+                    <h2>Categories</h2>
+                    <button class="btn btn-primary" onclick="showModal('category-modal')"><i class="fa-solid fa-plus"></i> Add Category</button>
+                </header>
+                <div class="card glass-panel">
+                    <div class="table-responsive">
+                        <table class="table" id="categories-table">
+                            <thead>
+                                <tr>
+                                    <th>Name</th>
+                                    <th>Type</th>
+                                    <th>Description</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <!-- Populated via JS -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Incomes Section -->
+            <section id="incomes-section" class="app-section">
+                <header class="section-header">
+                    <h2>Incomes</h2>
+                    <button class="btn btn-primary" onclick="showModal('income-modal')"><i class="fa-solid fa-plus"></i> Add Income</button>
+                </header>
+                <div class="card glass-panel">
+                    <div class="table-responsive">
+                        <table class="table" id="incomes-table">
+                            <thead>
+                                <tr>
+                                    <th>Date</th>
+                                    <th>Description</th>
+                                    <th>Category</th>
+                                    <th>Amount</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <!-- Populated via JS -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Expenses Section -->
+            <section id="expenses-section" class="app-section">
+                <header class="section-header">
+                    <h2>Expenses</h2>
+                    <button class="btn btn-primary" onclick="showModal('expense-modal')"><i class="fa-solid fa-plus"></i> Add Expense</button>
+                </header>
+                <div class="card glass-panel">
+                    <div class="filter-bar">
+                        <select id="expense-filter-category">
+                            <option value="">All Categories</option>
+                            <!-- Populated via JS -->
+                        </select>
+                        <input type="date" id="expense-filter-start">
+                        <input type="date" id="expense-filter-end">
+                        <button class="btn btn-secondary" onclick="app.loadExpenses()">Filter</button>
+                        <button class="btn btn-outline" onclick="app.resetExpenseFilters()">Reset</button>
+                    </div>
+                    <div class="table-responsive">
+                        <table class="table" id="expenses-table">
+                            <thead>
+                                <tr>
+                                    <th>Date</th>
+                                    <th>Description</th>
+                                    <th>Category</th>
+                                    <th>Amount</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <!-- Populated via JS -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Budgets Section -->
+            <section id="budgets-section" class="app-section">
+                <header class="section-header">
+                    <h2>Budgets</h2>
+                    <button class="btn btn-primary" onclick="showModal('budget-modal')"><i class="fa-solid fa-plus"></i> Set Budget</button>
+                </header>
+                <div class="card glass-panel">
+                    <div class="table-responsive">
+                        <table class="table" id="budgets-table">
+                            <thead>
+                                <tr>
+                                    <th>Category</th>
+                                    <th>Limit Amount</th>
+                                    <th>Start Date</th>
+                                    <th>End Date</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <!-- Populated via JS -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Savings Goals Section -->
+            <section id="goals-section" class="app-section">
+                <header class="section-header">
+                    <h2>Savings Goals</h2>
+                    <button class="btn btn-primary" onclick="showModal('goal-modal')"><i class="fa-solid fa-plus"></i> New Goal</button>
+                </header>
+                <div class="goals-grid" id="goals-grid">
+                    <!-- Populated via JS -->
+                </div>
+            </section>
+
+            <!-- Reports Section -->
+            <section id="reports-section" class="app-section">
+                <header class="section-header">
+                    <h2>Reports & Analytics</h2>
+                </header>
+                
+                <div class="reports-controls card glass-panel">
+                    <div class="report-filter">
+                        <label>Spending by Category (Date Range)</label>
+                        <input type="date" id="report-start-date">
+                        <input type="date" id="report-end-date">
+                        <button class="btn btn-secondary" onclick="app.loadReports()">Generate</button>
+                    </div>
+                    <div class="report-filter">
+                        <label>Monthly Trend (Year)</label>
+                        <input type="number" id="report-year" min="2000" max="2100" value="2026">
+                        <button class="btn btn-secondary" onclick="app.loadReports()">Generate</button>
+                    </div>
+                </div>
+
+                <div class="dashboard-grid">
+                    <div class="card glass-panel flex-1">
+                        <h3>Spending by Category</h3>
+                        <div class="chart-container">
+                            <canvas id="categoryChart"></canvas>
+                        </div>
+                    </div>
+                    <div class="card glass-panel flex-2">
+                        <h3>Monthly Trend</h3>
+                        <div class="chart-container">
+                            <canvas id="trendChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <!-- Modals -->
+    <!-- Category Modal -->
+    <div id="category-modal" class="modal-overlay">
+        <div class="modal glass-panel">
+            <div class="modal-header">
+                <h3 id="category-modal-title">Add Category</h3>
+                <button class="btn-close" onclick="closeModal('category-modal')"><i class="fa-solid fa-times"></i></button>
+            </div>
+            <form id="category-form">
+                <input type="hidden" id="category-id">
+                <div class="form-group">
+                    <label for="category-name">Name</label>
+                    <input type="text" id="category-name" required>
+                </div>
+                <div class="form-group">
+                    <label for="category-type">Type</label>
+                    <select id="category-type" required>
+                        <option value="EXPENSE">Expense</option>
+                        <option value="INCOME">Income</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="category-desc">Description</label>
+                    <input type="text" id="category-desc">
+                </div>
+                <div class="modal-actions">
+                    <button type="button" class="btn btn-outline" onclick="closeModal('category-modal')">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Save</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Income Modal -->
+    <div id="income-modal" class="modal-overlay">
+        <div class="modal glass-panel">
+            <div class="modal-header">
+                <h3 id="income-modal-title">Add Income</h3>
+                <button class="btn-close" onclick="closeModal('income-modal')"><i class="fa-solid fa-times"></i></button>
+            </div>
+            <form id="income-form">
+                <input type="hidden" id="income-id">
+                <div class="form-group">
+                    <label for="income-amount">Amount</label>
+                    <input type="number" step="0.01" id="income-amount" required min="0.01">
+                </div>
+                <div class="form-group">
+                    <label for="income-date">Date</label>
+                    <input type="date" id="income-date" required>
+                </div>
+                <div class="form-group">
+                    <label for="income-category">Category</label>
+                    <select id="income-category" required>
+                        <!-- Populated via JS -->
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="income-desc">Description</label>
+                    <input type="text" id="income-desc">
+                </div>
+                <div class="modal-actions">
+                    <button type="button" class="btn btn-outline" onclick="closeModal('income-modal')">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Save</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Expense Modal -->
+    <div id="expense-modal" class="modal-overlay">
+        <div class="modal glass-panel">
+            <div class="modal-header">
+                <h3 id="expense-modal-title">Add Expense</h3>
+                <button class="btn-close" onclick="closeModal('expense-modal')"><i class="fa-solid fa-times"></i></button>
+            </div>
+            <form id="expense-form">
+                <input type="hidden" id="expense-id">
+                <div class="form-group">
+                    <label for="expense-amount">Amount</label>
+                    <input type="number" step="0.01" id="expense-amount" required min="0.01">
+                </div>
+                <div class="form-group">
+                    <label for="expense-date">Date</label>
+                    <input type="date" id="expense-date" required>
+                </div>
+                <div class="form-group">
+                    <label for="expense-category">Category</label>
+                    <select id="expense-category" required>
+                        <!-- Populated via JS -->
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="expense-desc">Description</label>
+                    <input type="text" id="expense-desc">
+                </div>
+                <div class="modal-actions">
+                    <button type="button" class="btn btn-outline" onclick="closeModal('expense-modal')">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Save</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Budget Modal -->
+    <div id="budget-modal" class="modal-overlay">
+        <div class="modal glass-panel">
+            <div class="modal-header">
+                <h3 id="budget-modal-title">Set Budget</h3>
+                <button class="btn-close" onclick="closeModal('budget-modal')"><i class="fa-solid fa-times"></i></button>
+            </div>
+            <form id="budget-form">
+                <input type="hidden" id="budget-id">
+                <div class="form-group">
+                    <label for="budget-category">Category (Expense Only)</label>
+                    <select id="budget-category" required>
+                        <!-- Populated via JS -->
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="budget-amount">Limit Amount</label>
+                    <input type="number" step="0.01" id="budget-amount" required min="0.01">
+                </div>
+                <div class="form-group">
+                    <label for="budget-start">Start Date</label>
+                    <input type="date" id="budget-start" required>
+                </div>
+                <div class="form-group">
+                    <label for="budget-end">End Date</label>
+                    <input type="date" id="budget-end" required>
+                </div>
+                <div class="modal-actions">
+                    <button type="button" class="btn btn-outline" onclick="closeModal('budget-modal')">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Save</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Savings Goal Modal -->
+    <div id="goal-modal" class="modal-overlay">
+        <div class="modal glass-panel">
+            <div class="modal-header">
+                <h3 id="goal-modal-title">Savings Goal</h3>
+                <button class="btn-close" onclick="closeModal('goal-modal')"><i class="fa-solid fa-times"></i></button>
+            </div>
+            <form id="goal-form">
+                <input type="hidden" id="goal-id">
+                <div class="form-group">
+                    <label for="goal-title">Title</label>
+                    <input type="text" id="goal-title" required>
+                </div>
+                <div class="form-group">
+                    <label for="goal-target-amount">Target Amount</label>
+                    <input type="number" step="0.01" id="goal-target-amount" required min="0.01">
+                </div>
+                <div class="form-group">
+                    <label for="goal-current-amount">Current Amount</label>
+                    <input type="number" step="0.01" id="goal-current-amount" required min="0" value="0">
+                </div>
+                <div class="form-group">
+                    <label for="goal-target-date">Target Date</label>
+                    <input type="date" id="goal-target-date" required>
+                </div>
+                <div class="modal-actions">
+                    <button type="button" class="btn btn-outline" onclick="closeModal('goal-modal')">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Save</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Add Savings Modal (for updating goal progress) -->
+    <div id="add-savings-modal" class="modal-overlay">
+        <div class="modal glass-panel">
+            <div class="modal-header">
+                <h3>Update Savings</h3>
+                <button class="btn-close" onclick="closeModal('add-savings-modal')"><i class="fa-solid fa-times"></i></button>
+            </div>
+            <form id="add-savings-form">
+                <input type="hidden" id="add-savings-goal-id">
+                <p>Enter the amount to add to (or subtract from) this goal.</p>
+                <div class="form-group">
+                    <label for="add-savings-amount">Amount (use negative to withdraw)</label>
+                    <input type="number" step="0.01" id="add-savings-amount" required>
+                </div>
+                <div class="modal-actions">
+                    <button type="button" class="btn btn-outline" onclick="closeModal('add-savings-modal')">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Update</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+</html>

@@ -2,25 +2,23 @@ package com.tracker.controller;
 
 import com.tracker.dto.DashboardSummaryDTO;
 import com.tracker.service.DashboardService;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
+import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/api/dashboard")
+@RequiredArgsConstructor
+@Tag(name = "Dashboard", description = "Dashboard KPIs, summaries, and analytics")
 public class DashboardController {
 
     private final DashboardService dashboardService;
 
-    public DashboardController(DashboardService dashboardService) {
-        this.dashboardService = dashboardService;
-    }
-
-    @GetMapping("/summary")
-    public ResponseEntity<DashboardSummaryDTO> getDashboardSummary(@RequestParam Long userId) {
-        DashboardSummaryDTO response = dashboardService.getDashboardSummary(userId);
-        return ResponseEntity.ok(response);
+    @GetMapping
+    @Operation(summary = "Get full dashboard summary with KPIs, budgets, goals, and recent transactions")
+    public ResponseEntity<DashboardSummaryDTO> getDashboard(@RequestParam Long userId) {
+        return ResponseEntity.ok(dashboardService.getDashboardSummary(userId));
     }
 }
