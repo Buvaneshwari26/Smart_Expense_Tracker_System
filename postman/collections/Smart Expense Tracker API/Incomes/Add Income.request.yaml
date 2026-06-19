@@ -1,0 +1,20 @@
+$kind: http-request
+name: Add Income
+method: POST
+url: '{{baseUrl}}/api/incomes'
+order: 1000
+queryParams:
+  - key: userId
+    value: '1'
+headers:
+  - key: Content-Type
+    value: application/json
+body:
+  type: json
+  content: |-
+    {
+      "amount": 5000.00,
+      "date": "2026-06-01",
+      "description": "Monthly salary",
+      "categoryId": 2
+    }

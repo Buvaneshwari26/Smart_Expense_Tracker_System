@@ -1,0 +1,8 @@
+$kind: http-request
+name: Get Dashboard Summary
+method: GET
+url: '{{baseUrl}}/api/dashboard/summary'
+order: 1000
+queryParams:
+  - key: userId
+    value: '1'

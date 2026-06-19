@@ -1,0 +1,8 @@
+$kind: http-request
+name: Delete Income
+method: DELETE
+url: '{{baseUrl}}/api/incomes/{{incomeId}}'
+order: 5000
+queryParams:
+  - key: userId
+    value: '1'

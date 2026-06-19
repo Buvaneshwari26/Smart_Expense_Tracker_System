@@ -1,0 +1,20 @@
+$kind: http-request
+name: Add Expense
+method: POST
+url: '{{baseUrl}}/api/expenses'
+order: 1000
+queryParams:
+  - key: userId
+    value: '1'
+headers:
+  - key: Content-Type
+    value: application/json
+body:
+  type: json
+  content: |-
+    {
+      "amount": 50.00,
+      "date": "2026-06-14",
+      "description": "Lunch at restaurant",
+      "categoryId": 1
+    }

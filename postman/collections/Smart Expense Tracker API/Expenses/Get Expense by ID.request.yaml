@@ -1,0 +1,8 @@
+$kind: http-request
+name: Get Expense by ID
+method: GET
+url: '{{baseUrl}}/api/expenses/{{expenseId}}'
+order: 3000
+queryParams:
+  - key: userId
+    value: '1'

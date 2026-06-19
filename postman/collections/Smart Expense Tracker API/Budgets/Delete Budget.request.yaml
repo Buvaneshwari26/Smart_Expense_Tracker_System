@@ -1,0 +1,8 @@
+$kind: http-request
+name: Delete Budget
+method: DELETE
+url: '{{baseUrl}}/api/budgets/{{budgetId}}'
+order: 4000
+queryParams:
+  - key: userId
+    value: '1'

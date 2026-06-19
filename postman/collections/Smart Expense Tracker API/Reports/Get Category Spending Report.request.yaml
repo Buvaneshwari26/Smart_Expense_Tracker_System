@@ -1,0 +1,12 @@
+$kind: http-request
+name: Get Category Spending Report
+method: GET
+url: '{{baseUrl}}/api/reports/category-spending'
+order: 1000
+queryParams:
+  - key: userId
+    value: '1'
+  - key: startDate
+    value: '2026-01-01'
+  - key: endDate
+    value: '2026-12-31'

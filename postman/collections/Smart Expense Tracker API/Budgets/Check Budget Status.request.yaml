@@ -1,0 +1,10 @@
+$kind: http-request
+name: Check Budget Status
+method: GET
+url: '{{baseUrl}}/api/budgets/check'
+order: 5000
+queryParams:
+  - key: userId
+    value: '1'
+  - key: categoryId
+    value: '1'
