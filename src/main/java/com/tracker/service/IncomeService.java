@@ -49,6 +49,15 @@ public class IncomeService {
     }
 
     @Transactional(readOnly = true)
+    public Page<IncomeDTO> searchIncomes(Long userId, String keyword, Long categoryId,
+                                          LocalDate startDate, LocalDate endDate,
+                                          java.math.BigDecimal minAmount, java.math.BigDecimal maxAmount, Pageable pageable) {
+        userService.getUserEntity(userId);
+        return incomeRepository.searchIncomes(userId, keyword, categoryId, startDate, endDate, minAmount, maxAmount, pageable)
+                .map(this::mapToDTO);
+    }
+
+    @Transactional(readOnly = true)
     public IncomeDTO getIncomeById(Long userId, Long incomeId) {
         Income income = incomeRepository.findByIdAndUserId(incomeId, userId)
                 .orElseThrow(() -> new ResourceNotFoundException("Income not found with id: " + incomeId));

@@ -87,9 +87,10 @@ public class ExpenseService {
 
     @Transactional(readOnly = true)
     public Page<ExpenseDTO> searchExpenses(Long userId, String keyword, Long categoryId,
-                                            LocalDate startDate, LocalDate endDate, Pageable pageable) {
+                                            LocalDate startDate, LocalDate endDate,
+                                            java.math.BigDecimal minAmount, java.math.BigDecimal maxAmount, Pageable pageable) {
         userService.getUserEntity(userId);
-        return expenseRepository.searchExpenses(userId, keyword, categoryId, startDate, endDate, pageable)
+        return expenseRepository.searchExpenses(userId, keyword, categoryId, startDate, endDate, minAmount, maxAmount, pageable)
                 .map(this::mapToDTO);
     }
 
@@ -110,7 +111,7 @@ public class ExpenseService {
                     .filter(b -> b.getCategory().getId().equals(category.getId()))
                     .findFirst()
                     .ifPresent(budget -> {
-                        java.math.BigDecimal spent = expenseRepository.sumByUserIdAndMonthAndYear(user.getId(), month, year);
+                        java.math.BigDecimal spent = expenseRepository.sumByUserIdAndCategoryIdAndMonthAndYear(user.getId(), category.getId(), month, year);
                         if (spent != null && spent.compareTo(budget.getBudgetAmount()) > 0) {
                             Notification notification = Notification.builder()
                                     .title("Budget Exceeded!")

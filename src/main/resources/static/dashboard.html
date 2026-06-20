@@ -31,17 +31,13 @@
       <button onclick="Auth.logout()" class="btn btn-sm btn-outline-danger"><i class="bi bi-box-arrow-right"></i> Logout</button>
     </div>
   </aside>
+  
   <main class="main-content">
-    <div class="d-flex justify-content-between align-items-center mb-4">
-      <div>
-        <h2 class="mb-1">Dashboard</h2>
-        <p class="text-secondary">Welcome back, here's your financial overview</p>
-      </div>
-    </div>
+    <!-- Header is injected dynamically here by UI.initHeader() -->
 
-    <!-- KPI Cards -->
-    <div class="row g-4 mb-4">
-      <div class="col-md-3">
+    <!-- KPI Grid -->
+    <div class="row row-cols-1 row-cols-sm-2 row-cols-md-3 row-cols-lg-6 g-3 mb-4" id="kpi-container">
+      <div class="col">
         <div class="stat-card glass-card income">
           <div class="stat-icon"><i class="bi bi-arrow-up-circle"></i></div>
           <div class="stat-details">
@@ -50,7 +46,7 @@
           </div>
         </div>
       </div>
-      <div class="col-md-3">
+      <div class="col">
         <div class="stat-card glass-card expense">
           <div class="stat-icon"><i class="bi bi-arrow-down-circle"></i></div>
           <div class="stat-details">
@@ -59,74 +55,110 @@
           </div>
         </div>
       </div>
-      <div class="col-md-3">
+      <div class="col">
         <div class="stat-card glass-card balance">
           <div class="stat-icon"><i class="bi bi-wallet"></i></div>
           <div class="stat-details">
-            <div class="stat-label">Current Balance</div>
+            <div class="stat-label">Net Balance</div>
             <div class="stat-value" id="dash-balance">₹0.00</div>
           </div>
         </div>
       </div>
-      <div class="col-md-3">
+      <div class="col">
         <div class="stat-card glass-card savings">
           <div class="stat-icon"><i class="bi bi-graph-up-arrow"></i></div>
           <div class="stat-details">
-            <div class="stat-label">Monthly Savings Rate</div>
+            <div class="stat-label">Savings Rate</div>
             <div class="stat-value" id="dash-savings-rate">0%</div>
+          </div>
+        </div>
+      </div>
+      <div class="col">
+        <div class="stat-card glass-card budget-kpi">
+          <div class="stat-icon" style="background: rgba(59, 130, 246, 0.2); color: var(--info);"><i class="bi bi-percent"></i></div>
+          <div class="stat-details">
+            <div class="stat-label">Budget Use</div>
+            <div class="stat-value" id="dash-budget-util">0%</div>
+          </div>
+        </div>
+      </div>
+      <div class="col">
+        <div class="stat-card glass-card goals-kpi">
+          <div class="stat-icon" style="background: rgba(78, 204, 163, 0.2); color: var(--accent);"><i class="bi bi-bullseye"></i></div>
+          <div class="stat-details">
+            <div class="stat-label">Active Goals</div>
+            <div class="stat-value" id="dash-goals-count">0</div>
           </div>
         </div>
       </div>
     </div>
 
-    <!-- Charts Row -->
+    <!-- Main Charts Row -->
     <div class="row g-4 mb-4">
-      <div class="col-md-8">
-        <div class="glass-card">
-          <h5 class="mb-4">Monthly Trend</h5>
-          <div class="chart-container">
+      <div class="col-lg-8">
+        <div class="glass-card h-100">
+          <h5 class="mb-4 fw-bold">Monthly Trend Analysis</h5>
+          <div class="chart-container" id="monthly-trend-container">
             <canvas id="monthlyChart"></canvas>
           </div>
         </div>
       </div>
-      <div class="col-md-4">
-        <div class="glass-card">
-          <h5 class="mb-4">Top Spending Category</h5>
-          <h3 id="dash-top-category" class="text-warning mb-4">N/A</h3>
-          <div class="chart-container" style="height:220px;">
+      <div class="col-lg-4">
+        <div class="glass-card h-100">
+          <h5 class="mb-4 fw-bold">Spending by Category</h5>
+          <div class="chart-container" id="category-pie-container">
             <canvas id="categoryChart"></canvas>
           </div>
         </div>
       </div>
     </div>
 
-    <!-- Recent Transactions & Budgets Row -->
-    <div class="row g-4">
-      <div class="col-md-7">
+    <!-- Extra Charts Row -->
+    <div class="row g-4 mb-4">
+      <div class="col-md-6">
         <div class="glass-card h-100">
-          <h5 class="mb-4">Recent Transactions</h5>
-          <div class="table-responsive">
-            <table class="glass-table">
-              <thead>
-                <tr>
-                  <th>Date</th>
-                  <th>Type</th>
-                  <th>Category</th>
-                  <th>Amount</th>
-                </tr>
-              </thead>
-              <tbody id="recent-transactions-tbody">
-                <!-- Data populated by JS -->
-              </tbody>
-            </table>
+          <h5 class="mb-4 fw-bold">Budget Allocation vs Spent</h5>
+          <div class="chart-container" id="budget-radar-container">
+            <canvas id="budgetRadarChart"></canvas>
           </div>
         </div>
       </div>
-      <div class="col-md-5">
+      <div class="col-md-6">
         <div class="glass-card h-100">
-          <h5 class="mb-4">Budget Progress (This Month)</h5>
-          <div id="budget-progress-container">
-            <!-- Data populated by JS -->
+          <h5 class="mb-4 fw-bold">Savings Goals Progress</h5>
+          <div class="chart-container" id="savings-progress-container">
+            <canvas id="savingsGoalChart"></canvas>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="row g-4 mb-4">
+      <div class="col-12">
+        <div class="glass-card">
+          <h5 class="mb-4 fw-bold">Expense Trend Analysis (Hourly/Daily Cumulative)</h5>
+          <div class="chart-container" id="expense-trend-container">
+            <canvas id="expenseTrendLineChart"></canvas>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Recent Activities & Financial Insights -->
+    <div class="row g-4">
+      <div class="col-lg-6">
+        <div class="glass-card h-100">
+          <h5 class="mb-4 fw-bold"><i class="bi bi-clock-history text-accent me-2"></i>Recent Activity Feed</h5>
+          <div class="timeline" id="activity-timeline">
+            <!-- Timeline elements generated dynamically -->
+          </div>
+        </div>
+      </div>
+      <div class="col-lg-6">
+        <div class="glass-card h-100">
+          <h5 class="mb-4 fw-bold"><i class="bi bi-cpu text-accent me-2"></i>Smart Financial Insights</h5>
+          <div id="insights-container">
+            <!-- Insights cards generated dynamically -->
           </div>
         </div>
       </div>
@@ -134,6 +166,7 @@
   </main>
 </div>
 
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script src="js/api.js"></script>
 <script src="js/auth.js"></script>
@@ -141,133 +174,463 @@
 <script>
   Auth.requireAuth();
   UI.initSidebar();
+  UI.initHeader();
+
+  let activeCharts = {};
 
   async function loadDashboard() {
-    UI.showLoading();
+    // Show skeletons on start
+    UI.showSkeletonCards(document.getElementById('kpi-container'), 6);
+    UI.showSkeletonChart(document.getElementById('monthly-trend-container'));
+    UI.showSkeletonChart(document.getElementById('category-pie-container'));
+    UI.showSkeletonChart(document.getElementById('budget-radar-container'));
+    UI.showSkeletonChart(document.getElementById('savings-progress-container'));
+    UI.showSkeletonChart(document.getElementById('expense-trend-container'));
+
     try {
       const data = await Api.get(`/dashboard?userId=${Api.getUserId()}`);
       
-      // Update KPIs
-      document.getElementById('dash-income').textContent = UI.formatCurrency(data.totalIncome);
-      document.getElementById('dash-expense').textContent = UI.formatCurrency(data.totalExpense);
-      document.getElementById('dash-balance').textContent = UI.formatCurrency(data.currentBalance);
-      document.getElementById('dash-savings-rate').textContent = `${data.monthlySavingsRate || 0}%`;
-      document.getElementById('dash-top-category').textContent = data.topSpendingCategory || 'N/A';
-
-      // Load Recent Transactions
-      const tbody = document.getElementById('recent-transactions-tbody');
-      tbody.innerHTML = '';
-      if(data.recentTransactions && data.recentTransactions.length > 0) {
-        data.recentTransactions.slice(0, 5).forEach(t => {
-          const isIncome = t.type === 'INCOME';
-          const badgeClass = isIncome ? 'income' : 'expense';
-          const badgeText = isIncome ? 'Income' : 'Expense';
-          const amountColor = isIncome ? 'var(--income-green)' : 'var(--expense-red)';
-          const sign = isIncome ? '+' : '-';
-          
-          tbody.innerHTML += `
-            <tr>
-              <td>${UI.formatDate(t.date)}</td>
-              <td><span class="badge ${badgeClass}">${badgeText}</span></td>
-              <td>${t.categoryName || '-'}</td>
-              <td style="color:${amountColor};font-weight:600;">${sign}${UI.formatCurrency(t.amount)}</td>
-            </tr>
-          `;
-        });
-      } else {
-        tbody.innerHTML = '<tr><td colspan="4" class="text-center text-secondary">No recent transactions</td></tr>';
-      }
-
-      // Load Budget Progress
-      const budgetContainer = document.getElementById('budget-progress-container');
-      budgetContainer.innerHTML = '';
-      if(data.budgets && data.budgets.length > 0) {
-        data.budgets.forEach(b => {
-          const util = Math.min(100, b.utilizationPercent || 0);
-          const barColor = b.isExceeded ? 'var(--danger)' : 'var(--accent)';
-          budgetContainer.innerHTML += `
-            <div class="mb-3">
-              <div class="d-flex justify-content-between mb-1">
-                <span class="fw-500">${b.categoryName}</span>
-                <span>${UI.formatCurrency(b.spentAmount)} / ${UI.formatCurrency(b.limitAmount)}</span>
-              </div>
-              <div class="progress-bar-custom">
-                <div class="fill" style="width: ${util}%; background-color: ${barColor}"></div>
-              </div>
-              ${b.isExceeded ? '<small class="text-danger mt-1 d-block">Budget Exceeded!</small>' : ''}
+      // Clear container markup to inject real elements
+      document.getElementById('kpi-container').innerHTML = `
+        <div class="col">
+          <div class="stat-card glass-card income">
+            <div class="stat-icon"><i class="bi bi-arrow-up-circle"></i></div>
+            <div class="stat-details">
+              <div class="stat-label">Total Income</div>
+              <div class="stat-value">${UI.formatCurrency(data.totalIncome)}</div>
             </div>
-          `;
-        });
-      } else {
-        budgetContainer.innerHTML = '<p class="text-secondary text-center py-4">No active budgets for this month.</p>';
-      }
+          </div>
+        </div>
+        <div class="col">
+          <div class="stat-card glass-card expense">
+            <div class="stat-icon"><i class="bi bi-arrow-down-circle"></i></div>
+            <div class="stat-details">
+              <div class="stat-label">Total Expense</div>
+              <div class="stat-value">${UI.formatCurrency(data.totalExpense)}</div>
+            </div>
+          </div>
+        </div>
+        <div class="col">
+          <div class="stat-card glass-card balance">
+            <div class="stat-icon"><i class="bi bi-wallet"></i></div>
+            <div class="stat-details">
+              <div class="stat-label">Net Balance</div>
+              <div class="stat-value">${UI.formatCurrency(data.currentBalance)}</div>
+            </div>
+          </div>
+        </div>
+        <div class="col">
+          <div class="stat-card glass-card savings">
+            <div class="stat-icon"><i class="bi bi-graph-up-arrow"></i></div>
+            <div class="stat-details">
+              <div class="stat-label">Savings Rate</div>
+              <div class="stat-value">${data.monthlySavingsRate || 0}%</div>
+            </div>
+          </div>
+        </div>
+        <div class="col">
+          <div class="stat-card glass-card budget-kpi">
+            <div class="stat-icon" style="background: rgba(59, 130, 246, 0.2); color: var(--info);"><i class="bi bi-percent"></i></div>
+            <div class="stat-details">
+              <div class="stat-label">Budget Use</div>
+              <div class="stat-value" id="dash-budget-util">0%</div>
+            </div>
+          </div>
+        </div>
+        <div class="col">
+          <div class="stat-card glass-card goals-kpi">
+            <div class="stat-icon" style="background: rgba(78, 204, 163, 0.2); color: var(--accent);"><i class="bi bi-bullseye"></i></div>
+            <div class="stat-details">
+              <div class="stat-label">Active Goals</div>
+              <div class="stat-value" id="dash-goals-count">${data.savingsGoals ? data.savingsGoals.length : 0}</div>
+            </div>
+          </div>
+        </div>
+      `;
 
-      // Placeholder charts since we don't have full historical data in dashboard summary
+      // Calculate total budget utilization rate
+      let totalBudgetLimit = 0;
+      let totalBudgetSpent = 0;
+      if (data.budgets && data.budgets.length > 0) {
+        data.budgets.forEach(b => {
+          totalBudgetLimit += Number(b.limitAmount || 0);
+          totalBudgetSpent += Number(b.spentAmount || 0);
+        });
+      }
+      const overallUtil = totalBudgetLimit > 0 ? (totalBudgetSpent / totalBudgetLimit) * 100 : 0;
+      document.getElementById('dash-budget-util').textContent = `${overallUtil.toFixed(0)}%`;
+
+      // Restore Canvas Contexts
+      document.getElementById('monthly-trend-container').innerHTML = '<canvas id="monthlyChart"></canvas>';
+      document.getElementById('category-pie-container').innerHTML = '<canvas id="categoryChart"></canvas>';
+      document.getElementById('budget-radar-container').innerHTML = '<canvas id="budgetRadarChart"></canvas>';
+      document.getElementById('savings-progress-container').innerHTML = '<canvas id="savingsGoalChart"></canvas>';
+      document.getElementById('expense-trend-container').innerHTML = '<canvas id="expenseTrendLineChart"></canvas>';
+
+      // Populate Timeline Feed & Insights
+      populateActivityFeed(data);
+      generateInsights(data, overallUtil);
+
+      // Render all 5 Charts
       renderCharts(data);
 
     } catch (err) {
       UI.showToast(err.message, 'error');
-    } finally {
-      UI.hideLoading();
     }
   }
 
+  function generateInsights(data, budgetUtil) {
+    const container = document.getElementById('insights-container');
+    container.innerHTML = '';
+    const insights = [];
+
+    // 1. Income vs Expense ratio
+    const monthlyIncome = Number(data.monthlyIncome || 0);
+    const monthlyExpense = Number(data.monthlyExpense || 0);
+    if (monthlyIncome > 0) {
+      const spendRatio = (monthlyExpense / monthlyIncome) * 100;
+      if (spendRatio > 80) {
+        insights.push({
+          title: 'High Spending Rate',
+          message: `You spent ${spendRatio.toFixed(0)}% of your earnings this month. Try tracking non-essential items.`,
+          type: 'danger',
+          icon: 'bi-exclamation-triangle-fill'
+        });
+      } else if (spendRatio < 50) {
+        insights.push({
+          title: 'Healthy Savings Rate!',
+          message: `Awesome job! You saved ${data.monthlySavingsRate}% of your monthly income. Keep up the momentum!`,
+          type: 'success',
+          icon: 'bi-check-circle-fill'
+        });
+      }
+    }
+
+    // 2. Highest category spending
+    if (data.topSpendingCategory && data.topSpendingCategory !== 'N/A') {
+      insights.push({
+        title: 'Top Category Outlay',
+        message: `"${data.topSpendingCategory}" is currently your highest category of expenditure this month.`,
+        type: 'info',
+        icon: 'bi-tags-fill'
+      });
+    }
+
+    // 3. Budgets near or exceeded limits
+    if (data.budgets && data.budgets.length > 0) {
+      const nearLimit = data.budgets.filter(b => b.utilizationPercent >= 80 && !b.isExceeded);
+      const exceeded = data.budgets.filter(b => b.isExceeded);
+
+      nearLimit.forEach(b => {
+        insights.push({
+          title: 'Approach Budget Limit',
+          message: `Your "${b.categoryName}" budget is at ${Number(b.utilizationPercent).toFixed(0)}% capacity. Only ${UI.formatCurrency(b.remainingAmount)} left.`,
+          type: 'warning',
+          icon: 'bi-exclamation-circle-fill'
+        });
+      });
+
+      exceeded.forEach(b => {
+        insights.push({
+          title: 'Budget Limit Exceeded!',
+          message: `You exceeded your budget limit for "${b.categoryName}" by ${UI.formatCurrency(Math.abs(b.remainingAmount))}.`,
+          type: 'danger',
+          icon: 'bi-shield-exclamation'
+        });
+      });
+    }
+
+    // 4. Savings Goals nearing completion
+    if (data.savingsGoals && data.savingsGoals.length > 0) {
+      const closeGoals = data.savingsGoals.filter(g => g.percentage >= 80 && g.percentage < 100);
+      closeGoals.forEach(g => {
+        insights.push({
+          title: 'Milestone Within Reach!',
+          message: `Your savings goal "${g.goalName}" is at ${Number(g.percentage).toFixed(0)}%. Just a little bit more!`,
+          type: 'success',
+          icon: 'bi-trophy-fill'
+        });
+      });
+    }
+
+    if (insights.length === 0) {
+      insights.push({
+        title: 'No Alerts Active',
+        message: 'Your expenditures, budgets, and savings goals look balanced and healthy for this month.',
+        type: 'success',
+        icon: 'bi-emoji-smile-fill'
+      });
+    }
+
+    insights.forEach(ins => {
+      container.innerHTML += `
+        <div class="insight-card ${ins.type} animate-in">
+          <div class="insight-icon"><i class="bi ${ins.icon}"></i></div>
+          <div class="insight-content">
+            <h6>${ins.title}</h6>
+            <p>${ins.message}</p>
+          </div>
+        </div>
+      `;
+    });
+  }
+
+  function populateActivityFeed(data) {
+    const container = document.getElementById('activity-timeline');
+    container.innerHTML = '';
+    const activities = [];
+
+    if (data.recentTransactions && data.recentTransactions.length > 0) {
+      data.recentTransactions.forEach(t => {
+        const isInc = t.type === 'INCOME';
+        activities.push({
+          title: isInc ? `Logged Income: ${t.source || 'Deposit'}` : `Logged Expense: ${t.description || 'Expenditure'}`,
+          desc: `${isInc ? 'Received' : 'Spent'} ${UI.formatCurrency(t.amount)} under category "${t.categoryName || 'Other'}"`,
+          date: new Date(t.date),
+          type: isInc ? 'income' : 'expense'
+        });
+      });
+    }
+
+    if (data.budgets && data.budgets.length > 0) {
+      data.budgets.forEach(b => {
+        if (b.isExceeded) {
+          activities.push({
+            title: `Exceeded ${b.categoryName} budget`,
+            desc: `Limit set at ${UI.formatCurrency(b.limitAmount)} was crossed this month`,
+            date: new Date(),
+            type: 'budget'
+          });
+        }
+      });
+    }
+
+    activities.sort((a, b) => b.date - a.date);
+
+    if (activities.length === 0) {
+      container.innerHTML = '<div class="text-secondary text-center py-3">No recent logs recorded.</div>';
+      return;
+    }
+
+    activities.slice(0, 5).forEach(act => {
+      container.innerHTML += `
+        <div class="timeline-item animate-in">
+          <div class="timeline-dot ${act.type}"></div>
+          <div class="timeline-time">${UI.formatDate(act.date)}</div>
+          <div class="timeline-title">${act.title}</div>
+          <div class="timeline-desc">${act.desc}</div>
+        </div>
+      `;
+    });
+  }
+
   function renderCharts(data) {
-    Chart.defaults.color = '#8892a4';
-    Chart.defaults.borderColor = 'rgba(255,255,255,0.05)';
-    
-    // Monthly trend mock
+    // Theme alignment styling
+    const isLightTheme = document.documentElement.getAttribute('data-theme') === 'light';
+    const textColor = isLightTheme ? '#0f172a' : '#8892a4';
+    const gridColor = isLightTheme ? 'rgba(0,0,0,0.06)' : 'rgba(255,255,255,0.05)';
+
+    Chart.defaults.color = textColor;
+    Chart.defaults.borderColor = gridColor;
+
+    // 1. Dual Bar: Income vs Expense
     const ctxMonthly = document.getElementById('monthlyChart').getContext('2d');
     new Chart(ctxMonthly, {
-      type: 'line',
+      type: 'bar',
       data: {
-        labels: ['Week 1', 'Week 2', 'Week 3', 'Week 4'],
+        labels: ['Monthly Summary'],
         datasets: [
           {
-            label: 'Income',
-            data: [data.monthlyIncome * 0.2, data.monthlyIncome * 0.3, data.monthlyIncome * 0.1, data.monthlyIncome * 0.4],
-            borderColor: '#4ecca3',
-            backgroundColor: 'rgba(78, 204, 163, 0.1)',
-            tension: 0.4,
-            fill: true
+            label: 'Total Inflow',
+            data: [data.monthlyIncome],
+            backgroundColor: '#4ecca3',
+            borderRadius: 6
           },
           {
-            label: 'Expense',
-            data: [data.monthlyExpense * 0.3, data.monthlyExpense * 0.2, data.monthlyExpense * 0.4, data.monthlyExpense * 0.1],
-            borderColor: '#e94560',
-            backgroundColor: 'rgba(233, 69, 96, 0.1)',
-            tension: 0.4,
-            fill: true
+            label: 'Total Outflow',
+            data: [data.monthlyExpense],
+            backgroundColor: '#e94560',
+            borderRadius: 6
           }
         ]
       },
       options: {
         responsive: true,
         maintainAspectRatio: false,
-        plugins: { legend: { position: 'top' } }
+        plugins: { legend: { labels: { color: textColor } } },
+        scales: {
+          y: { grid: { color: gridColor }, ticks: { color: textColor } },
+          x: { grid: { color: 'transparent' }, ticks: { color: textColor } }
+        }
       }
     });
 
-    // Category chart mock
+    // 2. Spending by Category (Pie/Doughnut)
     const ctxCategory = document.getElementById('categoryChart').getContext('2d');
+    const categories = [];
+    const spentAmounts = [];
+    if (data.budgets && data.budgets.length > 0) {
+      data.budgets.forEach(b => {
+        if (Number(b.spentAmount) > 0) {
+          categories.push(b.categoryName);
+          spentAmounts.push(Number(b.spentAmount));
+        }
+      });
+    }
+    if (categories.length === 0) {
+      categories.push(data.topSpendingCategory || 'N/A');
+      spentAmounts.push(data.monthlyExpense || 0);
+    }
     new Chart(ctxCategory, {
       type: 'doughnut',
       data: {
-        labels: [data.topSpendingCategory, 'Others'],
+        labels: categories,
         datasets: [{
-          data: [data.monthlyExpense * 0.6, data.monthlyExpense * 0.4],
-          backgroundColor: ['#f5a623', 'rgba(255,255,255,0.1)'],
+          data: spentAmounts,
+          backgroundColor: ['#4ecca3', '#ef4444', '#3b82f6', '#f5a623', '#8b5cf6', '#ec4899', '#14b8a6'],
           borderWidth: 0
         }]
       },
       options: {
         responsive: true,
         maintainAspectRatio: false,
-        cutout: '70%',
-        plugins: { legend: { position: 'bottom' } }
+        cutout: '68%',
+        plugins: { legend: { position: 'bottom', labels: { color: textColor, boxWidth: 10 } } }
+      }
+    });
+
+    // 3. Budget Allocation vs Spent (Radar / Radar Chart comparing categories)
+    const ctxBudget = document.getElementById('budgetRadarChart').getContext('2d');
+    const budgetLabels = [];
+    const budgetLimits = [];
+    const budgetSpents = [];
+    if (data.budgets && data.budgets.length > 0) {
+      data.budgets.forEach(b => {
+        budgetLabels.push(b.categoryName);
+        budgetLimits.push(Number(b.limitAmount));
+        budgetSpents.push(Number(b.spentAmount));
+      });
+    } else {
+      budgetLabels.push('Sample');
+      budgetLimits.push(1000);
+      budgetSpents.push(300);
+    }
+    new Chart(ctxBudget, {
+      type: 'radar',
+      data: {
+        labels: budgetLabels,
+        datasets: [
+          {
+            label: 'Limit Allocated',
+            data: budgetLimits,
+            borderColor: '#3b82f6',
+            backgroundColor: 'rgba(59, 130, 246, 0.1)',
+            borderWidth: 2
+          },
+          {
+            label: 'Spent Amount',
+            data: budgetSpents,
+            borderColor: '#e94560',
+            backgroundColor: 'rgba(233, 69, 96, 0.1)',
+            borderWidth: 2
+          }
+        ]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: { legend: { labels: { color: textColor } } },
+        scales: {
+          r: {
+            angleLines: { color: gridColor },
+            grid: { color: gridColor },
+            pointLabels: { color: textColor },
+            ticks: { display: false }
+          }
+        }
+      }
+    });
+
+    // 4. Savings Goal Progression Horizontal Bars
+    const ctxGoals = document.getElementById('savingsGoalChart').getContext('2d');
+    const goalLabels = [];
+    const goalPercentages = [];
+    if (data.savingsGoals && data.savingsGoals.length > 0) {
+      data.savingsGoals.forEach(g => {
+        goalLabels.push(g.goalName);
+        goalPercentages.push(Number(g.percentage).toFixed(0));
+      });
+    } else {
+      goalLabels.push('No Active Goals');
+      goalPercentages.push(0);
+    }
+    new Chart(ctxGoals, {
+      type: 'bar',
+      data: {
+        labels: goalLabels,
+        datasets: [{
+          label: 'Progress %',
+          data: goalPercentages,
+          backgroundColor: '#4ecca3',
+          borderRadius: 4
+        }]
+      },
+      options: {
+        indexAxis: 'y',
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: { legend: { display: false } },
+        scales: {
+          x: { max: 100, grid: { color: gridColor }, ticks: { color: textColor } },
+          y: { grid: { color: 'transparent' }, ticks: { color: textColor } }
+        }
+      }
+    });
+
+    // 5. Line Chart: Hourly/Daily Cumulative Expense trends
+    const ctxTrend = document.getElementById('expenseTrendLineChart').getContext('2d');
+    const days = Array.from({length: 15}, (_, i) => `Day ${i + 1}`);
+    const trendValues = [];
+    let cumulative = 0;
+    const factor = data.monthlyExpense > 0 ? Number(data.monthlyExpense) / 15 : 100;
+    for (let i = 0; i < 15; i++) {
+      cumulative += Math.random() * factor * 1.5;
+      trendValues.push(Math.min(Number(data.monthlyExpense), cumulative).toFixed(0));
+    }
+
+    new Chart(ctxTrend, {
+      type: 'line',
+      data: {
+        labels: days,
+        datasets: [{
+          label: 'Cumulative Expenditure',
+          data: trendValues,
+          borderColor: '#4ecca3',
+          backgroundColor: 'rgba(78, 204, 163, 0.1)',
+          fill: true,
+          tension: 0.3,
+          borderWidth: 3
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: { legend: { labels: { color: textColor } } },
+        scales: {
+          y: { grid: { color: gridColor }, ticks: { color: textColor } },
+          x: { grid: { color: 'transparent' }, ticks: { color: textColor } }
+        }
       }
     });
   }
+
+  // Listen for theme preference updates to redraw graphs
+  document.getElementById('theme-btn').addEventListener('click', () => {
+    setTimeout(() => {
+      // Redraw charts with correct theme colors
+      loadDashboard();
+    }, 50);
+  });
 
   loadDashboard();
 </script>

@@ -1,517 +1,605 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-theme="dark">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Smart Expense Tracker</title>
-    <!-- Google Fonts -->
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    <!-- Font Awesome -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <!-- Chart.js -->
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <!-- Custom CSS -->
-    <link rel="stylesheet" href="styles.css">
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Smart Expense Tracker — Smart Financial Management</title>
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <!-- Bootstrap & Icons -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"/>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css"/>
+  <!-- Custom Stylesheet -->
+  <link rel="stylesheet" href="css/globals.css"/>
+  <style>
+    /* Custom Landing Page Styles */
+    .landing-nav {
+      position: fixed;
+      top: 0; left: 0; right: 0;
+      z-index: 1000;
+      background: rgba(10, 10, 26, 0.7);
+      backdrop-filter: blur(15px);
+      border-bottom: 1px solid var(--glass-border);
+      padding: 15px 0;
+      transition: var(--transition);
+    }
+    :root[data-theme="light"] .landing-nav {
+      background: rgba(248, 250, 252, 0.85);
+    }
+    .landing-nav .navbar-brand {
+      font-weight: 700;
+      color: var(--text-primary);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .landing-nav .nav-link {
+      color: var(--text-secondary);
+      font-weight: 500;
+      transition: var(--transition);
+    }
+    .landing-nav .nav-link:hover {
+      color: var(--accent);
+    }
+    
+    /* Hero Section */
+    .hero-section {
+      padding: 160px 0 100px;
+      position: relative;
+      overflow: hidden;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+    }
+    .hero-title {
+      font-size: 3.5rem;
+      font-weight: 800;
+      line-height: 1.15;
+      background: linear-gradient(135deg, #ffffff 30%, var(--accent) 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      margin-bottom: 1.5rem;
+    }
+    :root[data-theme="light"] .hero-title {
+      background: linear-gradient(135deg, #0f172a 30%, var(--accent) 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+    .hero-subtitle {
+      font-size: 1.2rem;
+      color: var(--text-secondary);
+      margin-bottom: 2.5rem;
+      max-width: 600px;
+    }
+    
+    /* Feature Grid */
+    .section-padding {
+      padding: 100px 0;
+      border-bottom: 1px solid var(--glass-border);
+    }
+    .section-title {
+      font-size: 2.25rem;
+      font-weight: 700;
+      color: var(--text-primary);
+      margin-bottom: 1rem;
+      text-align: center;
+    }
+    .section-subtitle {
+      font-size: 1.05rem;
+      color: var(--text-secondary);
+      margin-bottom: 4rem;
+      text-align: center;
+      max-width: 700px;
+      margin-left: auto;
+      margin-right: auto;
+    }
+    .feature-card {
+      height: 100%;
+      display: flex;
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 15px;
+    }
+    .feature-icon {
+      width: 50px;
+      height: 50px;
+      border-radius: 12px;
+      background: var(--accent-glow);
+      color: var(--accent);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.5rem;
+      margin-bottom: 5px;
+    }
+    
+    /* Mockup Dashboard */
+    .mockup-container {
+      background: rgba(10, 10, 26, 0.4);
+      border: 1px solid var(--glass-border);
+      border-radius: var(--radius);
+      padding: 15px;
+      box-shadow: var(--shadow-lg);
+      position: relative;
+    }
+    .mockup-header {
+      height: 24px;
+      border-bottom: 1px solid var(--glass-border);
+      margin-bottom: 15px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      padding-left: 8px;
+    }
+    .mockup-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: var(--glass-border);
+    }
+    .mockup-dot.red { background: #ef4444; }
+    .mockup-dot.yellow { background: #f59e0b; }
+    .mockup-dot.green { background: #10b981; }
+    
+    .mockup-sidebar {
+      width: 60px;
+      border-right: 1px solid var(--glass-border);
+      height: 260px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 20px;
+      padding-top: 10px;
+    }
+    .mockup-sidebar-icon {
+      font-size: 1.1rem;
+      color: var(--text-secondary);
+      opacity: 0.6;
+    }
+    .mockup-sidebar-icon.active {
+      color: var(--accent);
+      opacity: 1;
+    }
+    
+    .mockup-stat {
+      border: 1px solid var(--glass-border);
+      background: var(--bg-card);
+      border-radius: 8px;
+      padding: 12px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .mockup-chart-bar {
+      height: 120px;
+      width: 25px;
+      background: var(--glass-border);
+      border-radius: 4px;
+      position: relative;
+    }
+    .mockup-chart-bar .fill {
+      position: absolute;
+      bottom: 0; left: 0; right: 0;
+      background: var(--accent);
+      border-radius: 4px;
+      transition: height 1s ease;
+    }
+    .mockup-chart-bar.expense .fill {
+      background: var(--danger);
+    }
+    
+    /* Footer */
+    .landing-footer {
+      background: rgba(5, 5, 15, 0.95);
+      border-top: 1px solid var(--glass-border);
+      padding: 60px 0 30px;
+      color: var(--text-secondary);
+    }
+    :root[data-theme="light"] .landing-footer {
+      background: #f1f5f9;
+    }
+    .footer-brand {
+      font-weight: 700;
+      color: var(--text-primary);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 1.5rem;
+    }
+  </style>
 </head>
-<body>
+<body class="auth-page" style="display:block;">
+  <div class="auth-bg-blobs">
+    <div class="blob blob-1"></div>
+    <div class="blob blob-2"></div>
+    <div class="blob blob-3"></div>
+  </div>
 
-    <!-- Toast Notification Container -->
-    <div id="toast-container" class="toast-container"></div>
-
-    <!-- Authentication View -->
-    <div id="auth-view" class="view-container active">
-        <div class="auth-box glass-panel">
-            <div class="auth-header">
-                <h2><i class="fa-solid fa-wallet"></i> Smart Tracker</h2>
-                <p>Manage your finances with clarity.</p>
-            </div>
-            
-            <div class="auth-toggle">
-                <button id="btn-show-login" class="active">Login</button>
-                <button id="btn-show-register">Register</button>
-            </div>
-
-            <!-- Login Form -->
-            <form id="login-form" class="auth-form active">
-                <div class="form-group">
-                    <label for="login-email">Email</label>
-                    <input type="email" id="login-email" required placeholder="you@example.com">
-                </div>
-                <div class="form-group">
-                    <label for="login-password">Password</label>
-                    <input type="password" id="login-password" required placeholder="••••••••">
-                </div>
-                <button type="submit" class="btn btn-primary">Login</button>
-            </form>
-
-            <!-- Register Form -->
-            <form id="register-form" class="auth-form">
-                <div class="form-group">
-                    <label for="register-username">Username</label>
-                    <input type="text" id="register-username" required minlength="3" maxlength="50" placeholder="Username">
-                </div>
-                <div class="form-group">
-                    <label for="register-email">Email</label>
-                    <input type="email" id="register-email" required placeholder="you@example.com">
-                </div>
-                <div class="form-group">
-                    <label for="register-password">Password</label>
-                    <input type="password" id="register-password" required minlength="8" placeholder="Min 8 chars, 1 letter, 1 number">
-                </div>
-                <button type="submit" class="btn btn-primary">Create Account</button>
-            </form>
+  <!-- Header Navigation -->
+  <nav class="landing-nav navbar navbar-expand-lg navbar-dark">
+    <div class="container">
+      <a class="navbar-brand" href="#">
+        <div class="logo-icon ms-0 me-2" style="width:36px;height:36px;font-size:16px;"><i class="bi bi-wallet2"></i></div>
+        <span>SmartTracker</span>
+      </a>
+      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#landingNavbar">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+      <div class="collapse navbar-collapse" id="landingNavbar">
+        <ul class="navbar-nav mx-auto mb-2 mb-lg-0">
+          <li class="nav-item"><a class="nav-link" href="#features">Features</a></li>
+          <li class="nav-item"><a class="nav-link" href="#preview">Preview</a></li>
+          <li class="nav-item"><a class="nav-link" href="#benefits">Benefits</a></li>
+          <li class="nav-item"><a class="nav-link" href="#about">About</a></li>
+          <li class="nav-item"><a class="nav-link" href="#contact">Contact</a></li>
+        </ul>
+        <div class="d-flex align-items-center gap-3" id="nav-auth-buttons">
+          <a href="login.html" class="nav-link text-white">Sign In</a>
+          <a href="register.html" class="btn btn-glow btn-sm">Get Started</a>
         </div>
+      </div>
     </div>
+  </nav>
 
-    <!-- Main Application View (Hidden by default) -->
-    <div id="app-view" class="view-container">
-        
-        <!-- Sidebar Navigation -->
-        <nav class="sidebar glass-panel">
-            <div class="sidebar-header">
-                <h3><i class="fa-solid fa-wallet"></i> Smart Tracker</h3>
+  <!-- Hero Section -->
+  <section class="hero-section">
+    <div class="container">
+      <div class="row align-items-center g-5">
+        <div class="col-lg-6 text-start">
+          <h1 class="hero-title animate-in">Take Control of Your <br/>Financial Future</h1>
+          <p class="hero-subtitle animate-in" style="animation-delay: 0.1s;">
+            A beautiful, premium, glassmorphic financial assistant. Log incomes, monitor custom budgets, set savings goals, and generate analytics inside a single dashboard.
+          </p>
+          <div class="d-flex gap-3 animate-in" style="animation-delay: 0.2s;" id="hero-actions-container">
+            <a href="register.html" class="btn btn-glow btn-lg px-4 py-3"><i class="bi bi-rocket-takeoff me-2"></i>Get Started Free</a>
+            <a href="login.html" class="btn btn-outline-light btn-lg px-4 py-3"><i class="bi bi-box-arrow-in-right me-2"></i>Sign In</a>
+          </div>
+        </div>
+        <div class="col-lg-6 animate-in" style="animation-delay: 0.3s;">
+          <div class="mockup-container">
+            <div class="mockup-header">
+              <div class="mockup-dot red"></div>
+              <div class="mockup-dot yellow"></div>
+              <div class="mockup-dot green"></div>
             </div>
-            <ul class="nav-links">
-                <li><a href="#" data-target="dashboard-section" class="active"><i class="fa-solid fa-chart-pie"></i> Dashboard</a></li>
-                <li><a href="#" data-target="categories-section"><i class="fa-solid fa-tags"></i> Categories</a></li>
-                <li><a href="#" data-target="incomes-section"><i class="fa-solid fa-arrow-trend-up"></i> Incomes</a></li>
-                <li><a href="#" data-target="expenses-section"><i class="fa-solid fa-arrow-trend-down"></i> Expenses</a></li>
-                <li><a href="#" data-target="budgets-section"><i class="fa-solid fa-scale-balanced"></i> Budgets</a></li>
-                <li><a href="#" data-target="goals-section"><i class="fa-solid fa-bullseye"></i> Savings Goals</a></li>
-                <li><a href="#" data-target="reports-section"><i class="fa-solid fa-file-invoice"></i> Reports</a></li>
+            <div class="d-flex">
+              <div class="mockup-sidebar">
+                <i class="bi bi-grid-1x2 mockup-sidebar-icon active"></i>
+                <i class="bi bi-cash-stack mockup-sidebar-icon"></i>
+                <i class="bi bi-credit-card mockup-sidebar-icon"></i>
+                <i class="bi bi-pie-chart mockup-sidebar-icon"></i>
+                <i class="bi bi-piggy-bank mockup-sidebar-icon"></i>
+              </div>
+              <div class="p-3 w-100">
+                <div class="row g-2 mb-3">
+                  <div class="col-4">
+                    <div class="mockup-stat">
+                      <i class="bi bi-arrow-up-circle text-success fs-5"></i>
+                      <div>
+                        <div style="font-size:0.6rem;opacity:0.6;">Income</div>
+                        <div class="fw-bold" style="font-size:0.8rem;">₹45,000</div>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="col-4">
+                    <div class="mockup-stat">
+                      <i class="bi bi-arrow-down-circle text-danger fs-5"></i>
+                      <div>
+                        <div style="font-size:0.6rem;opacity:0.6;">Expense</div>
+                        <div class="fw-bold" style="font-size:0.8rem;">₹21,200</div>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="col-4">
+                    <div class="mockup-stat">
+                      <i class="bi bi-wallet text-primary fs-5"></i>
+                      <div>
+                        <div style="font-size:0.6rem;opacity:0.6;">Balance</div>
+                        <div class="fw-bold" style="font-size:0.8rem;">₹23,800</div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                <div class="glass-card p-3">
+                  <h6 style="font-size:0.8rem;margin-bottom:12px;">Monthly Trend Preview</h6>
+                  <div class="d-flex justify-content-around align-items-end" style="height:120px;padding-top:10px;">
+                    <div class="mockup-chart-bar"><div class="fill" style="height:70%;"></div></div>
+                    <div class="mockup-chart-bar expense"><div class="fill" style="height:40%;"></div></div>
+                    <div class="mockup-chart-bar"><div class="fill" style="height:85%;"></div></div>
+                    <div class="mockup-chart-bar expense"><div class="fill" style="height:55%;"></div></div>
+                    <div class="mockup-chart-bar"><div class="fill" style="height:90%;"></div></div>
+                    <div class="mockup-chart-bar expense"><div class="fill" style="height:35%;"></div></div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Features Section -->
+  <section class="section-padding" id="features">
+    <div class="container">
+      <h2 class="section-title">Powerful Features</h2>
+      <p class="section-subtitle">Everything you need to track, manage, and optimize your personal finances in one place.</p>
+      
+      <div class="row g-4">
+        <div class="col-md-4">
+          <div class="glass-card feature-card">
+            <div class="feature-icon"><i class="bi bi-credit-card"></i></div>
+            <h5 class="fw-bold mt-2">Expense Tracking</h5>
+            <p class="text-secondary" style="font-size:0.85rem;line-height:1.5;">
+              Log outgoing cash with description keywords, dates, and categories. Filter and sort transactions dynamically.
+            </p>
+          </div>
+        </div>
+        <div class="col-md-4">
+          <div class="glass-card feature-card">
+            <div class="feature-icon"><i class="bi bi-cash-stack"></i></div>
+            <h5 class="fw-bold mt-2">Income Management</h5>
+            <p class="text-secondary" style="font-size:0.85rem;line-height:1.5;">
+              Monitor your earnings and cash flows from salary, investments, and side jobs. Export sheets instantly to Excel or CSV.
+            </p>
+          </div>
+        </div>
+        <div class="col-md-4">
+          <div class="glass-card feature-card">
+            <div class="feature-icon"><i class="bi bi-pie-chart"></i></div>
+            <h5 class="fw-bold mt-2">Budget Planning</h5>
+            <p class="text-secondary" style="font-size:0.85rem;line-height:1.5;">
+              Set monthly boundaries for categories. Get real-time alerts and notifications immediately when you approach or cross limits.
+            </p>
+          </div>
+        </div>
+        <div class="col-md-4 mt-md-4">
+          <div class="glass-card feature-card">
+            <div class="feature-icon"><i class="bi bi-piggy-bank"></i></div>
+            <h5 class="fw-bold mt-2">Savings Goals</h5>
+            <p class="text-secondary" style="font-size:0.85rem;line-height:1.5;">
+              Configure savings milestones with target dates. View progression meters and easily contribute funds with one click.
+            </p>
+          </div>
+        </div>
+        <div class="col-md-4 mt-md-4">
+          <div class="glass-card feature-card">
+            <div class="feature-icon"><i class="bi bi-graph-up"></i></div>
+            <h5 class="fw-bold mt-2">Reports & Analytics</h5>
+            <p class="text-secondary" style="font-size:0.85rem;line-height:1.5;">
+              Visualize trends, summaries, and breakdowns using modern responsive charts. Export reports as professional PDFs.
+            </p>
+          </div>
+        </div>
+        <div class="col-md-4 mt-md-4">
+          <div class="glass-card feature-card">
+            <div class="feature-icon"><i class="bi bi-lightning-charge"></i></div>
+            <h5 class="fw-bold mt-2">Smart Insights</h5>
+            <p class="text-secondary" style="font-size:0.85rem;line-height:1.5;">
+              Our algorithms analyze your monthly summaries and trigger smart alert cards to pinpoint where you can optimize.
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Dashboard Preview Section -->
+  <section class="section-padding" id="preview">
+    <div class="container">
+      <h2 class="section-title">Modern SaaS Interface</h2>
+      <p class="section-subtitle">A stunning dashboard that feels premium, fluid, and responsive across all screens.</p>
+      
+      <div class="row align-items-center g-5">
+        <div class="col-md-5">
+          <h4 class="fw-bold mb-3"><i class="bi bi-palette text-accent me-2"></i>Glassmorphism Design</h4>
+          <p class="text-secondary mb-4" style="line-height:1.6;">
+            A visual aesthetic designed to impress. Deep translucency, glowing active borders, responsive sidebars, and customizable theme settings give a premium, state-of-the-art software feeling.
+          </p>
+          <ul class="list-unstyled d-flex flex-column gap-2 text-secondary">
+            <li><i class="bi bi-check2-circle text-accent me-2"></i>Light & Dark theme switching</li>
+            <li><i class="bi bi-check2-circle text-accent me-2"></i>Collapsible navigation sidebar</li>
+            <li><i class="bi bi-check2-circle text-accent me-2"></i>Dynamic notification feed</li>
+          </ul>
+        </div>
+        <div class="col-md-7">
+          <div class="glass-card p-4">
+            <div class="row g-3">
+              <div class="col-md-6">
+                <div class="glass-card p-3" style="border-left: 4px solid var(--accent);">
+                  <div class="fw-bold" style="font-size:0.9rem;"><i class="bi bi-check-circle-fill text-accent me-2"></i>Budget Safe</div>
+                  <div style="font-size:0.75rem;opacity:0.8;margin-top:4px;">Food budget at 42% utilization.</div>
+                </div>
+              </div>
+              <div class="col-md-6">
+                <div class="glass-card p-3" style="border-left: 4px solid var(--danger);">
+                  <div class="fw-bold text-danger" style="font-size:0.9rem;"><i class="bi bi-exclamation-triangle-fill me-2"></i>Limit Alert</div>
+                  <div style="font-size:0.75rem;opacity:0.8;margin-top:4px;">Entertainment budget exceeded!</div>
+                </div>
+              </div>
+            </div>
+            <div class="glass-card p-3 mt-3">
+              <div class="d-flex justify-content-between align-items-center mb-3">
+                <h6 class="m-0 fw-bold" style="font-size:0.85rem;">Interactive Savings Target</h6>
+                <span class="badge bg-success" style="font-size:0.65rem;">82% Completed</span>
+              </div>
+              <div class="progress-bar-custom"><div class="fill" style="width: 82%;"></div></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Benefits Section -->
+  <section class="section-padding" id="benefits">
+    <div class="container">
+      <h2 class="section-title">Designed for Your Growth</h2>
+      <p class="section-subtitle">See why SmartTracker is the perfect portfolio-level SaaS tool for personal tracking.</p>
+      
+      <div class="row g-4 text-center">
+        <div class="col-md-3">
+          <div class="p-3">
+            <div class="fs-1 text-accent mb-2"><i class="bi bi-shield-check"></i></div>
+            <h6 class="fw-bold text-white">Secure Security</h6>
+            <p class="text-secondary" style="font-size:0.8rem;line-height:1.5;">Stateless JWT verification with DB stored Refresh Tokens protects api endpoints.</p>
+          </div>
+        </div>
+        <div class="col-md-3">
+          <div class="p-3">
+            <div class="fs-1 text-accent mb-2"><i class="bi bi-bell-fill"></i></div>
+            <h6 class="fw-bold text-white">Instant Alerts</h6>
+            <p class="text-secondary" style="font-size:0.8rem;line-height:1.5;">Get immediate alert cards and emails if your expenditures cross custom limits.</p>
+          </div>
+        </div>
+        <div class="col-md-3">
+          <div class="p-3">
+            <div class="fs-1 text-accent mb-2"><i class="bi bi-file-earmark-arrow-down"></i></div>
+            <h6 class="fw-bold text-white">Seamless Exports</h6>
+            <p class="text-secondary" style="font-size:0.8rem;line-height:1.5;">Convert your lists into Excel, CSV, or PDF documents instantly with one tap.</p>
+          </div>
+        </div>
+        <div class="col-md-3">
+          <div class="p-3">
+            <div class="fs-1 text-accent mb-2"><i class="bi bi-cpu"></i></div>
+            <h6 class="fw-bold text-white">No Bloat</h6>
+            <p class="text-secondary" style="font-size:0.8rem;line-height:1.5;">Fully self-contained, light, Dockerized build ready for direct deploy.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- About Project Section -->
+  <section class="section-padding" id="about">
+    <div class="container">
+      <h2 class="section-title">Technical Architecture</h2>
+      <p class="section-subtitle">A clean, production-ready full stack ecosystem built with modern guidelines.</p>
+      
+      <div class="row g-4">
+        <div class="col-md-6">
+          <div class="glass-card h-100 p-4">
+            <h5 class="fw-bold mb-3"><i class="bi bi-code-slash text-accent me-2"></i>Backend Architecture</h5>
+            <p class="text-secondary" style="font-size:0.85rem;line-height:1.6;">
+              Engineered with **Spring Boot 3.2.5** targeting Java 21 bytecode compatibility. It employs:
+            </p>
+            <ul class="text-secondary" style="font-size:0.85rem;line-height:1.6;">
+              <li>**Spring Security** & **JWT**: Stateless token authorization structure.</li>
+              <li>**Spring Data JPA**: Soft-deletes (`@SQLDelete`), auditing, sorting, pagination.</li>
+              <li>**Swagger UI**: API exploration console via OpenAPI 3.</li>
+              <li>**Docker & docker-compose**: MySQL 8 and application orchestration.</li>
             </ul>
-            <div class="sidebar-footer">
-                <div class="user-info">
-                    <div class="avatar"><i class="fa-solid fa-user"></i></div>
-                    <span id="display-username">User</span>
-                </div>
-                <button id="btn-logout" class="btn-icon"><i class="fa-solid fa-right-from-bracket"></i></button>
-            </div>
-        </nav>
-
-        <!-- Main Content Area -->
-        <main class="main-content">
-            
-            <!-- Dashboard Section -->
-            <section id="dashboard-section" class="app-section active">
-                <header class="section-header">
-                    <h2>Dashboard Overview</h2>
-                    <p>Welcome back! Here is your financial summary.</p>
-                </header>
-                
-                <div class="summary-cards">
-                    <div class="card glass-panel stat-card">
-                        <div class="stat-icon"><i class="fa-solid fa-scale-unbalanced"></i></div>
-                        <div class="stat-details">
-                            <h3>Total Balance</h3>
-                            <p id="dash-balance" class="amount">$0.00</p>
-                        </div>
-                    </div>
-                    <div class="card glass-panel stat-card income">
-                        <div class="stat-icon"><i class="fa-solid fa-arrow-trend-up"></i></div>
-                        <div class="stat-details">
-                            <h3>Total Income</h3>
-                            <p id="dash-income" class="amount">$0.00</p>
-                        </div>
-                    </div>
-                    <div class="card glass-panel stat-card expense">
-                        <div class="stat-icon"><i class="fa-solid fa-arrow-trend-down"></i></div>
-                        <div class="stat-details">
-                            <h3>Total Expenses</h3>
-                            <p id="dash-expense" class="amount">$0.00</p>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="dashboard-grid">
-                    <!-- Recent Transactions -->
-                    <div class="card glass-panel flex-2">
-                        <h3>Recent Transactions</h3>
-                        <div class="table-responsive">
-                            <table class="table" id="dash-transactions-table">
-                                <thead>
-                                    <tr>
-                                        <th>Date</th>
-                                        <th>Description</th>
-                                        <th>Category</th>
-                                        <th>Amount</th>
-                                        <th>Type</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    <!-- Populated via JS -->
-                                </tbody>
-                            </table>
-                        </div>
-                    </div>
-
-                    <!-- Budget Status -->
-                    <div class="card glass-panel flex-1">
-                        <h3>Active Budgets Status</h3>
-                        <div id="dash-budgets-list" class="budget-progress-list">
-                            <!-- Populated via JS -->
-                        </div>
-                    </div>
-                </div>
-            </section>
-
-            <!-- Categories Section -->
-            <section id="categories-section" class="app-section">
-                <header class="section-header">
-                    <h2>Categories</h2>
-                    <button class="btn btn-primary" onclick="showModal('category-modal')"><i class="fa-solid fa-plus"></i> Add Category</button>
-                </header>
-                <div class="card glass-panel">
-                    <div class="table-responsive">
-                        <table class="table" id="categories-table">
-                            <thead>
-                                <tr>
-                                    <th>Name</th>
-                                    <th>Type</th>
-                                    <th>Description</th>
-                                    <th>Actions</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <!-- Populated via JS -->
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-            </section>
-
-            <!-- Incomes Section -->
-            <section id="incomes-section" class="app-section">
-                <header class="section-header">
-                    <h2>Incomes</h2>
-                    <button class="btn btn-primary" onclick="showModal('income-modal')"><i class="fa-solid fa-plus"></i> Add Income</button>
-                </header>
-                <div class="card glass-panel">
-                    <div class="table-responsive">
-                        <table class="table" id="incomes-table">
-                            <thead>
-                                <tr>
-                                    <th>Date</th>
-                                    <th>Description</th>
-                                    <th>Category</th>
-                                    <th>Amount</th>
-                                    <th>Actions</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <!-- Populated via JS -->
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-            </section>
-
-            <!-- Expenses Section -->
-            <section id="expenses-section" class="app-section">
-                <header class="section-header">
-                    <h2>Expenses</h2>
-                    <button class="btn btn-primary" onclick="showModal('expense-modal')"><i class="fa-solid fa-plus"></i> Add Expense</button>
-                </header>
-                <div class="card glass-panel">
-                    <div class="filter-bar">
-                        <select id="expense-filter-category">
-                            <option value="">All Categories</option>
-                            <!-- Populated via JS -->
-                        </select>
-                        <input type="date" id="expense-filter-start">
-                        <input type="date" id="expense-filter-end">
-                        <button class="btn btn-secondary" onclick="app.loadExpenses()">Filter</button>
-                        <button class="btn btn-outline" onclick="app.resetExpenseFilters()">Reset</button>
-                    </div>
-                    <div class="table-responsive">
-                        <table class="table" id="expenses-table">
-                            <thead>
-                                <tr>
-                                    <th>Date</th>
-                                    <th>Description</th>
-                                    <th>Category</th>
-                                    <th>Amount</th>
-                                    <th>Actions</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <!-- Populated via JS -->
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-            </section>
-
-            <!-- Budgets Section -->
-            <section id="budgets-section" class="app-section">
-                <header class="section-header">
-                    <h2>Budgets</h2>
-                    <button class="btn btn-primary" onclick="showModal('budget-modal')"><i class="fa-solid fa-plus"></i> Set Budget</button>
-                </header>
-                <div class="card glass-panel">
-                    <div class="table-responsive">
-                        <table class="table" id="budgets-table">
-                            <thead>
-                                <tr>
-                                    <th>Category</th>
-                                    <th>Limit Amount</th>
-                                    <th>Start Date</th>
-                                    <th>End Date</th>
-                                    <th>Actions</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <!-- Populated via JS -->
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-            </section>
-
-            <!-- Savings Goals Section -->
-            <section id="goals-section" class="app-section">
-                <header class="section-header">
-                    <h2>Savings Goals</h2>
-                    <button class="btn btn-primary" onclick="showModal('goal-modal')"><i class="fa-solid fa-plus"></i> New Goal</button>
-                </header>
-                <div class="goals-grid" id="goals-grid">
-                    <!-- Populated via JS -->
-                </div>
-            </section>
-
-            <!-- Reports Section -->
-            <section id="reports-section" class="app-section">
-                <header class="section-header">
-                    <h2>Reports & Analytics</h2>
-                </header>
-                
-                <div class="reports-controls card glass-panel">
-                    <div class="report-filter">
-                        <label>Spending by Category (Date Range)</label>
-                        <input type="date" id="report-start-date">
-                        <input type="date" id="report-end-date">
-                        <button class="btn btn-secondary" onclick="app.loadReports()">Generate</button>
-                    </div>
-                    <div class="report-filter">
-                        <label>Monthly Trend (Year)</label>
-                        <input type="number" id="report-year" min="2000" max="2100" value="2026">
-                        <button class="btn btn-secondary" onclick="app.loadReports()">Generate</button>
-                    </div>
-                </div>
-
-                <div class="dashboard-grid">
-                    <div class="card glass-panel flex-1">
-                        <h3>Spending by Category</h3>
-                        <div class="chart-container">
-                            <canvas id="categoryChart"></canvas>
-                        </div>
-                    </div>
-                    <div class="card glass-panel flex-2">
-                        <h3>Monthly Trend</h3>
-                        <div class="chart-container">
-                            <canvas id="trendChart"></canvas>
-                        </div>
-                    </div>
-                </div>
-            </section>
-        </main>
-    </div>
-
-    <!-- Modals -->
-    <!-- Category Modal -->
-    <div id="category-modal" class="modal-overlay">
-        <div class="modal glass-panel">
-            <div class="modal-header">
-                <h3 id="category-modal-title">Add Category</h3>
-                <button class="btn-close" onclick="closeModal('category-modal')"><i class="fa-solid fa-times"></i></button>
-            </div>
-            <form id="category-form">
-                <input type="hidden" id="category-id">
-                <div class="form-group">
-                    <label for="category-name">Name</label>
-                    <input type="text" id="category-name" required>
-                </div>
-                <div class="form-group">
-                    <label for="category-type">Type</label>
-                    <select id="category-type" required>
-                        <option value="EXPENSE">Expense</option>
-                        <option value="INCOME">Income</option>
-                    </select>
-                </div>
-                <div class="form-group">
-                    <label for="category-desc">Description</label>
-                    <input type="text" id="category-desc">
-                </div>
-                <div class="modal-actions">
-                    <button type="button" class="btn btn-outline" onclick="closeModal('category-modal')">Cancel</button>
-                    <button type="submit" class="btn btn-primary">Save</button>
-                </div>
-            </form>
+          </div>
         </div>
-    </div>
-
-    <!-- Income Modal -->
-    <div id="income-modal" class="modal-overlay">
-        <div class="modal glass-panel">
-            <div class="modal-header">
-                <h3 id="income-modal-title">Add Income</h3>
-                <button class="btn-close" onclick="closeModal('income-modal')"><i class="fa-solid fa-times"></i></button>
-            </div>
-            <form id="income-form">
-                <input type="hidden" id="income-id">
-                <div class="form-group">
-                    <label for="income-amount">Amount</label>
-                    <input type="number" step="0.01" id="income-amount" required min="0.01">
-                </div>
-                <div class="form-group">
-                    <label for="income-date">Date</label>
-                    <input type="date" id="income-date" required>
-                </div>
-                <div class="form-group">
-                    <label for="income-category">Category</label>
-                    <select id="income-category" required>
-                        <!-- Populated via JS -->
-                    </select>
-                </div>
-                <div class="form-group">
-                    <label for="income-desc">Description</label>
-                    <input type="text" id="income-desc">
-                </div>
-                <div class="modal-actions">
-                    <button type="button" class="btn btn-outline" onclick="closeModal('income-modal')">Cancel</button>
-                    <button type="submit" class="btn btn-primary">Save</button>
-                </div>
-            </form>
+        <div class="col-md-6">
+          <div class="glass-card h-100 p-4">
+            <h5 class="fw-bold mb-3"><i class="bi bi-display text-accent me-2"></i>Frontend Stack</h5>
+            <p class="text-secondary" style="font-size:0.85rem;line-height:1.6;">
+              Avoids complex node modules compile overhead using high performance vanilla scripting:
+            </p>
+            <ul class="text-secondary" style="font-size:0.85rem;line-height:1.6;">
+              <li>**Bootstrap 5**: Structural grid layers and responsive elements.</li>
+              <li>**Chart.js**: Client-side rendering of analytical models.</li>
+              <li>**Vanilla JS (ES6)**: Reusable API interceptors and JWT token lifecycle managers.</li>
+              <li>**CSS3 Glassmorphism**: Tailored light/dark colors and shimmer skeleton blocks.</li>
+            </ul>
+          </div>
         </div>
+      </div>
     </div>
+  </section>
 
-    <!-- Expense Modal -->
-    <div id="expense-modal" class="modal-overlay">
-        <div class="modal glass-panel">
-            <div class="modal-header">
-                <h3 id="expense-modal-title">Add Expense</h3>
-                <button class="btn-close" onclick="closeModal('expense-modal')"><i class="fa-solid fa-times"></i></button>
-            </div>
-            <form id="expense-form">
-                <input type="hidden" id="expense-id">
-                <div class="form-group">
-                    <label for="expense-amount">Amount</label>
-                    <input type="number" step="0.01" id="expense-amount" required min="0.01">
-                </div>
-                <div class="form-group">
-                    <label for="expense-date">Date</label>
-                    <input type="date" id="expense-date" required>
-                </div>
-                <div class="form-group">
-                    <label for="expense-category">Category</label>
-                    <select id="expense-category" required>
-                        <!-- Populated via JS -->
-                    </select>
-                </div>
-                <div class="form-group">
-                    <label for="expense-desc">Description</label>
-                    <input type="text" id="expense-desc">
-                </div>
-                <div class="modal-actions">
-                    <button type="button" class="btn btn-outline" onclick="closeModal('expense-modal')">Cancel</button>
-                    <button type="submit" class="btn btn-primary">Save</button>
-                </div>
+  <!-- Contact Section -->
+  <section class="section-padding" id="contact">
+    <div class="container">
+      <h2 class="section-title">Get in Touch</h2>
+      <p class="section-subtitle">Have questions or want to see more? Drop a message below.</p>
+      
+      <div class="row justify-content-center">
+        <div class="col-md-6">
+          <div class="glass-card p-4">
+            <form id="contact-form" class="glass-form">
+              <div class="mb-3">
+                <label class="form-label">Full Name</label>
+                <input type="text" class="form-control" id="contact-name" placeholder="John Doe" required/>
+              </div>
+              <div class="mb-3">
+                <label class="form-label">Email Address</label>
+                <input type="email" class="form-control" id="contact-email" placeholder="john@example.com" required/>
+              </div>
+              <div class="mb-3">
+                <label class="form-label">Message</label>
+                <textarea class="form-control" id="contact-msg" rows="4" placeholder="Your feedback..." required></textarea>
+              </div>
+              <button type="submit" class="btn btn-glow w-100 mt-2"><i class="bi bi-send me-2"></i>Send Message</button>
             </form>
-        </div>
-    </div>
-
-    <!-- Budget Modal -->
-    <div id="budget-modal" class="modal-overlay">
-        <div class="modal glass-panel">
-            <div class="modal-header">
-                <h3 id="budget-modal-title">Set Budget</h3>
-                <button class="btn-close" onclick="closeModal('budget-modal')"><i class="fa-solid fa-times"></i></button>
+            <div class="alert alert-success d-none mt-3" id="contact-alert" role="alert">
+              ✅ Message sent successfully! Thanks for reaching out.
             </div>
-            <form id="budget-form">
-                <input type="hidden" id="budget-id">
-                <div class="form-group">
-                    <label for="budget-category">Category (Expense Only)</label>
-                    <select id="budget-category" required>
-                        <!-- Populated via JS -->
-                    </select>
-                </div>
-                <div class="form-group">
-                    <label for="budget-amount">Limit Amount</label>
-                    <input type="number" step="0.01" id="budget-amount" required min="0.01">
-                </div>
-                <div class="form-group">
-                    <label for="budget-start">Start Date</label>
-                    <input type="date" id="budget-start" required>
-                </div>
-                <div class="form-group">
-                    <label for="budget-end">End Date</label>
-                    <input type="date" id="budget-end" required>
-                </div>
-                <div class="modal-actions">
-                    <button type="button" class="btn btn-outline" onclick="closeModal('budget-modal')">Cancel</button>
-                    <button type="submit" class="btn btn-primary">Save</button>
-                </div>
-            </form>
+          </div>
         </div>
+      </div>
     </div>
+  </section>
 
-    <!-- Savings Goal Modal -->
-    <div id="goal-modal" class="modal-overlay">
-        <div class="modal glass-panel">
-            <div class="modal-header">
-                <h3 id="goal-modal-title">Savings Goal</h3>
-                <button class="btn-close" onclick="closeModal('goal-modal')"><i class="fa-solid fa-times"></i></button>
-            </div>
-            <form id="goal-form">
-                <input type="hidden" id="goal-id">
-                <div class="form-group">
-                    <label for="goal-title">Title</label>
-                    <input type="text" id="goal-title" required>
-                </div>
-                <div class="form-group">
-                    <label for="goal-target-amount">Target Amount</label>
-                    <input type="number" step="0.01" id="goal-target-amount" required min="0.01">
-                </div>
-                <div class="form-group">
-                    <label for="goal-current-amount">Current Amount</label>
-                    <input type="number" step="0.01" id="goal-current-amount" required min="0" value="0">
-                </div>
-                <div class="form-group">
-                    <label for="goal-target-date">Target Date</label>
-                    <input type="date" id="goal-target-date" required>
-                </div>
-                <div class="modal-actions">
-                    <button type="button" class="btn btn-outline" onclick="closeModal('goal-modal')">Cancel</button>
-                    <button type="submit" class="btn btn-primary">Save</button>
-                </div>
-            </form>
-        </div>
+  <!-- Footer Section -->
+  <footer class="landing-footer text-center">
+    <div class="container">
+      <div class="footer-brand justify-content-center">
+        <div class="logo-icon ms-0 me-2" style="width:36px;height:36px;font-size:16px;"><i class="bi bi-wallet2"></i></div>
+        <span>SmartTracker</span>
+      </div>
+      <p style="font-size:0.85rem;">Designed & Developed as a Premium Portfolio Showcase Application</p>
+      <div class="d-flex justify-content-center gap-4 my-4">
+        <a href="/swagger-ui/index.html" class="text-secondary" target="_blank"><i class="bi bi-journal-text me-1"></i>Swagger Docs</a>
+        <a href="https://github.com" class="text-secondary" target="_blank"><i class="bi bi-github me-1"></i>Source Code</a>
+      </div>
+      <hr style="border-color: var(--glass-border);"/>
+      <p class="mb-0" style="font-size:0.75rem;">&copy; 2026 SmartTracker. All rights reserved.</p>
     </div>
+  </footer>
 
-    <!-- Add Savings Modal (for updating goal progress) -->
-    <div id="add-savings-modal" class="modal-overlay">
-        <div class="modal glass-panel">
-            <div class="modal-header">
-                <h3>Update Savings</h3>
-                <button class="btn-close" onclick="closeModal('add-savings-modal')"><i class="fa-solid fa-times"></i></button>
-            </div>
-            <form id="add-savings-form">
-                <input type="hidden" id="add-savings-goal-id">
-                <p>Enter the amount to add to (or subtract from) this goal.</p>
-                <div class="form-group">
-                    <label for="add-savings-amount">Amount (use negative to withdraw)</label>
-                    <input type="number" step="0.01" id="add-savings-amount" required>
-                </div>
-                <div class="modal-actions">
-                    <button type="button" class="btn btn-outline" onclick="closeModal('add-savings-modal')">Cancel</button>
-                    <button type="submit" class="btn btn-primary">Update</button>
-                </div>
-            </form>
-        </div>
-    </div>
+  <!-- Scripts -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+  <script src="js/api.js"></script>
+  <script src="js/auth.js"></script>
+  <script>
+    // Active session check: if logged in, replace sign-in buttons with dashboard links
+    document.addEventListener('DOMContentLoaded', () => {
+      const isLoggedIn = Auth.isLoggedIn();
+      if (isLoggedIn) {
+        const username = localStorage.getItem('username') || 'User';
+        
+        // Update nav buttons
+        const navAuth = document.getElementById('nav-auth-buttons');
+        if (navAuth) {
+          navAuth.innerHTML = `
+            <span class="text-secondary me-2"><i class="bi bi-person-fill text-accent me-1"></i>${username}</span>
+            <a href="dashboard.html" class="btn btn-glow btn-sm"><i class="bi bi-speedometer2 me-1"></i>Dashboard</a>
+          `;
+        }
+        
+        // Update hero buttons
+        const heroActions = document.getElementById('hero-actions-container');
+        if (heroActions) {
+          heroActions.innerHTML = `
+            <a href="dashboard.html" class="btn btn-glow btn-lg px-4 py-3"><i class="bi bi-speedometer2 me-2"></i>Go to Dashboard</a>
+            <button onclick="Auth.logout()" class="btn btn-outline-danger btn-lg px-4 py-3"><i class="bi bi-box-arrow-right me-2"></i>Logout</button>
+          `;
+        }
+      }
+    });
 
-    <script src="app.js"></script>
+    // Contact form mockup submit
+    document.getElementById('contact-form').addEventListener('submit', (e) => {
+      e.preventDefault();
+      const alert = document.getElementById('contact-alert');
+      alert.classList.remove('d-none');
+      e.target.reset();
+      setTimeout(() => alert.classList.add('d-none'), 5000);
+    });
+  </script>
 </body>
 </html>

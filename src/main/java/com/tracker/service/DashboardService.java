@@ -56,7 +56,7 @@ public class DashboardService {
         List<Budget> budgets = budgetRepository.findByUserIdAndMonthAndYear(userId, month, year);
         List<BudgetProgressDTO> budgetProgressList = budgets.stream().map(budget -> {
             BigDecimal spent = Objects.requireNonNullElse(
-                    expenseRepository.sumByUserIdAndMonthAndYear(userId, month, year), BigDecimal.ZERO);
+                    expenseRepository.sumByUserIdAndCategoryIdAndMonthAndYear(userId, budget.getCategory().getId(), month, year), BigDecimal.ZERO);
             BigDecimal remaining = budget.getBudgetAmount().subtract(spent);
             BigDecimal utilization = budget.getBudgetAmount().compareTo(BigDecimal.ZERO) > 0
                     ? spent.multiply(BigDecimal.valueOf(100)).divide(budget.getBudgetAmount(), 2, RoundingMode.HALF_UP)

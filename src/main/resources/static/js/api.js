@@ -1,3 +1,9 @@
+// Initialize theme before rendering
+(function() {
+  const theme = localStorage.getItem('theme') || 'dark';
+  document.documentElement.setAttribute('data-theme', theme);
+})();
+
 const API_BASE = 'http://localhost:8080/api';
 
 const Api = {

@@ -42,7 +42,7 @@ const UI = {
     container.innerHTML = '';
     if (!pageData || pageData.totalPages <= 1) return;
     const nav = document.createElement('nav');
-    nav.innerHTML = '<ul class="pagination pagination-custom"></ul>';
+    nav.innerHTML = '<ul class="pagination pagination-custom m-0"></ul>';
     const ul = nav.querySelector('ul');
     
     // Previous
@@ -71,6 +71,12 @@ const UI = {
     if (toggle && sidebar) {
       toggle.addEventListener('click', () => sidebar.classList.toggle('open'));
     }
+    // Collapsible sidebar state load
+    const isCollapsed = localStorage.getItem('sidebar_collapsed') === 'true';
+    if (isCollapsed && sidebar) {
+      sidebar.classList.add('collapsed');
+    }
+
     // Set active nav link
     const currentPage = window.location.pathname.split('/').pop() || 'dashboard.html';
     document.querySelectorAll('.nav-link').forEach(link => {
@@ -80,5 +86,269 @@ const UI = {
     const user = Auth.getUser();
     const el = document.getElementById('sidebar-username');
     if (el) el.textContent = user.username || 'User';
+  },
+
+  initHeader() {
+    const mainContent = document.querySelector('.main-content');
+    if (!mainContent) return;
+
+    // Check if header already exists
+    if (document.querySelector('.dashboard-header')) return;
+
+    const user = Auth.getUser();
+    const username = user.username || 'User';
+    
+    // Determine greeting
+    const hours = new Date().getHours();
+    let greeting = 'Good Evening';
+    if (hours < 12) greeting = 'Good Morning';
+    else if (hours < 17) greeting = 'Good Afternoon';
+
+    // Get avatar image or default
+    const savedAvatar = localStorage.getItem('profile_avatar') || '';
+    const avatarImg = savedAvatar ? `<img src="${savedAvatar}" class="header-avatar" alt="Avatar"/>` : `<i class="bi bi-person-circle fs-4"></i>`;
+
+    const headerHtml = `
+      <header class="dashboard-header animate-in">
+        <div class="header-welcome">
+          <h2>${greeting}, ${username} 👋</h2>
+          <p id="header-datetime"><i class="bi bi-calendar3 me-2"></i>Loading date & time...</p>
+        </div>
+        <div class="header-actions">
+          <button class="sidebar-collapse-btn d-none d-md-flex" title="Toggle Sidebar">
+            <i class="bi bi-layout-sidebar-inset"></i>
+          </button>
+          <div class="position-relative">
+            <button class="notification-bell-btn" id="bell-btn" title="Notifications">
+              <i class="bi bi-bell"></i>
+              <span class="notification-badge d-none" id="bell-count">0</span>
+            </button>
+            <div class="notification-dropdown" id="notification-dropdown">
+              <div class="notification-header">
+                <h6>Notifications</h6>
+                <button id="mark-all-read-btn">Mark all as read</button>
+              </div>
+              <div class="notification-list" id="notification-list">
+                <div class="notification-empty">No new alerts.</div>
+              </div>
+            </div>
+          </div>
+          <button class="theme-toggle-btn" id="theme-btn" title="Toggle Theme">
+            <i class="bi bi-moon-stars"></i>
+          </button>
+          <a href="profile.html" class="d-flex align-items-center" style="text-decoration:none; color: var(--text-primary);">
+            ${avatarImg}
+          </a>
+        </div>
+      </header>
+    `;
+
+    mainContent.insertAdjacentHTML('afterbegin', headerHtml);
+
+    // Live Date/Time Clock
+    const updateDateTime = () => {
+      const el = document.getElementById('header-datetime');
+      if (el) {
+        const now = new Date();
+        const options = { weekday: 'long', day: 'numeric', month: 'short', year: 'numeric' };
+        const dateStr = now.toLocaleDateString('en-IN', options);
+        const timeStr = now.toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+        el.innerHTML = `<i class="bi bi-calendar3 me-2"></i>${dateStr} &bull; ${timeStr}`;
+      }
+    };
+    updateDateTime();
+    setInterval(updateDateTime, 1000);
+
+    // Sidebar collapse setup
+    const collapseBtn = document.querySelector('.sidebar-collapse-btn');
+    const sidebar = document.querySelector('.sidebar');
+    if (collapseBtn && sidebar) {
+      collapseBtn.addEventListener('click', () => {
+        sidebar.classList.toggle('collapsed');
+        localStorage.setItem('sidebar_collapsed', sidebar.classList.contains('collapsed'));
+      });
+    }
+
+    // Theme Toggle setup
+    const themeBtn = document.getElementById('theme-btn');
+    const currentTheme = localStorage.getItem('theme') || 'dark';
+    if (themeBtn) {
+      themeBtn.querySelector('i').className = currentTheme === 'light' ? 'bi bi-sun' : 'bi bi-moon-stars';
+      themeBtn.addEventListener('click', () => {
+        const theme = document.documentElement.getAttribute('data-theme') === 'light' ? 'dark' : 'light';
+        document.documentElement.setAttribute('data-theme', theme);
+        localStorage.setItem('theme', theme);
+        themeBtn.querySelector('i').className = theme === 'light' ? 'bi bi-sun' : 'bi bi-moon-stars';
+      });
+    }
+
+    // Notifications Center logic
+    const bellBtn = document.getElementById('bell-btn');
+    const dropdown = document.getElementById('notification-dropdown');
+    
+    if (bellBtn && dropdown) {
+      bellBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        dropdown.classList.toggle('show');
+        if (dropdown.classList.contains('show')) {
+          this.loadNotifications();
+        }
+      });
+      document.addEventListener('click', () => dropdown.classList.remove('show'));
+      dropdown.addEventListener('click', (e) => e.stopPropagation());
+    }
+
+    const markAllBtn = document.getElementById('mark-all-read-btn');
+    if (markAllBtn) {
+      markAllBtn.addEventListener('click', async () => {
+        const userId = Api.getUserId();
+        if (!userId) return;
+        try {
+          const pageData = await Api.get(`/notifications?userId=${userId}&size=30`);
+          const items = pageData.content || pageData;
+          if (items && items.length > 0) {
+            for (const item of items) {
+              if (!item.isRead && !item.read) {
+                await Api.patch(`/notifications/${item.id}/mark-read`);
+              }
+            }
+          }
+          this.updateUnreadCount();
+          this.loadNotifications();
+          this.showToast('All notifications marked as read', 'success');
+        } catch (err) {
+          console.error(err);
+        }
+      });
+    }
+
+    this.updateUnreadCount();
+  },
+
+  async updateUnreadCount() {
+    const userId = Api.getUserId();
+    const badge = document.getElementById('bell-count');
+    if (!userId || !badge) return;
+    try {
+      const count = await Api.get(`/notifications/unread-count?userId=${userId}`);
+      if (count > 0) {
+        badge.textContent = count;
+        badge.classList.remove('d-none');
+      } else {
+        badge.classList.add('d-none');
+      }
+    } catch {
+      badge.classList.add('d-none');
+    }
+  },
+
+  async loadNotifications() {
+    const userId = Api.getUserId();
+    const container = document.getElementById('notification-list');
+    if (!userId || !container) return;
+    container.innerHTML = '<div class="notification-empty"><div class="spinner-border spinner-border-sm text-light"></div> Loading...</div>';
+    try {
+      const pageData = await Api.get(`/notifications?userId=${userId}&size=5`);
+      const list = pageData.content !== undefined ? pageData.content : pageData;
+      container.innerHTML = '';
+      if (!list || list.length === 0) {
+        container.innerHTML = '<div class="notification-empty">No new alerts.</div>';
+        return;
+      }
+      list.forEach(n => {
+        let icon = 'bi-bell-fill';
+        let colorClass = 'info';
+        if (n.title.toLowerCase().includes('budget')) { icon = 'bi-exclamation-triangle-fill'; colorClass = 'danger'; }
+        else if (n.title.toLowerCase().includes('goal')) { icon = 'bi-trophy-fill'; colorClass = 'success'; }
+        else if (n.title.toLowerCase().includes('income')) { icon = 'bi-plus-circle-fill'; colorClass = 'success'; }
+        else if (n.title.toLowerCase().includes('expense')) { icon = 'bi-dash-circle-fill'; colorClass = 'danger'; }
+
+        const isUnread = !(n.isRead || n.read);
+        const itemHtml = `
+          <div class="notification-item ${isUnread ? 'unread' : ''}" data-id="${n.id}">
+            <div class="notification-item-icon ${colorClass}"><i class="bi ${icon}"></i></div>
+            <div class="notification-item-content">
+              <div class="notification-item-title">${n.title}</div>
+              <div class="notification-item-msg">${n.message}</div>
+              <div class="notification-item-time">${this.formatDate(n.createdAt)}</div>
+            </div>
+          </div>
+        `;
+        container.insertAdjacentHTML('beforeend', itemHtml);
+      });
+
+      container.querySelectorAll('.notification-item').forEach(item => {
+        item.addEventListener('click', async () => {
+          const id = item.dataset.id;
+          if (item.classList.contains('unread')) {
+            try {
+              await Api.patch(`/notifications/${id}/mark-read`);
+              item.classList.remove('unread');
+              this.updateUnreadCount();
+            } catch (err) {
+              console.error(err);
+            }
+          }
+        });
+      });
+    } catch {
+      container.innerHTML = '<div class="notification-empty text-danger">Failed to load alerts.</div>';
+    }
+  },
+
+  showSkeletonCards(container, count = 3) {
+    container.innerHTML = '';
+    let cards = '';
+    const colSize = Math.floor(12 / count);
+    for (let i = 0; i < count; i++) {
+      cards += `
+        <div class="col-md-${colSize}">
+          <div class="glass-card stat-card">
+            <div class="skeleton skeleton-circle"></div>
+            <div style="flex:1;">
+              <div class="skeleton skeleton-text" style="width:50%;"></div>
+              <div class="skeleton skeleton-text" style="width:70%;height:24px;"></div>
+            </div>
+          </div>
+        </div>
+      `;
+    }
+    container.innerHTML = cards;
+  },
+
+  showSkeletonTable(tbody, rows = 5, cols = 5) {
+    tbody.innerHTML = '';
+    let trs = '';
+    for (let r = 0; r < rows; r++) {
+      let tdHtml = '';
+      for (let c = 0; c < cols; c++) {
+        tdHtml += `<td><div class="skeleton skeleton-text" style="width:${Math.floor(Math.random()*40)+40}%;margin-bottom:0;"></div></td>`;
+      }
+      trs += `<tr>${tdHtml}</tr>`;
+    }
+    tbody.innerHTML = trs;
+  },
+
+  showSkeletonChart(container) {
+    container.innerHTML = `
+      <div class="d-flex flex-column justify-content-center align-items-center h-100 py-5">
+        <div class="skeleton skeleton-chart mb-3"></div>
+      </div>
+    `;
+  },
+
+  renderEmptyState(container, title, subtitle, iconClass = 'bi-wallet2', actionText = null, actionCallback = null) {
+    container.innerHTML = `
+      <div class="empty-state-container animate-in">
+        <div class="empty-state-icon"><i class="bi ${iconClass}"></i></div>
+        <div class="empty-state-title">${title}</div>
+        <div class="empty-state-subtitle">${subtitle}</div>
+        ${actionText ? `<button class="btn btn-glow btn-sm" id="empty-state-action"><i class="bi bi-plus-lg me-1"></i>${actionText}</button>` : ''}
+      </div>
+    `;
+    if (actionText && actionCallback) {
+      const btn = container.querySelector('#empty-state-action');
+      if (btn) btn.addEventListener('click', actionCallback);
+    }
   }
 };

@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Budget Management — Smart Expense Tracker</title>
+  <title>Budgets — Smart Expense Tracker</title>
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"/>
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css"/>
   <link rel="stylesheet" href="css/globals.css"/>
@@ -32,56 +32,90 @@
     </div>
   </aside>
   <main class="main-content">
+    <!-- Header injected by UI.initHeader() -->
+
     <div class="d-flex justify-content-between align-items-center mb-4">
       <div>
         <h2 class="mb-1">Budget Management</h2>
-        <p class="text-secondary">Set monthly spending limits for categories</p>
+        <p class="text-secondary mb-0">Set and monitor spending limits by category</p>
       </div>
-      <div>
-        <button class="btn btn-glow" onclick="openModal()"><i class="bi bi-plus-lg me-2"></i>Add Budget</button>
+      <button class="btn btn-glow" onclick="openModal()"><i class="bi bi-plus-lg me-2"></i>Create Budget</button>
+    </div>
+
+    <!-- Month Filter -->
+    <div class="glass-card mb-4 d-flex flex-wrap gap-3 align-items-center py-3">
+      <div class="d-flex align-items-center gap-2">
+        <label class="form-label mb-0 text-secondary">Month:</label>
+        <input type="month" class="form-control form-control-sm" id="monthPicker" style="width:180px;" onchange="loadData()">
+      </div>
+      <div class="ms-auto d-flex gap-2">
+        <div class="glass-card py-2 px-3 text-center" style="min-width:110px;">
+          <div class="fw-bold" id="summary-total" style="color:var(--accent);">₹0</div>
+          <div class="text-secondary" style="font-size:0.75rem;">Total Budget</div>
+        </div>
+        <div class="glass-card py-2 px-3 text-center" style="min-width:110px;">
+          <div class="fw-bold" id="summary-spent" style="color:var(--expense-red);">₹0</div>
+          <div class="text-secondary" style="font-size:0.75rem;">Total Spent</div>
+        </div>
+        <div class="glass-card py-2 px-3 text-center" style="min-width:110px;">
+          <div class="fw-bold" id="summary-remaining" style="color:var(--income-green);">₹0</div>
+          <div class="text-secondary" style="font-size:0.75rem;">Remaining</div>
+        </div>
       </div>
     </div>
 
-    <div class="row g-4" id="budget-cards-container">
-      <!-- Loaded via JS -->
-    </div>
+    <!-- Budget Cards Grid -->
+    <div id="budget-grid" class="row g-3"></div>
+    <div id="empty-state-container"></div>
   </main>
 </div>
 
-<!-- Modal -->
-<div class="modal fade" id="itemModal" tabindex="-1">
+<!-- Add/Edit Modal -->
+<div class="modal fade" id="budgetModal" tabindex="-1">
   <div class="modal-dialog modal-dialog-centered modal-glass">
     <div class="modal-content">
       <div class="modal-header border-0">
-        <h5 class="modal-title" id="modalTitle">Add Budget</h5>
+        <h5 class="modal-title" id="modalTitle">Create Budget</h5>
         <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
       </div>
       <div class="modal-body pt-0">
-        <form id="itemForm" class="glass-form">
-          <input type="hidden" id="itemId">
+        <form id="budgetForm" class="glass-form">
+          <input type="hidden" id="budgetId">
           <div class="mb-3">
             <label class="form-label">Category</label>
-            <select class="form-select" id="categoryId" required></select>
-          </div>
-          <div class="mb-3">
-            <label class="form-label">Budget Amount</label>
-            <input type="number" step="0.01" class="form-control" id="budgetAmount" required>
+            <select class="form-select" id="categoryId" required><option value="">Select Category</option></select>
           </div>
           <div class="row g-3 mb-3">
             <div class="col-6">
-              <label class="form-label">Month (1-12)</label>
-              <input type="number" min="1" max="12" class="form-control" id="month" required>
+              <label class="form-label">Month</label>
+              <select class="form-select" id="budgetMonth" required>
+                <option value="1">January</option><option value="2">February</option>
+                <option value="3">March</option><option value="4">April</option>
+                <option value="5">May</option><option value="6">June</option>
+                <option value="7">July</option><option value="8">August</option>
+                <option value="9">September</option><option value="10">October</option>
+                <option value="11">November</option><option value="12">December</option>
+              </select>
             </div>
             <div class="col-6">
               <label class="form-label">Year</label>
-              <input type="number" min="2000" class="form-control" id="year" required>
+              <input type="number" class="form-control" id="budgetYear" required min="2020" max="2099">
             </div>
+          </div>
+          <div class="mb-3">
+            <label class="form-label">Budget Amount (₹)</label>
+            <input type="number" step="0.01" class="form-control" id="budgetAmount" required placeholder="0.00">
+          </div>
+          <div class="mb-3">
+            <label class="form-label">Alert Threshold (%)</label>
+            <input type="number" class="form-control" id="alertThreshold" value="80" min="1" max="100">
+            <small class="text-secondary">Get alerted when spending exceeds this %</small>
           </div>
         </form>
       </div>
       <div class="modal-footer border-0">
         <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancel</button>
-        <button type="button" class="btn btn-glow" onclick="saveItem()">Save Budget</button>
+        <button type="button" class="btn btn-glow" onclick="saveBudget()"><i class="bi bi-check-lg me-1"></i>Save Budget</button>
       </div>
     </div>
   </div>
@@ -94,131 +128,148 @@
 <script>
   Auth.requireAuth();
   UI.initSidebar();
-  let myModal = new bootstrap.Modal(document.getElementById('itemModal'));
-  
+  UI.initHeader();
+  let myModal = new bootstrap.Modal(document.getElementById('budgetModal'));
+
+  // Set current month
+  const now = new Date();
+  document.getElementById('monthPicker').value = `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}`;
+
   async function loadCategories() {
     try {
       const data = await Api.get(`/categories?userId=${Api.getUserId()}`);
-      const categories = data.filter(c => c.type === 'EXPENSE');
-      const select = document.getElementById('categoryId');
-      select.innerHTML = '<option value="">Select Category</option>' + 
-        categories.map(c => `<option value="${c.id}">${c.name}</option>`).join('');
-    } catch (err) {
-      console.error('Failed to load categories', err);
-    }
+      const expCats = data.filter(c => c.type === 'EXPENSE');
+      const opts = expCats.map(c => `<option value="${c.id}">${c.name}</option>`).join('');
+      document.getElementById('categoryId').innerHTML = '<option value="">Select Category</option>' + opts;
+    } catch (err) { console.error(err); }
   }
 
   async function loadData() {
-    UI.showLoading();
+    const grid = document.getElementById('budget-grid');
+    const emptyContainer = document.getElementById('empty-state-container');
+    grid.innerHTML = Array(6).fill('<div class="col-md-4"><div class="glass-card skeleton-loader" style="height:200px;"></div></div>').join('');
+    emptyContainer.innerHTML = '';
+
+    const monthVal = document.getElementById('monthPicker').value;
+    const [year, month] = monthVal.split('-').map(Number);
+
     try {
-      // First get dashboard summary to get the progress calculations for the current month
-      // Alternatively, we get all budgets and show them as cards. 
-      // For full progress info, let's fetch all budgets, but progress needs expenses.
-      // We will show basic budget info, and rely on dashboard for progress, 
-      // or implement progress fetching here. For simplicity, we just list the budgets.
-      const data = await Api.get(`/budgets?userId=${Api.getUserId()}`);
-      const container = document.getElementById('budget-cards-container');
-      container.innerHTML = '';
-      if(data && data.length > 0) {
-        data.forEach(item => {
-          // Add leading zero to month
-          const monthStr = item.month.toString().padStart(2, '0');
-          container.innerHTML += `
-            <div class="col-md-4">
-              <div class="glass-card h-100 position-relative">
-                <div class="d-flex justify-content-between align-items-start mb-3">
-                  <div>
-                    <h5 class="mb-1">${item.categoryName}</h5>
-                    <span class="badge bg-secondary">${monthStr} / ${item.year}</span>
-                  </div>
-                  <div class="dropdown">
-                    <button class="btn btn-sm btn-link text-secondary" data-bs-toggle="dropdown"><i class="bi bi-three-dots-vertical"></i></button>
-                    <ul class="dropdown-menu dropdown-menu-dark">
-                      <li><a class="dropdown-item" href="#" onclick='editItem(${JSON.stringify(item)})'><i class="bi bi-pencil me-2"></i>Edit</a></li>
-                      <li><a class="dropdown-item text-danger" href="#" onclick="deleteItem(${item.id})"><i class="bi bi-trash me-2"></i>Delete</a></li>
-                    </ul>
-                  </div>
+      const budgets = await Api.get(`/budgets?userId=${Api.getUserId()}&month=${month}&year=${year}`);
+      grid.innerHTML = '';
+
+      let totalBudget = 0, totalSpent = 0;
+
+      if (!budgets || budgets.length === 0) {
+        UI.renderEmptyState(emptyContainer, 'No Budgets Found', 'Create your first budget for this month.', 'bi-pie-chart', 'Create Budget', openModal);
+        updateSummary(0, 0);
+        return;
+      }
+
+      budgets.forEach(b => {
+        totalBudget += b.budgetAmount || 0;
+        totalSpent += b.spentAmount || 0;
+        const spent = b.spentAmount || 0;
+        const limit = b.budgetAmount || 1;
+        const pct = Math.min(100, Math.round((spent / limit) * 100));
+        const threshold = b.alertThreshold || 80;
+        const isOver = pct >= 100;
+        const isAlert = pct >= threshold && !isOver;
+        const barColor = isOver ? 'var(--expense-red)' : isAlert ? 'var(--warning)' : 'var(--accent)';
+        const statusBadge = isOver
+          ? `<span class="badge" style="background:#e9456033;color:var(--expense-red);">⚠ Over Budget</span>`
+          : isAlert
+          ? `<span class="badge" style="background:#f5a62333;color:var(--warning);">⚡ Alert</span>`
+          : `<span class="badge" style="background:#4ecca333;color:var(--income-green);">✓ On Track</span>`;
+
+        grid.innerHTML += `
+          <div class="col-md-6 col-lg-4 animate-in">
+            <div class="glass-card h-100">
+              <div class="d-flex justify-content-between align-items-start mb-3">
+                <div>
+                  <div class="fw-600 mb-1">${b.categoryName}</div>
+                  ${statusBadge}
                 </div>
-                <div class="mt-4">
-                  <div class="text-secondary mb-1">Limit</div>
-                  <h3 class="text-white">${UI.formatCurrency(item.budgetAmount)}</h3>
+                <div class="d-flex gap-1">
+                  <button class="btn btn-sm btn-outline-info" onclick='editBudget(${JSON.stringify(b)})' title="Edit"><i class="bi bi-pencil"></i></button>
+                  <button class="btn btn-sm btn-outline-danger" onclick="deleteBudget(${b.id})" title="Delete"><i class="bi bi-trash"></i></button>
                 </div>
               </div>
+              <div class="d-flex justify-content-between mb-2">
+                <span class="text-secondary" style="font-size:0.82rem;">Spent</span>
+                <span class="fw-600" style="color:${barColor};">${UI.formatCurrency(spent)} / ${UI.formatCurrency(limit)}</span>
+              </div>
+              <div class="progress-bar-custom mb-2">
+                <div class="progress-bar-fill" style="width:${pct}%;background:${barColor};"></div>
+              </div>
+              <div class="d-flex justify-content-between">
+                <span class="text-secondary" style="font-size:0.75rem;">${pct}% used</span>
+                <span class="text-secondary" style="font-size:0.75rem;">Remaining: ${UI.formatCurrency(Math.max(0, limit - spent))}</span>
+              </div>
             </div>
-          `;
-        });
-      } else {
-        container.innerHTML = '<div class="col-12"><div class="glass-card text-center py-5 text-secondary">No budgets configured yet</div></div>';
-      }
-    } catch (err) {
-      UI.showToast(err.message, 'error');
-    } finally {
-      UI.hideLoading();
-    }
+          </div>
+        `;
+      });
+      updateSummary(totalBudget, totalSpent);
+    } catch (err) { UI.showToast(err.message, 'error'); }
+  }
+
+  function updateSummary(total, spent) {
+    document.getElementById('summary-total').textContent = UI.formatCurrency(total);
+    document.getElementById('summary-spent').textContent = UI.formatCurrency(spent);
+    document.getElementById('summary-remaining').textContent = UI.formatCurrency(Math.max(0, total - spent));
   }
 
   function openModal() {
-    document.getElementById('itemForm').reset();
-    document.getElementById('itemId').value = '';
+    document.getElementById('budgetForm').reset();
+    document.getElementById('budgetId').value = '';
     const now = new Date();
-    document.getElementById('month').value = now.getMonth() + 1;
-    document.getElementById('year').value = now.getFullYear();
-    document.getElementById('modalTitle').textContent = 'Add Budget';
+    document.getElementById('budgetMonth').value = now.getMonth() + 1;
+    document.getElementById('budgetYear').value = now.getFullYear();
+    document.getElementById('alertThreshold').value = 80;
+    document.getElementById('modalTitle').textContent = 'Create Budget';
     myModal.show();
   }
 
-  function editItem(item) {
-    document.getElementById('itemId').value = item.id;
-    document.getElementById('categoryId').value = item.categoryId;
-    document.getElementById('budgetAmount').value = item.budgetAmount;
-    document.getElementById('month').value = item.month;
-    document.getElementById('year').value = item.year;
+  function editBudget(b) {
+    document.getElementById('budgetId').value = b.id;
+    document.getElementById('categoryId').value = b.categoryId;
+    document.getElementById('budgetMonth').value = b.month;
+    document.getElementById('budgetYear').value = b.year;
+    document.getElementById('budgetAmount').value = b.budgetAmount;
+    document.getElementById('alertThreshold').value = b.alertThreshold || 80;
     document.getElementById('modalTitle').textContent = 'Edit Budget';
     myModal.show();
   }
 
-  async function saveItem() {
-    const form = document.getElementById('itemForm');
-    if(!form.checkValidity()) { form.reportValidity(); return; }
-    
-    const id = document.getElementById('itemId').value;
+  async function saveBudget() {
+    const form = document.getElementById('budgetForm');
+    if (!form.checkValidity()) { form.reportValidity(); return; }
+    const id = document.getElementById('budgetId').value;
     const payload = {
       categoryId: document.getElementById('categoryId').value,
+      month: document.getElementById('budgetMonth').value,
+      year: document.getElementById('budgetYear').value,
       budgetAmount: document.getElementById('budgetAmount').value,
-      month: document.getElementById('month').value,
-      year: document.getElementById('year').value
+      alertThreshold: document.getElementById('alertThreshold').value
     };
-
     UI.showLoading();
     try {
-      if(id) {
-        await Api.put(`/budgets/${id}?userId=${Api.getUserId()}`, payload);
-        UI.showToast('Budget updated successfully');
-      } else {
-        await Api.post(`/budgets?userId=${Api.getUserId()}`, payload);
-        UI.showToast('Budget added successfully');
-      }
+      if (id) { await Api.put(`/budgets/${id}?userId=${Api.getUserId()}`, payload); UI.showToast('Budget updated!'); }
+      else { await Api.post(`/budgets?userId=${Api.getUserId()}`, payload); UI.showToast('Budget created!'); }
       myModal.hide();
       loadData();
-    } catch (err) {
-      UI.showToast(err.message, 'error');
-    } finally {
-      UI.hideLoading();
-    }
+    } catch (err) { UI.showToast(err.message, 'error'); }
+    finally { UI.hideLoading(); }
   }
 
-  async function deleteItem(id) {
-    if(!confirm('Are you sure you want to delete this budget?')) return;
+  async function deleteBudget(id) {
+    if (!confirm('Delete this budget?')) return;
     UI.showLoading();
     try {
       await Api.del(`/budgets/${id}?userId=${Api.getUserId()}`);
-      UI.showToast('Budget deleted successfully');
-      loadData();
-    } catch (err) {
-      UI.showToast(err.message, 'error');
-    } finally {
-      UI.hideLoading();
-    }
+      UI.showToast('Budget deleted.'); loadData();
+    } catch (err) { UI.showToast(err.message, 'error'); }
+    finally { UI.hideLoading(); }
   }
 
   loadCategories().then(() => loadData());

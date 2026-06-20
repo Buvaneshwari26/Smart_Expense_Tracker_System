@@ -26,6 +26,9 @@ public interface ExpenseRepository extends JpaRepository<Expense, Long> {
     @Query("SELECT SUM(e.amount) FROM Expense e WHERE e.user.id = :userId AND MONTH(e.date) = :month AND YEAR(e.date) = :year")
     BigDecimal sumByUserIdAndMonthAndYear(@Param("userId") Long userId, @Param("month") int month, @Param("year") int year);
 
+    @Query("SELECT SUM(e.amount) FROM Expense e WHERE e.user.id = :userId AND e.category.id = :categoryId AND MONTH(e.date) = :month AND YEAR(e.date) = :year")
+    BigDecimal sumByUserIdAndCategoryIdAndMonthAndYear(@Param("userId") Long userId, @Param("categoryId") Long categoryId, @Param("month") int month, @Param("year") int year);
+
     @Query("SELECT e.category.name, SUM(e.amount) FROM Expense e WHERE e.user.id = :userId AND MONTH(e.date) = :month AND YEAR(e.date) = :year GROUP BY e.category.name ORDER BY SUM(e.amount) DESC")
     List<Object[]> findCategoryWiseTotals(@Param("userId") Long userId, @Param("month") int month, @Param("year") int year);
 
@@ -33,11 +36,15 @@ public interface ExpenseRepository extends JpaRepository<Expense, Long> {
            "AND (:keyword IS NULL OR LOWER(e.description) LIKE LOWER(CONCAT('%', :keyword, '%'))) " +
            "AND (:categoryId IS NULL OR e.category.id = :categoryId) " +
            "AND (:startDate IS NULL OR e.date >= :startDate) " +
-           "AND (:endDate IS NULL OR e.date <= :endDate)")
+           "AND (:endDate IS NULL OR e.date <= :endDate) " +
+           "AND (:minAmount IS NULL OR e.amount >= :minAmount) " +
+           "AND (:maxAmount IS NULL OR e.amount <= :maxAmount)")
     Page<Expense> searchExpenses(@Param("userId") Long userId,
                                   @Param("keyword") String keyword,
                                   @Param("categoryId") Long categoryId,
                                   @Param("startDate") LocalDate startDate,
                                   @Param("endDate") LocalDate endDate,
+                                  @Param("minAmount") BigDecimal minAmount,
+                                  @Param("maxAmount") BigDecimal maxAmount,
                                   Pageable pageable);
 }

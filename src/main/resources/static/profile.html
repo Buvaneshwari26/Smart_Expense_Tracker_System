@@ -32,64 +32,215 @@
     </div>
   </aside>
   <main class="main-content">
+    <!-- Header injected by UI.initHeader() -->
+
     <div class="d-flex justify-content-between align-items-center mb-4">
       <div>
         <h2 class="mb-1">My Profile</h2>
-        <p class="text-secondary">Manage your account settings</p>
+        <p class="text-secondary mb-0">Manage your account settings and preferences</p>
       </div>
     </div>
 
     <div class="row g-4">
-      <div class="col-md-6">
-        <div class="glass-card mb-4">
-          <h5 class="mb-4">Profile Information</h5>
-          <form id="profileForm" class="glass-form">
-            <div class="mb-3">
-              <label class="form-label">Full Name</label>
-              <input type="text" class="form-control" id="fullName" required>
+      <!-- Profile Card -->
+      <div class="col-md-4">
+        <div class="glass-card text-center h-100">
+          <!-- Avatar -->
+          <div style="position:relative;display:inline-block;margin-bottom:20px;">
+            <div id="avatar-display" style="
+              width:100px;height:100px;border-radius:50%;
+              background:linear-gradient(135deg,var(--accent),#3b82f6);
+              display:flex;align-items:center;justify-content:center;
+              font-size:40px;font-weight:700;color:#000;
+              margin:0 auto;
+              box-shadow:0 0 30px rgba(78,204,163,0.4);
+            ">B</div>
+            <div style="
+              position:absolute;bottom:4px;right:4px;
+              width:28px;height:28px;border-radius:50%;
+              background:var(--accent);display:flex;align-items:center;justify-content:center;
+              cursor:pointer;font-size:12px;color:#000;
+              box-shadow:0 2px 8px rgba(0,0,0,0.3);
+            " title="Change avatar"><i class="bi bi-camera-fill"></i></div>
+          </div>
+
+          <h5 class="fw-700 mb-1" id="profile-name">—</h5>
+          <p class="text-secondary mb-2" id="profile-email">—</p>
+          <span class="badge mb-3" style="background:rgba(78,204,163,0.2);color:var(--accent);font-size:0.75rem;" id="profile-role">—</span>
+
+          <!-- Account Stats -->
+          <div class="row g-2 mt-3 pt-3" style="border-top:1px solid var(--glass-border);">
+            <div class="col-6">
+              <div class="glass-card py-2 px-1 text-center">
+                <div class="fw-bold" id="stat-total-expenses" style="color:var(--expense-red);">—</div>
+                <div class="text-secondary" style="font-size:0.72rem;">Total Expenses</div>
+              </div>
             </div>
-            <div class="mb-3">
-              <label class="form-label">Username</label>
-              <input type="text" class="form-control" id="username" required>
+            <div class="col-6">
+              <div class="glass-card py-2 px-1 text-center">
+                <div class="fw-bold" id="stat-total-income" style="color:var(--income-green);">—</div>
+                <div class="text-secondary" style="font-size:0.72rem;">Total Income</div>
+              </div>
             </div>
-            <div class="mb-3">
-              <label class="form-label">Email</label>
-              <input type="email" class="form-control text-secondary" id="email" disabled>
-              <div class="form-text text-secondary"><i class="bi bi-info-circle"></i> Email cannot be changed</div>
+            <div class="col-6">
+              <div class="glass-card py-2 px-1 text-center">
+                <div class="fw-bold" id="stat-budgets" style="color:#3b82f6;">—</div>
+                <div class="text-secondary" style="font-size:0.72rem;">Budgets</div>
+              </div>
             </div>
-            <div class="mb-4">
-              <label class="form-label">Phone Number</label>
-              <input type="text" class="form-control" id="phone">
+            <div class="col-6">
+              <div class="glass-card py-2 px-1 text-center">
+                <div class="fw-bold" id="stat-goals" style="color:#8b5cf6;">—</div>
+                <div class="text-secondary" style="font-size:0.72rem;">Goals</div>
+              </div>
             </div>
-            <button type="button" class="btn btn-glow w-100" onclick="updateProfile()">Save Changes</button>
-          </form>
+          </div>
         </div>
       </div>
 
-      <div class="col-md-6">
-        <div class="glass-card mb-4">
-          <h5 class="mb-4">Change Password</h5>
-          <form id="passwordForm" class="glass-form">
-            <div class="mb-3">
-              <label class="form-label">Current Password</label>
-              <input type="password" class="form-control" id="currentPassword" required>
-            </div>
-            <div class="mb-3">
-              <label class="form-label">New Password</label>
-              <input type="password" class="form-control" id="newPassword" required>
-            </div>
-            <div class="mb-4">
-              <label class="form-label">Confirm New Password</label>
-              <input type="password" class="form-control" id="confirmPassword" required>
-            </div>
-            <button type="button" class="btn btn-outline-warning w-100" onclick="changePassword()">Update Password</button>
-          </form>
-        </div>
+      <!-- Settings Tabs -->
+      <div class="col-md-8">
+        <!-- Tab Navigation -->
+        <div class="glass-card p-0 mb-0 overflow-hidden">
+          <ul class="nav nav-tabs" id="profileTabs" style="border:none;background:rgba(255,255,255,0.03);padding:0;">
+            <li class="nav-item">
+              <a class="nav-link active profile-tab" href="#" onclick="showTab('tab-profile', this)"><i class="bi bi-person me-2"></i>Edit Profile</a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link profile-tab" href="#" onclick="showTab('tab-security', this)"><i class="bi bi-shield-lock me-2"></i>Security</a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link profile-tab" href="#" onclick="showTab('tab-prefs', this)"><i class="bi bi-sliders me-2"></i>Preferences</a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link profile-tab" href="#" onclick="showTab('tab-danger', this)"><i class="bi bi-exclamation-triangle me-2"></i>Danger Zone</a>
+            </li>
+          </ul>
 
-        <div class="glass-card">
-          <h5 class="mb-4 text-danger">Danger Zone</h5>
-          <p class="text-secondary mb-4">Once you delete your account, there is no going back. Please be certain.</p>
-          <button class="btn btn-danger w-100" onclick="deleteAccount()"><i class="bi bi-trash me-2"></i>Delete Account</button>
+          <!-- Edit Profile Tab -->
+          <div id="tab-profile" class="tab-pane p-4 glass-form">
+            <form id="profileForm">
+              <div class="row g-3">
+                <div class="col-md-6">
+                  <label class="form-label">First Name</label>
+                  <input type="text" class="form-control" id="firstName" placeholder="First Name">
+                </div>
+                <div class="col-md-6">
+                  <label class="form-label">Last Name</label>
+                  <input type="text" class="form-control" id="lastName" placeholder="Last Name">
+                </div>
+                <div class="col-md-12">
+                  <label class="form-label">Username</label>
+                  <input type="text" class="form-control" id="username" placeholder="Username">
+                </div>
+                <div class="col-md-12">
+                  <label class="form-label">Email</label>
+                  <input type="email" class="form-control" id="email" placeholder="your@email.com">
+                </div>
+                <div class="col-md-12">
+                  <label class="form-label">Phone</label>
+                  <input type="tel" class="form-control" id="phone" placeholder="+91 99999 00000">
+                </div>
+                <div class="col-12 d-flex justify-content-end">
+                  <button type="button" class="btn btn-glow" onclick="saveProfile()"><i class="bi bi-check-lg me-1"></i>Save Changes</button>
+                </div>
+              </div>
+            </form>
+          </div>
+
+          <!-- Security Tab -->
+          <div id="tab-security" class="tab-pane p-4 glass-form" style="display:none;">
+            <form id="passwordForm">
+              <div class="mb-3">
+                <label class="form-label">Current Password</label>
+                <input type="password" class="form-control" id="currentPassword" placeholder="Enter current password">
+              </div>
+              <div class="mb-3">
+                <label class="form-label">New Password</label>
+                <input type="password" class="form-control" id="newPassword" placeholder="New password (min 8 chars)">
+                <div id="pw-strength" class="mt-2"></div>
+              </div>
+              <div class="mb-4">
+                <label class="form-label">Confirm New Password</label>
+                <input type="password" class="form-control" id="confirmPassword" placeholder="Confirm new password">
+              </div>
+              <button type="button" class="btn btn-glow" onclick="changePassword()"><i class="bi bi-shield-check me-1"></i>Update Password</button>
+            </form>
+
+            <!-- Active Sessions -->
+            <div class="mt-4 pt-3" style="border-top:1px solid var(--glass-border);">
+              <h6 class="fw-600 mb-3">Active Sessions</h6>
+              <div class="glass-card d-flex align-items-center gap-3 py-3 mb-2">
+                <div style="width:40px;height:40px;border-radius:10px;background:rgba(78,204,163,0.1);display:flex;align-items:center;justify-content:center;"><i class="bi bi-laptop" style="color:var(--accent);"></i></div>
+                <div class="flex-grow-1">
+                  <div class="fw-500">Current Session</div>
+                  <div class="text-secondary" style="font-size:0.78rem;">This Device &bull; Active Now</div>
+                </div>
+                <span class="badge" style="background:rgba(78,204,163,0.2);color:var(--accent);">Current</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Preferences Tab -->
+          <div id="tab-prefs" class="tab-pane p-4" style="display:none;">
+            <div class="mb-4">
+              <label class="form-label fw-600">Appearance</label>
+              <div class="d-flex gap-3 flex-wrap mt-2">
+                <button class="btn pref-theme-btn" onclick="setTheme('dark', this)" id="pref-dark">
+                  <i class="bi bi-moon-stars-fill me-2"></i>Dark Mode
+                </button>
+                <button class="btn pref-theme-btn" onclick="setTheme('light', this)" id="pref-light">
+                  <i class="bi bi-sun-fill me-2"></i>Light Mode
+                </button>
+              </div>
+            </div>
+            <div class="mb-4" style="border-top:1px solid var(--glass-border);padding-top:20px;">
+              <label class="form-label fw-600">Notification Preferences</label>
+              <div class="d-flex flex-column gap-3 mt-2">
+                <div class="d-flex justify-content-between align-items-center glass-card py-3">
+                  <div>
+                    <div class="fw-500">Budget Alerts</div>
+                    <div class="text-secondary" style="font-size:0.78rem;">Get notified when approaching budget limits</div>
+                  </div>
+                  <div class="form-check form-switch">
+                    <input class="form-check-input" type="checkbox" id="notif-budget" checked onchange="savePrefs()">
+                  </div>
+                </div>
+                <div class="d-flex justify-content-between align-items-center glass-card py-3">
+                  <div>
+                    <div class="fw-500">Goal Milestones</div>
+                    <div class="text-secondary" style="font-size:0.78rem;">Celebrate when you hit savings milestones</div>
+                  </div>
+                  <div class="form-check form-switch">
+                    <input class="form-check-input" type="checkbox" id="notif-goals" checked onchange="savePrefs()">
+                  </div>
+                </div>
+                <div class="d-flex justify-content-between align-items-center glass-card py-3">
+                  <div>
+                    <div class="fw-500">Weekly Summary</div>
+                    <div class="text-secondary" style="font-size:0.78rem;">Receive weekly spending summaries</div>
+                  </div>
+                  <div class="form-check form-switch">
+                    <input class="form-check-input" type="checkbox" id="notif-weekly" onchange="savePrefs()">
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Danger Zone Tab -->
+          <div id="tab-danger" class="tab-pane p-4" style="display:none;">
+            <div class="glass-card mb-3" style="border:1px solid rgba(233,69,96,0.3);">
+              <h6 class="fw-600 mb-1" style="color:var(--expense-red);"><i class="bi bi-trash me-2"></i>Delete All Data</h6>
+              <p class="text-secondary mb-3" style="font-size:0.85rem;">Permanently delete all your transactions, budgets, and goals. This cannot be undone.</p>
+              <button class="btn btn-sm btn-outline-danger" onclick="confirmDeleteData()"><i class="bi bi-trash me-1"></i>Delete All My Data</button>
+            </div>
+            <div class="glass-card" style="border:1px solid rgba(233,69,96,0.5);">
+              <h6 class="fw-600 mb-1" style="color:var(--expense-red);"><i class="bi bi-person-x me-2"></i>Delete Account</h6>
+              <p class="text-secondary mb-3" style="font-size:0.85rem;">Permanently delete your account and all associated data. This action is irreversible.</p>
+              <button class="btn btn-sm btn-danger" onclick="confirmDeleteAccount()"><i class="bi bi-person-x me-1"></i>Delete My Account</button>
+            </div>
+          </div>
         </div>
       </div>
     </div>
@@ -103,95 +254,157 @@
 <script>
   Auth.requireAuth();
   UI.initSidebar();
+  UI.initHeader();
+
+  const style = document.createElement('style');
+  style.textContent = `
+    .profile-tab { background: transparent; color: var(--text-secondary); border: none; border-bottom: 2px solid transparent; border-radius: 0; padding: 14px 20px; transition: var(--transition); }
+    .profile-tab:hover, .profile-tab.active { color: var(--accent); border-bottom-color: var(--accent); background: transparent; }
+    .pref-theme-btn { background: var(--bg-card); color: var(--text-secondary); border: 1px solid var(--glass-border); border-radius: 10px; padding: 10px 20px; transition: var(--transition); }
+    .pref-theme-btn.active, .pref-theme-btn:hover { background: rgba(78,204,163,0.15); color: var(--accent); border-color: var(--accent); }
+    .form-check-input:checked { background-color: var(--accent); border-color: var(--accent); }
+  `;
+  document.head.appendChild(style);
+
+  function showTab(tabId, link) {
+    document.querySelectorAll('.tab-pane').forEach(t => t.style.display = 'none');
+    document.querySelectorAll('.profile-tab').forEach(l => l.classList.remove('active'));
+    document.getElementById(tabId).style.display = 'block';
+    link.classList.add('active');
+    return false;
+  }
 
   async function loadProfile() {
-    UI.showLoading();
     try {
-      const data = await Api.get(`/users/${Api.getUserId()}`);
-      document.getElementById('fullName').value = data.fullName || '';
-      document.getElementById('username').value = data.username || '';
-      document.getElementById('email').value = data.email || '';
-      document.getElementById('phone').value = data.phoneNumber || '';
+      const user = await Api.get(`/users/${Api.getUserId()}`);
+      document.getElementById('profile-name').textContent = user.username || `${user.firstName || ''} ${user.lastName || ''}`.trim() || '—';
+      document.getElementById('profile-email').textContent = user.email || '—';
+      document.getElementById('profile-role').textContent = user.role || 'USER';
+      document.getElementById('avatar-display').textContent = (user.username || user.email || 'U')[0].toUpperCase();
+      document.getElementById('firstName').value = user.firstName || '';
+      document.getElementById('lastName').value = user.lastName || '';
+      document.getElementById('username').value = user.username || '';
+      document.getElementById('email').value = user.email || '';
+      document.getElementById('phone').value = user.phone || '';
     } catch (err) {
-      UI.showToast('Failed to load profile: ' + err.message, 'error');
-    } finally {
-      UI.hideLoading();
+      // Fallback to localStorage
+      const u = Auth.getUser();
+      document.getElementById('profile-name').textContent = u.username || '—';
+      document.getElementById('profile-email').textContent = u.email || '—';
+      document.getElementById('profile-role').textContent = u.role || 'USER';
+      document.getElementById('avatar-display').textContent = (u.username || u.email || 'U')[0].toUpperCase();
+      document.getElementById('username').value = u.username || '';
+      document.getElementById('email').value = u.email || '';
     }
   }
 
-  async function updateProfile() {
-    const form = document.getElementById('profileForm');
-    if(!form.checkValidity()) { form.reportValidity(); return; }
+  async function loadStats() {
+    try {
+      const summary = await Api.get(`/dashboard/summary?userId=${Api.getUserId()}`);
+      document.getElementById('stat-total-expenses').textContent = UI.formatCurrency(summary.totalExpense || 0);
+      document.getElementById('stat-total-income').textContent = UI.formatCurrency(summary.totalIncome || 0);
+      document.getElementById('stat-budgets').textContent = summary.totalBudgets || '—';
+      document.getElementById('stat-goals').textContent = summary.totalSavingsGoals || '—';
+    } catch (err) { console.error(err); }
+  }
 
+  async function saveProfile() {
+    const payload = {
+      firstName: document.getElementById('firstName').value,
+      lastName: document.getElementById('lastName').value,
+      username: document.getElementById('username').value,
+      email: document.getElementById('email').value,
+      phone: document.getElementById('phone').value
+    };
     UI.showLoading();
     try {
-      const payload = {
-        fullName: document.getElementById('fullName').value,
-        username: document.getElementById('username').value,
-        phoneNumber: document.getElementById('phone').value
-      };
       await Api.put(`/users/${Api.getUserId()}`, payload);
-      UI.showToast('Profile updated successfully');
-      
-      // Update local storage username
-      localStorage.setItem('username', payload.username);
-      document.getElementById('sidebar-username').textContent = payload.username;
-    } catch (err) {
-      UI.showToast(err.message, 'error');
-    } finally {
-      UI.hideLoading();
-    }
+      if (payload.username) localStorage.setItem('username', payload.username);
+      if (payload.email) localStorage.setItem('email', payload.email);
+      UI.showToast('Profile updated successfully!');
+      loadProfile();
+    } catch (err) { UI.showToast(err.message, 'error'); }
+    finally { UI.hideLoading(); }
   }
 
   async function changePassword() {
-    const form = document.getElementById('passwordForm');
-    if(!form.checkValidity()) { form.reportValidity(); return; }
-
-    const curr = document.getElementById('currentPassword').value;
+    const current = document.getElementById('currentPassword').value;
     const newPw = document.getElementById('newPassword').value;
     const confirm = document.getElementById('confirmPassword').value;
-
-    if(newPw !== confirm) {
-      UI.showToast('New passwords do not match', 'error');
-      return;
-    }
-
+    if (!current || !newPw || !confirm) { UI.showToast('All fields are required', 'error'); return; }
+    if (newPw !== confirm) { UI.showToast('Passwords do not match', 'error'); return; }
+    if (newPw.length < 8) { UI.showToast('Password must be at least 8 characters', 'error'); return; }
     UI.showLoading();
     try {
-      // We'll use PATCH method with request params as defined in the controller
-      await Api.patch(`/users/${Api.getUserId()}/change-password?currentPassword=${encodeURIComponent(curr)}&newPassword=${encodeURIComponent(newPw)}`);
-      UI.showToast('Password changed successfully');
-      form.reset();
-    } catch (err) {
-      UI.showToast(err.message, 'error');
-    } finally {
-      UI.hideLoading();
+      await Api.post(`/users/${Api.getUserId()}/change-password`, { currentPassword: current, newPassword: newPw });
+      UI.showToast('Password updated!');
+      document.getElementById('passwordForm').reset();
+    } catch (err) { UI.showToast(err.message, 'error'); }
+    finally { UI.hideLoading(); }
+  }
+
+  // Password strength indicator
+  document.getElementById('newPassword').addEventListener('input', function() {
+    const v = this.value;
+    const div = document.getElementById('pw-strength');
+    if (!v) { div.innerHTML = ''; return; }
+    let strength = 0;
+    if (v.length >= 8) strength++;
+    if (/[A-Z]/.test(v)) strength++;
+    if (/[0-9]/.test(v)) strength++;
+    if (/[^A-Za-z0-9]/.test(v)) strength++;
+    const labels = ['Weak', 'Fair', 'Good', 'Strong'];
+    const colors = ['#e94560', '#f5a623', '#3b82f6', '#4ecca3'];
+    div.innerHTML = `
+      <div class="d-flex gap-1 mb-1">
+        ${[0,1,2,3].map(i => `<div style="height:3px;flex:1;border-radius:2px;background:${i < strength ? colors[strength-1] : 'rgba(255,255,255,0.1)'}"></div>`).join('')}
+      </div>
+      <small style="color:${colors[strength-1]};">${strength > 0 ? labels[strength-1] : ''}</small>
+    `;
+  });
+
+  function setTheme(theme, btn) {
+    document.querySelectorAll('.pref-theme-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    localStorage.setItem('theme', theme);
+    document.documentElement.setAttribute('data-theme', theme);
+    UI.showToast(`${theme === 'dark' ? 'Dark' : 'Light'} mode activated!`);
+  }
+
+  function savePrefs() {
+    const prefs = {
+      budgetAlerts: document.getElementById('notif-budget').checked,
+      goalMilestones: document.getElementById('notif-goals').checked,
+      weeklySummary: document.getElementById('notif-weekly').checked
+    };
+    localStorage.setItem('preferences', JSON.stringify(prefs));
+    UI.showToast('Preferences saved!');
+  }
+
+  function loadPrefs() {
+    const prefs = JSON.parse(localStorage.getItem('preferences') || '{}');
+    if (prefs.budgetAlerts !== undefined) document.getElementById('notif-budget').checked = prefs.budgetAlerts;
+    if (prefs.goalMilestones !== undefined) document.getElementById('notif-goals').checked = prefs.goalMilestones;
+    if (prefs.weeklySummary !== undefined) document.getElementById('notif-weekly').checked = prefs.weeklySummary;
+    const theme = localStorage.getItem('theme') || 'dark';
+    document.getElementById(`pref-${theme}`).classList.add('active');
+  }
+
+  function confirmDeleteData() {
+    if (prompt('Type "DELETE" to confirm deleting all your data:') === 'DELETE') {
+      Api.del(`/users/${Api.getUserId()}/data`).then(() => { UI.showToast('All data deleted.'); }).catch(err => UI.showToast(err.message, 'error'));
     }
   }
 
-  async function deleteAccount() {
-    // Only Admin can delete users per the controller, so we simulate this or just call it 
-    // Wait, the API requires ROLE_ADMIN. We should show a warning if they are not admin.
-    const role = localStorage.getItem('role');
-    if(role !== 'ADMIN') {
-      UI.showToast('Only administrators can delete accounts', 'error');
-      return;
-    }
-    
-    if(!confirm('Are you ABSOLUTELY sure? This action cannot be undone.')) return;
-    
-    UI.showLoading();
-    try {
-      await Api.del(`/users/${Api.getUserId()}`);
-      alert('Account deleted. You will be logged out.');
-      Auth.logout();
-    } catch (err) {
-      UI.showToast(err.message, 'error');
-      UI.hideLoading();
+  function confirmDeleteAccount() {
+    if (prompt('Type "DELETE ACCOUNT" to permanently delete your account:') === 'DELETE ACCOUNT') {
+      Api.del(`/users/${Api.getUserId()}`).then(() => { Auth.logout(); }).catch(err => UI.showToast(err.message, 'error'));
     }
   }
 
   loadProfile();
+  loadStats();
+  loadPrefs();
 </script>
 </body>
 </html>

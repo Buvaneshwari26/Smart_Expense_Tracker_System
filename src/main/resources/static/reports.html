@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Reports & Analytics — Smart Expense Tracker</title>
+  <title>Reports — Smart Expense Tracker</title>
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"/>
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css"/>
   <link rel="stylesheet" href="css/globals.css"/>
@@ -32,53 +32,141 @@
     </div>
   </aside>
   <main class="main-content">
+    <!-- Header injected by UI.initHeader() -->
+
     <div class="d-flex justify-content-between align-items-center mb-4">
       <div>
         <h2 class="mb-1">Reports & Analytics</h2>
-        <p class="text-secondary">Visualize your financial data</p>
+        <p class="text-secondary mb-0">Deep insights into your financial patterns</p>
       </div>
-      <div>
-        <button class="btn btn-outline-danger" onclick="Api.download(`/expenses/export/pdf?userId=${Api.getUserId()}`, 'expense-report.pdf')"><i class="bi bi-file-earmark-pdf me-2"></i>Export PDF</button>
+      <div class="d-flex gap-2">
+        <button class="btn btn-outline-success btn-sm" onclick="Api.download(`/reports/export/excel?userId=${Api.getUserId()}&startDate=${document.getElementById('startDate').value}&endDate=${document.getElementById('endDate').value}`, 'report.xlsx')"><i class="bi bi-file-earmark-excel me-1"></i>Excel</button>
+        <button class="btn btn-outline-danger btn-sm" onclick="Api.download(`/reports/export/pdf?userId=${Api.getUserId()}&startDate=${document.getElementById('startDate').value}&endDate=${document.getElementById('endDate').value}`, 'report.pdf')"><i class="bi bi-file-earmark-pdf me-1"></i>PDF</button>
       </div>
     </div>
 
+    <!-- Date Range & Quick Filters -->
     <div class="glass-card mb-4">
-      <form id="reportForm" class="row g-3 align-items-end glass-form">
+      <div class="row g-3 align-items-end">
         <div class="col-md-3">
-          <label class="form-label">Report Type</label>
-          <select class="form-select" id="reportType">
-            <option value="monthly">Monthly Summary</option>
-            <option value="yearly">Yearly Overview</option>
-            <option value="category">Category Breakdown</option>
-            <option value="incomeVsExpense">Income vs Expense</option>
-          </select>
+          <label class="form-label">Start Date</label>
+          <input type="date" class="form-control" id="startDate">
         </div>
-        <div class="col-md-2" id="monthCol">
-          <label class="form-label">Month</label>
-          <input type="number" min="1" max="12" class="form-control" id="month">
+        <div class="col-md-3">
+          <label class="form-label">End Date</label>
+          <input type="date" class="form-control" id="endDate">
         </div>
-        <div class="col-md-2">
-          <label class="form-label">Year</label>
-          <input type="number" min="2000" class="form-control" id="year">
+        <div class="col-md-3">
+          <label class="form-label">Quick Range</label>
+          <div class="d-flex gap-2 flex-wrap">
+            <button class="btn btn-sm filter-tab" onclick="setRange(7)">7D</button>
+            <button class="btn btn-sm filter-tab" onclick="setRange(30)">30D</button>
+            <button class="btn btn-sm filter-tab active" onclick="setRange(90)">3M</button>
+            <button class="btn btn-sm filter-tab" onclick="setRange(180)">6M</button>
+            <button class="btn btn-sm filter-tab" onclick="setRange(365)">1Y</button>
+          </div>
         </div>
-        <div class="col-md-2">
-          <button type="button" class="btn btn-glow w-100" onclick="generateReport()">Generate</button>
+        <div class="col-md-3">
+          <button class="btn btn-glow w-100" onclick="loadAll()"><i class="bi bi-bar-chart me-2"></i>Generate Report</button>
         </div>
-      </form>
+      </div>
     </div>
 
-    <div class="row g-4 mb-4" id="reportSummaryCards">
-      <!-- Populated by JS -->
+    <!-- KPI Row -->
+    <div class="row g-3 mb-4">
+      <div class="col-md-3">
+        <div class="glass-card stat-card">
+          <div class="stat-icon income"><i class="bi bi-arrow-up-circle"></i></div>
+          <div class="stat-value" id="rpt-income">₹0</div>
+          <div class="stat-label">Total Income</div>
+        </div>
+      </div>
+      <div class="col-md-3">
+        <div class="glass-card stat-card">
+          <div class="stat-icon expense"><i class="bi bi-arrow-down-circle"></i></div>
+          <div class="stat-value" id="rpt-expense">₹0</div>
+          <div class="stat-label">Total Expenses</div>
+        </div>
+      </div>
+      <div class="col-md-3">
+        <div class="glass-card stat-card">
+          <div class="stat-icon" style="background:rgba(59,130,246,0.15);color:#3b82f6;"><i class="bi bi-wallet2"></i></div>
+          <div class="stat-value" id="rpt-savings">₹0</div>
+          <div class="stat-label">Net Savings</div>
+        </div>
+      </div>
+      <div class="col-md-3">
+        <div class="glass-card stat-card">
+          <div class="stat-icon" style="background:rgba(139,92,246,0.15);color:#8b5cf6;"><i class="bi bi-percent"></i></div>
+          <div class="stat-value" id="rpt-rate">0%</div>
+          <div class="stat-label">Savings Rate</div>
+        </div>
+      </div>
     </div>
 
+    <!-- Charts Row 1 -->
+    <div class="row g-3 mb-3">
+      <div class="col-md-8">
+        <div class="glass-card chart-container">
+          <div class="d-flex justify-content-between align-items-center mb-3">
+            <h6 class="fw-600 mb-0">Income vs Expense Trend</h6>
+            <div class="d-flex gap-2">
+              <span class="badge" style="background:rgba(78,204,163,0.2);color:var(--accent);font-size:0.7rem;">● Income</span>
+              <span class="badge" style="background:rgba(233,69,96,0.2);color:var(--expense-red);font-size:0.7rem;">● Expense</span>
+            </div>
+          </div>
+          <canvas id="trendChart" height="100"></canvas>
+        </div>
+      </div>
+      <div class="col-md-4">
+        <div class="glass-card chart-container">
+          <h6 class="fw-600 mb-3">Expense Distribution</h6>
+          <canvas id="donutChart" height="200"></canvas>
+        </div>
+      </div>
+    </div>
+
+    <!-- Charts Row 2 -->
+    <div class="row g-3 mb-3">
+      <div class="col-md-6">
+        <div class="glass-card chart-container">
+          <h6 class="fw-600 mb-3">Top Expense Categories</h6>
+          <canvas id="barChart" height="130"></canvas>
+        </div>
+      </div>
+      <div class="col-md-6">
+        <div class="glass-card chart-container">
+          <h6 class="fw-600 mb-3">Daily Spending Pattern</h6>
+          <canvas id="areaChart" height="130"></canvas>
+        </div>
+      </div>
+    </div>
+
+    <!-- Category Breakdown Table -->
     <div class="glass-card">
-      <div class="chart-container" style="height:400px">
-        <canvas id="reportChart"></canvas>
+      <h6 class="fw-600 mb-4">Category Breakdown</h6>
+      <div class="table-responsive">
+        <table class="glass-table">
+          <thead>
+            <tr>
+              <th>Category</th>
+              <th>Type</th>
+              <th>Total Amount</th>
+              <th>Transactions</th>
+              <th>% of Total</th>
+              <th>Trend</th>
+            </tr>
+          </thead>
+          <tbody id="breakdown-body">
+            <tr><td colspan="6" class="text-center text-secondary py-3">Select a date range and generate report</td></tr>
+          </tbody>
+        </table>
       </div>
     </div>
   </main>
 </div>
 
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script src="js/api.js"></script>
 <script src="js/auth.js"></script>
@@ -86,106 +174,182 @@
 <script>
   Auth.requireAuth();
   UI.initSidebar();
-  let currentChart = null;
+  UI.initHeader();
+  let trendChart, donutChart, barChart, areaChart;
 
-  // Init date inputs
-  const now = new Date();
-  document.getElementById('month').value = now.getMonth() + 1;
-  document.getElementById('year').value = now.getFullYear();
+  // Inject filter-tab style
+  const style = document.createElement('style');
+  style.textContent = `.filter-tab{background:transparent;color:var(--text-secondary);border:1px solid var(--glass-border);border-radius:20px;padding:3px 12px;font-size:0.82rem;transition:var(--transition);}.filter-tab.active,.filter-tab:hover{background:var(--accent);color:#000;border-color:var(--accent);}`;
+  document.head.appendChild(style);
 
-  document.getElementById('reportType').addEventListener('change', function() {
-    const type = this.value;
-    document.getElementById('monthCol').style.display = (type === 'yearly' || type === 'incomeVsExpense') ? 'none' : 'block';
-  });
+  // Set default date range (90 days)
+  function setRange(days) {
+    document.querySelectorAll('.filter-tab').forEach(b => b.classList.remove('active'));
+    event.target.classList.add('active');
+    const end = new Date();
+    const start = new Date();
+    start.setDate(start.getDate() - days);
+    document.getElementById('startDate').value = start.toISOString().split('T')[0];
+    document.getElementById('endDate').value = end.toISOString().split('T')[0];
+    loadAll();
+  }
+  setRange(90);
 
-  async function generateReport() {
+  const CHART_COLORS = ['#4ecca3','#e94560','#3b82f6','#f59e0b','#8b5cf6','#ec4899','#14b8a6','#f97316','#6366f1','#06b6d4'];
+
+  function destroyChart(c) { if (c) c.destroy(); return null; }
+
+  async function loadAll() {
+    const start = document.getElementById('startDate').value;
+    const end = document.getElementById('endDate').value;
+    if (!start || !end) { UI.showToast('Please select a date range', 'error'); return; }
     UI.showLoading();
     try {
-      const type = document.getElementById('reportType').value;
-      const month = document.getElementById('month').value;
-      const year = document.getElementById('year').value;
-      let url = '';
+      const [summary, trend, catBreakdown] = await Promise.all([
+        Api.get(`/reports/summary?userId=${Api.getUserId()}&startDate=${start}&endDate=${end}`).catch(() => ({})),
+        Api.get(`/reports/monthly-trend?userId=${Api.getUserId()}&startDate=${start}&endDate=${end}`).catch(() => []),
+        Api.get(`/reports/category-breakdown?userId=${Api.getUserId()}&startDate=${start}&endDate=${end}`).catch(() => [])
+      ]);
 
-      switch(type) {
-        case 'monthly': url = `/reports/monthly?userId=${Api.getUserId()}&month=${month}&year=${year}`; break;
-        case 'yearly': url = `/reports/yearly?userId=${Api.getUserId()}&year=${year}`; break;
-        case 'category': url = `/reports/category?userId=${Api.getUserId()}&month=${month}&year=${year}`; break;
-        case 'incomeVsExpense': url = `/reports/income-vs-expense?userId=${Api.getUserId()}&year=${year}`; break;
+      renderKPIs(summary);
+      renderTrendChart(trend);
+      renderDonutChart(catBreakdown);
+      renderBarChart(catBreakdown);
+      renderAreaChart(trend);
+      renderBreakdownTable(catBreakdown);
+    } catch (err) { UI.showToast(err.message, 'error'); }
+    finally { UI.hideLoading(); }
+  }
+
+  function renderKPIs(s) {
+    const income = s.totalIncome || 0;
+    const expense = s.totalExpense || 0;
+    const net = income - expense;
+    const rate = income > 0 ? Math.round((net / income) * 100) : 0;
+    document.getElementById('rpt-income').textContent = UI.formatCurrency(income);
+    document.getElementById('rpt-expense').textContent = UI.formatCurrency(expense);
+    document.getElementById('rpt-savings').textContent = UI.formatCurrency(net);
+    document.getElementById('rpt-rate').textContent = `${rate}%`;
+    document.getElementById('rpt-savings').style.color = net >= 0 ? 'var(--income-green)' : 'var(--expense-red)';
+  }
+
+  function renderTrendChart(trend) {
+    const labels = trend.map(t => t.month || t.label || '');
+    const incomes = trend.map(t => t.totalIncome || 0);
+    const expenses = trend.map(t => t.totalExpense || 0);
+    trendChart = destroyChart(trendChart);
+    const ctx = document.getElementById('trendChart').getContext('2d');
+    trendChart = new Chart(ctx, {
+      type: 'line',
+      data: {
+        labels,
+        datasets: [
+          { label: 'Income', data: incomes, borderColor: '#4ecca3', backgroundColor: 'rgba(78,204,163,0.1)', fill: true, tension: 0.4, pointBackgroundColor: '#4ecca3' },
+          { label: 'Expense', data: expenses, borderColor: '#e94560', backgroundColor: 'rgba(233,69,96,0.1)', fill: true, tension: 0.4, pointBackgroundColor: '#e94560' }
+        ]
+      },
+      options: {
+        responsive: true, plugins: { legend: { display: false }, tooltip: { mode: 'index' } },
+        scales: {
+          x: { grid: { color: 'rgba(255,255,255,0.05)' }, ticks: { color: '#8892a4' } },
+          y: { grid: { color: 'rgba(255,255,255,0.05)' }, ticks: { color: '#8892a4', callback: v => '₹' + (v/1000).toFixed(0) + 'K' } }
+        }
       }
-
-      const data = await Api.get(url);
-      renderReport(type, data);
-    } catch (err) {
-      UI.showToast(err.message, 'error');
-    } finally {
-      UI.hideLoading();
-    }
+    });
   }
 
-  function renderReport(type, data) {
-    if(currentChart) currentChart.destroy();
-    const ctx = document.getElementById('reportChart').getContext('2d');
-    Chart.defaults.color = '#8892a4';
-    Chart.defaults.borderColor = 'rgba(255,255,255,0.05)';
+  function renderDonutChart(cats) {
+    const expenses = (cats || []).filter(c => c.type === 'EXPENSE');
+    donutChart = destroyChart(donutChart);
+    const ctx = document.getElementById('donutChart').getContext('2d');
+    donutChart = new Chart(ctx, {
+      type: 'doughnut',
+      data: {
+        labels: expenses.map(c => c.categoryName),
+        datasets: [{ data: expenses.map(c => c.totalAmount), backgroundColor: CHART_COLORS, borderWidth: 0 }]
+      },
+      options: {
+        responsive: true,
+        plugins: { legend: { position: 'bottom', labels: { color: '#8892a4', font: { size: 11 } } } },
+        cutout: '65%'
+      }
+    });
+  }
 
-    const cardsContainer = document.getElementById('reportSummaryCards');
-    cardsContainer.innerHTML = '';
+  function renderBarChart(cats) {
+    const expenses = (cats || []).filter(c => c.type === 'EXPENSE').sort((a,b) => b.totalAmount - a.totalAmount).slice(0, 8);
+    barChart = destroyChart(barChart);
+    const ctx = document.getElementById('barChart').getContext('2d');
+    barChart = new Chart(ctx, {
+      type: 'bar',
+      data: {
+        labels: expenses.map(c => c.categoryName),
+        datasets: [{ label: 'Expense', data: expenses.map(c => c.totalAmount), backgroundColor: CHART_COLORS, borderRadius: 6, borderSkipped: false }]
+      },
+      options: {
+        responsive: true, plugins: { legend: { display: false } },
+        scales: {
+          x: { grid: { display: false }, ticks: { color: '#8892a4', font: { size: 10 } } },
+          y: { grid: { color: 'rgba(255,255,255,0.05)' }, ticks: { color: '#8892a4', callback: v => '₹' + (v/1000).toFixed(0) + 'K' } }
+        }
+      }
+    });
+  }
 
-    if(type === 'monthly' || type === 'yearly') {
-      cardsContainer.innerHTML = `
-        <div class="col-md-4"><div class="glass-card"><div class="text-secondary mb-1">Total Income</div><h3 class="text-success">+${UI.formatCurrency(data.totalIncome)}</h3></div></div>
-        <div class="col-md-4"><div class="glass-card"><div class="text-secondary mb-1">Total Expense</div><h3 class="text-danger">-${UI.formatCurrency(data.totalExpense)}</h3></div></div>
-        <div class="col-md-4"><div class="glass-card"><div class="text-secondary mb-1">Balance</div><h3 class="text-info">${UI.formatCurrency(data.balance)}</h3></div></div>
+  function renderAreaChart(trend) {
+    const labels = trend.map(t => t.month || t.label || '');
+    const values = trend.map(t => (t.totalIncome || 0) - (t.totalExpense || 0));
+    areaChart = destroyChart(areaChart);
+    const ctx = document.getElementById('areaChart').getContext('2d');
+    areaChart = new Chart(ctx, {
+      type: 'line',
+      data: {
+        labels,
+        datasets: [{
+          label: 'Net Savings',
+          data: values,
+          borderColor: '#8b5cf6',
+          backgroundColor: 'rgba(139,92,246,0.15)',
+          fill: true, tension: 0.4,
+          pointBackgroundColor: values.map(v => v >= 0 ? '#4ecca3' : '#e94560')
+        }]
+      },
+      options: {
+        responsive: true, plugins: { legend: { display: false } },
+        scales: {
+          x: { grid: { color: 'rgba(255,255,255,0.05)' }, ticks: { color: '#8892a4' } },
+          y: { grid: { color: 'rgba(255,255,255,0.05)' }, ticks: { color: '#8892a4', callback: v => '₹' + (v/1000).toFixed(0) + 'K' } }
+        }
+      }
+    });
+  }
+
+  function renderBreakdownTable(cats) {
+    const tbody = document.getElementById('breakdown-body');
+    if (!cats || cats.length === 0) { tbody.innerHTML = '<tr><td colspan="6" class="text-center text-secondary py-3">No data for selected range</td></tr>'; return; }
+    const totalAmt = cats.reduce((s, c) => s + (c.totalAmount || 0), 0);
+    tbody.innerHTML = cats.sort((a, b) => b.totalAmount - a.totalAmount).map(c => {
+      const pct = totalAmt > 0 ? ((c.totalAmount / totalAmt) * 100).toFixed(1) : 0;
+      const isIncome = c.type === 'INCOME';
+      return `
+        <tr class="animate-in">
+          <td><span class="fw-500">${c.categoryName}</span></td>
+          <td><span class="badge ${isIncome ? 'income' : 'expense'}">${c.type}</span></td>
+          <td class="fw-bold" style="color:${isIncome ? 'var(--income-green)' : 'var(--expense-red)'};">${isIncome ? '+' : '-'}${UI.formatCurrency(c.totalAmount)}</td>
+          <td>${c.transactionCount || '—'}</td>
+          <td>
+            <div class="d-flex align-items-center gap-2">
+              <div class="progress-bar-custom flex-grow-1" style="height:6px;">
+                <div class="progress-bar-fill" style="width:${pct}%;background:${isIncome ? 'var(--income-green)' : 'var(--expense-red)'};"></div>
+              </div>
+              <span style="font-size:0.78rem;min-width:36px;">${pct}%</span>
+            </div>
+          </td>
+          <td><span style="color:${isIncome ? 'var(--income-green)' : 'var(--expense-red)'};">${isIncome ? '↑' : '↓'}</span></td>
+        </tr>
       `;
-    }
-
-    if(type === 'monthly') {
-      const labels = data.categoryBreakdown.map(c => c.category);
-      const values = data.categoryBreakdown.map(c => c.amount);
-      currentChart = new Chart(ctx, {
-        type: 'bar',
-        data: {
-          labels,
-          datasets: [{ label: 'Expenses by Category', data: values, backgroundColor: 'rgba(233, 69, 96, 0.7)' }]
-        },
-        options: { responsive: true, maintainAspectRatio: false }
-      });
-    } else if (type === 'yearly' || type === 'incomeVsExpense') {
-      const sourceData = type === 'yearly' ? data.monthlyData : data.data;
-      const labels = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
-      const incomes = sourceData.map(m => m.income);
-      const expenses = sourceData.map(m => m.expense);
-      currentChart = new Chart(ctx, {
-        type: 'line',
-        data: {
-          labels,
-          datasets: [
-            { label: 'Income', data: incomes, borderColor: '#4ecca3', backgroundColor: 'rgba(78, 204, 163, 0.1)', fill: true, tension: 0.4 },
-            { label: 'Expense', data: expenses, borderColor: '#e94560', backgroundColor: 'rgba(233, 69, 96, 0.1)', fill: true, tension: 0.4 }
-          ]
-        },
-        options: { responsive: true, maintainAspectRatio: false }
-      });
-    } else if (type === 'category') {
-      const labels = data.categories.map(c => c.category);
-      const values = data.categories.map(c => c.totalSpent);
-      currentChart = new Chart(ctx, {
-        type: 'doughnut',
-        data: {
-          labels,
-          datasets: [{
-            data: values,
-            borderWidth: 0,
-            backgroundColor: ['#e94560', '#f5a623', '#4ecca3', '#3b82f6', '#9b5de5', '#00bbf9', '#00f5d4']
-          }]
-        },
-        options: { responsive: true, maintainAspectRatio: false, cutout: '60%', plugins: { legend: { position: 'right' } } }
-      });
-    }
+    }).join('');
   }
-
-  // Initial load
-  generateReport();
 </script>
 </body>
 </html>

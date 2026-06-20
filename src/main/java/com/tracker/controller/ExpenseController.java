@@ -73,10 +73,15 @@ public class ExpenseController {
             @RequestParam(required = false) Long categoryId,
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate,
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate,
+            @RequestParam(required = false) java.math.BigDecimal minAmount,
+            @RequestParam(required = false) java.math.BigDecimal maxAmount,
             @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "10") int size) {
-        return ResponseEntity.ok(expenseService.searchExpenses(userId, keyword, categoryId, startDate, endDate,
-                PageRequest.of(page, size, Sort.by("date").descending())));
+            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(defaultValue = "date") String sortBy,
+            @RequestParam(defaultValue = "desc") String sortDir) {
+        Sort sort = sortDir.equalsIgnoreCase("asc") ? Sort.by(sortBy).ascending() : Sort.by(sortBy).descending();
+        return ResponseEntity.ok(expenseService.searchExpenses(userId, keyword, categoryId, startDate, endDate, minAmount, maxAmount,
+                PageRequest.of(page, size, sort)));
     }
 
     @GetMapping("/category/{categoryId}")

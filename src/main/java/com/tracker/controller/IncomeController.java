@@ -7,10 +7,13 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.*;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.*;
 import org.springframework.web.bind.annotation.*;
 
 import java.io.IOException;
+import java.math.BigDecimal;
+import java.time.LocalDate;
 
 @RestController
 @RequestMapping("/api/incomes")
@@ -77,5 +80,24 @@ public class IncomeController {
                 .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=incomes.csv")
                 .contentType(MediaType.parseMediaType("text/csv"))
                 .body(data);
+    }
+
+    @GetMapping("/search")
+    @Operation(summary = "Search and filter incomes dynamically")
+    public ResponseEntity<Page<IncomeDTO>> searchIncomes(
+            @RequestParam Long userId,
+            @RequestParam(required = false) String keyword,
+            @RequestParam(required = false) Long categoryId,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate,
+            @RequestParam(required = false) BigDecimal minAmount,
+            @RequestParam(required = false) BigDecimal maxAmount,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(defaultValue = "date") String sortBy,
+            @RequestParam(defaultValue = "desc") String sortDir) {
+        Sort sort = sortDir.equalsIgnoreCase("asc") ? Sort.by(sortBy).ascending() : Sort.by(sortBy).descending();
+        return ResponseEntity.ok(incomeService.searchIncomes(userId, keyword, categoryId, startDate, endDate, minAmount, maxAmount,
+                PageRequest.of(page, size, sort)));
     }
 }
