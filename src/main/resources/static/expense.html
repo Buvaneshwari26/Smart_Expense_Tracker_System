@@ -1,0 +1,270 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Expenses — Smart Expense Tracker</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"/>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css"/>
+  <link rel="stylesheet" href="css/globals.css"/>
+</head>
+<body>
+<button class="sidebar-toggle d-md-none"><i class="bi bi-list"></i></button>
+<div class="app-layout">
+  <aside class="sidebar">
+    <div class="sidebar-brand">
+      <div class="logo-icon"><i class="bi bi-wallet2"></i></div>
+      <span class="brand-text">ExpenseTracker</span>
+    </div>
+    <nav class="sidebar-nav">
+      <a href="dashboard.html" class="nav-link"><i class="bi bi-grid-1x2"></i><span>Dashboard</span></a>
+      <a href="income.html" class="nav-link"><i class="bi bi-cash-stack"></i><span>Income</span></a>
+      <a href="expense.html" class="nav-link"><i class="bi bi-credit-card"></i><span>Expenses</span></a>
+      <a href="category.html" class="nav-link"><i class="bi bi-tags"></i><span>Categories</span></a>
+      <a href="budget.html" class="nav-link"><i class="bi bi-pie-chart"></i><span>Budgets</span></a>
+      <a href="savings.html" class="nav-link"><i class="bi bi-piggy-bank"></i><span>Savings Goals</span></a>
+      <a href="reports.html" class="nav-link"><i class="bi bi-graph-up"></i><span>Reports</span></a>
+      <a href="profile.html" class="nav-link"><i class="bi bi-person-circle"></i><span>Profile</span></a>
+    </nav>
+    <div class="sidebar-footer">
+      <span id="sidebar-username">User</span>
+      <button onclick="Auth.logout()" class="btn btn-sm btn-outline-danger"><i class="bi bi-box-arrow-right"></i> Logout</button>
+    </div>
+  </aside>
+  <main class="main-content">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+      <div>
+        <h2 class="mb-1">Expense Management</h2>
+        <p class="text-secondary">Track your spending and outgoing cash</p>
+      </div>
+      <div>
+        <button class="btn btn-glow" onclick="openModal()"><i class="bi bi-plus-lg me-2"></i>Add Expense</button>
+      </div>
+    </div>
+
+    <div class="glass-card mb-4">
+      <form id="searchForm" class="row g-3 align-items-end glass-form">
+        <div class="col-md-3">
+          <label class="form-label">Search Keyword</label>
+          <input type="text" class="form-control" id="searchKeyword" placeholder="Description...">
+        </div>
+        <div class="col-md-2">
+          <label class="form-label">Category</label>
+          <select class="form-select" id="searchCategory"><option value="">All Categories</option></select>
+        </div>
+        <div class="col-md-2">
+          <label class="form-label">Start Date</label>
+          <input type="date" class="form-control" id="searchStart">
+        </div>
+        <div class="col-md-2">
+          <label class="form-label">End Date</label>
+          <input type="date" class="form-control" id="searchEnd">
+        </div>
+        <div class="col-md-3 d-flex gap-2">
+          <button type="button" class="btn btn-outline-primary w-50" onclick="loadData(0)"><i class="bi bi-search"></i></button>
+          <button type="button" class="btn btn-outline-secondary w-50" onclick="resetSearch()"><i class="bi bi-x-circle"></i></button>
+        </div>
+      </form>
+    </div>
+
+    <div class="glass-card mb-4 d-flex gap-2">
+      <button class="btn btn-outline-success" onclick="Api.download(`/expenses/export/excel?userId=${Api.getUserId()}`, 'expenses.xlsx')"><i class="bi bi-file-earmark-excel me-2"></i>Excel</button>
+      <button class="btn btn-outline-info" onclick="Api.download(`/expenses/export/csv?userId=${Api.getUserId()}`, 'expenses.csv')"><i class="bi bi-filetype-csv me-2"></i>CSV</button>
+      <button class="btn btn-outline-danger" onclick="Api.download(`/expenses/export/pdf?userId=${Api.getUserId()}`, 'expenses.pdf')"><i class="bi bi-file-earmark-pdf me-2"></i>PDF</button>
+    </div>
+
+    <div class="glass-card">
+      <div class="table-responsive">
+        <table class="glass-table">
+          <thead>
+            <tr>
+              <th>Date</th>
+              <th>Category</th>
+              <th>Amount</th>
+              <th>Description</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody id="table-body">
+            <!-- Loaded via JS -->
+          </tbody>
+        </table>
+      </div>
+      <div id="pagination" class="mt-4 d-flex justify-content-end"></div>
+    </div>
+  </main>
+</div>
+
+<!-- Modal -->
+<div class="modal fade" id="itemModal" tabindex="-1">
+  <div class="modal-dialog modal-dialog-centered modal-glass">
+    <div class="modal-content">
+      <div class="modal-header border-0">
+        <h5 class="modal-title" id="modalTitle">Add Expense</h5>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body pt-0">
+        <form id="itemForm" class="glass-form">
+          <input type="hidden" id="itemId">
+          <div class="mb-3">
+            <label class="form-label">Amount</label>
+            <input type="number" step="0.01" class="form-control" id="amount" required>
+          </div>
+          <div class="mb-3">
+            <label class="form-label">Date</label>
+            <input type="date" class="form-control" id="date" required>
+          </div>
+          <div class="mb-3">
+            <label class="form-label">Category</label>
+            <select class="form-select" id="categoryId" required></select>
+          </div>
+          <div class="mb-3">
+            <label class="form-label">Description</label>
+            <textarea class="form-control" id="description" rows="2"></textarea>
+          </div>
+        </form>
+      </div>
+      <div class="modal-footer border-0">
+        <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancel</button>
+        <button type="button" class="btn btn-glow" onclick="saveItem()">Save Expense</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<script src="js/api.js"></script>
+<script src="js/auth.js"></script>
+<script src="js/ui.js"></script>
+<script>
+  Auth.requireAuth();
+  UI.initSidebar();
+  let myModal = new bootstrap.Modal(document.getElementById('itemModal'));
+  let categories = [];
+
+  async function loadCategories() {
+    try {
+      const data = await Api.get(`/categories?userId=${Api.getUserId()}`);
+      categories = data.filter(c => c.type === 'EXPENSE');
+      const opts = categories.map(c => `<option value="${c.id}">${c.name}</option>`).join('');
+      document.getElementById('categoryId').innerHTML = '<option value="">Select Category</option>' + opts;
+      document.getElementById('searchCategory').innerHTML = '<option value="">All Categories</option>' + opts;
+    } catch (err) {
+      console.error('Failed to load categories', err);
+    }
+  }
+
+  function resetSearch() {
+    document.getElementById('searchForm').reset();
+    loadData(0);
+  }
+
+  async function loadData(page = 0) {
+    UI.showLoading();
+    try {
+      const keyword = document.getElementById('searchKeyword').value;
+      const cat = document.getElementById('searchCategory').value;
+      const start = document.getElementById('searchStart').value;
+      const end = document.getElementById('searchEnd').value;
+      
+      let url = `/expenses/search?userId=${Api.getUserId()}&page=${page}&size=10`;
+      if(keyword) url += `&keyword=${encodeURIComponent(keyword)}`;
+      if(cat) url += `&categoryId=${cat}`;
+      if(start) url += `&startDate=${start}`;
+      if(end) url += `&endDate=${end}`;
+
+      const data = await Api.get(url);
+      const tbody = document.getElementById('table-body');
+      tbody.innerHTML = '';
+      if(data.content && data.content.length > 0) {
+        data.content.forEach(item => {
+          tbody.innerHTML += `
+            <tr>
+              <td>${UI.formatDate(item.date)}</td>
+              <td><span class="badge expense">${item.categoryName}</span></td>
+              <td class="text-danger fw-bold">-${UI.formatCurrency(item.amount)}</td>
+              <td>${item.description || '-'}</td>
+              <td>
+                <button class="btn btn-sm btn-outline-info me-1" onclick='editItem(${JSON.stringify(item)})'><i class="bi bi-pencil"></i></button>
+                <button class="btn btn-sm btn-outline-danger" onclick="deleteItem(${item.id})"><i class="bi bi-trash"></i></button>
+              </td>
+            </tr>
+          `;
+        });
+      } else {
+        tbody.innerHTML = '<tr><td colspan="5" class="text-center text-secondary py-4">No expense records found</td></tr>';
+      }
+      UI.renderPagination(document.getElementById('pagination'), data, loadData);
+    } catch (err) {
+      UI.showToast(err.message, 'error');
+    } finally {
+      UI.hideLoading();
+    }
+  }
+
+  function openModal() {
+    document.getElementById('itemForm').reset();
+    document.getElementById('itemId').value = '';
+    document.getElementById('date').valueAsDate = new Date();
+    document.getElementById('modalTitle').textContent = 'Add Expense';
+    myModal.show();
+  }
+
+  function editItem(item) {
+    document.getElementById('itemId').value = item.id;
+    document.getElementById('amount').value = item.amount;
+    document.getElementById('date').value = item.date;
+    document.getElementById('categoryId').value = item.categoryId;
+    document.getElementById('description').value = item.description || '';
+    document.getElementById('modalTitle').textContent = 'Edit Expense';
+    myModal.show();
+  }
+
+  async function saveItem() {
+    const form = document.getElementById('itemForm');
+    if(!form.checkValidity()) { form.reportValidity(); return; }
+    
+    const id = document.getElementById('itemId').value;
+    const payload = {
+      amount: document.getElementById('amount').value,
+      date: document.getElementById('date').value,
+      categoryId: document.getElementById('categoryId').value,
+      description: document.getElementById('description').value
+    };
+
+    UI.showLoading();
+    try {
+      if(id) {
+        await Api.put(`/expenses/${id}?userId=${Api.getUserId()}`, payload);
+        UI.showToast('Expense updated successfully');
+      } else {
+        await Api.post(`/expenses?userId=${Api.getUserId()}`, payload);
+        UI.showToast('Expense added successfully');
+      }
+      myModal.hide();
+      loadData(0);
+    } catch (err) {
+      UI.showToast(err.message, 'error');
+    } finally {
+      UI.hideLoading();
+    }
+  }
+
+  async function deleteItem(id) {
+    if(!confirm('Are you sure you want to delete this record?')) return;
+    UI.showLoading();
+    try {
+      await Api.del(`/expenses/${id}?userId=${Api.getUserId()}`);
+      UI.showToast('Expense deleted successfully');
+      loadData(0);
+    } catch (err) {
+      UI.showToast(err.message, 'error');
+    } finally {
+      UI.hideLoading();
+    }
+  }
+
+  loadCategories().then(() => loadData(0));
+</script>
+</body>
+</html>
