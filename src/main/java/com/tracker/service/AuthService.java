@@ -51,7 +51,8 @@ public class AuthService {
         User saved = userRepository.save(user);
         log.info("New user registered: {}", saved.getEmail());
 
-        String accessToken = jwtTokenProvider.generateTokenFromEmail(saved.getEmail());
+        // Pass userId and role into token so the JWT carries full user context
+        String accessToken = jwtTokenProvider.generateTokenFromEmail(saved.getEmail(), saved.getId(), saved.getRole());
         String refreshToken = createRefreshToken(saved);
 
         return AuthResponse.builder()
@@ -60,6 +61,7 @@ public class AuthService {
                 .email(saved.getEmail())
                 .role(saved.getRole())
                 .accessToken(accessToken)
+                .token(accessToken)  // alias for Postman compatibility
                 .refreshToken(refreshToken)
                 .tokenType("Bearer")
                 .message("User registered successfully")
@@ -74,6 +76,7 @@ public class AuthService {
         User user = userRepository.findByEmail(request.getEmail())
                 .orElseThrow(() -> new BadRequestException("User not found"));
 
+        // generateToken from Authentication uses UserPrincipal which has userId+role
         String accessToken = jwtTokenProvider.generateToken(authentication);
         String refreshToken = createRefreshToken(user);
 
@@ -85,6 +88,7 @@ public class AuthService {
                 .email(user.getEmail())
                 .role(user.getRole())
                 .accessToken(accessToken)
+                .token(accessToken)  // alias for Postman compatibility
                 .refreshToken(refreshToken)
                 .tokenType("Bearer")
                 .message("Login successful")
@@ -102,7 +106,7 @@ public class AuthService {
         }
 
         User user = token.getUser();
-        String newAccessToken = jwtTokenProvider.generateTokenFromEmail(user.getEmail());
+        String newAccessToken = jwtTokenProvider.generateTokenFromEmail(user.getEmail(), user.getId(), user.getRole());
 
         return AuthResponse.builder()
                 .userId(user.getId())
@@ -110,6 +114,7 @@ public class AuthService {
                 .email(user.getEmail())
                 .role(user.getRole())
                 .accessToken(newAccessToken)
+                .token(newAccessToken)  // alias for Postman compatibility
                 .refreshToken(refreshTokenValue)
                 .tokenType("Bearer")
                 .message("Token refreshed successfully")

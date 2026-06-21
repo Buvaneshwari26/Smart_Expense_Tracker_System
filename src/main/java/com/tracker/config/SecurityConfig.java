@@ -9,6 +9,7 @@ import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
+import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
@@ -49,7 +50,7 @@ public class SecurityConfig {
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
             .csrf(csrf -> csrf.disable())
-            .cors(cors -> cors.and())
+            .cors(Customizer.withDefaults())
             .sessionManagement(sess -> sess.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
             .authorizeHttpRequests(auth -> auth
                 // Public endpoints
@@ -58,7 +59,11 @@ public class SecurityConfig {
                 .requestMatchers("/*.html", "/css/**", "/js/**", "/images/**", "/").permitAll()
                 .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
                 // Admin-only endpoints
-                .requestMatchers("/api/users/**").hasRole("ADMIN")
+                .requestMatchers(HttpMethod.GET, "/api/users").hasRole("ADMIN")
+                .requestMatchers(HttpMethod.DELETE, "/api/users/{id}").hasRole("ADMIN")
+                // Profile endpoints — any authenticated user can access their own
+                .requestMatchers("/api/users/profile/**").authenticated()
+                .requestMatchers("/api/users/{id}/**").authenticated()
                 // All other API requests require authentication
                 .anyRequest().authenticated()
             )

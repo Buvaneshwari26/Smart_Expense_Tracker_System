@@ -1,5 +1,6 @@
 package com.tracker.dto;
 
+import com.fasterxml.jackson.annotation.JsonAlias;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -15,6 +16,8 @@ public class AuthResponse {
     private String email;
     private String role;
     private String accessToken;
+    @JsonAlias("accessToken")
+    private String token;       // alias — both "accessToken" and "token" work in Postman scripts
     private String refreshToken;
     private String tokenType;
     private String message;

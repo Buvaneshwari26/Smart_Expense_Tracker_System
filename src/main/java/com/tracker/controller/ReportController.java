@@ -1,7 +1,9 @@
 package com.tracker.controller;
 
+import com.tracker.security.SecurityUtils;
 import com.tracker.service.ReportService;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -14,6 +16,7 @@ import java.util.Map;
 @RequestMapping("/api/reports")
 @RequiredArgsConstructor
 @Tag(name = "Reports", description = "Financial reports and analytics")
+@SecurityRequirement(name = "bearerAuth")
 public class ReportController {
 
     private final ReportService reportService;
@@ -21,9 +24,9 @@ public class ReportController {
     @GetMapping("/monthly")
     @Operation(summary = "Get monthly income/expense report")
     public ResponseEntity<Map<String, Object>> getMonthlyReport(
-            @RequestParam Long userId,
             @RequestParam(required = false) Integer month,
             @RequestParam(required = false) Integer year) {
+        Long userId = SecurityUtils.getCurrentUserId();
         LocalDate now = LocalDate.now();
         int m = month != null ? month : now.getMonthValue();
         int y = year != null ? year : now.getYear();
@@ -33,8 +36,8 @@ public class ReportController {
     @GetMapping("/yearly")
     @Operation(summary = "Get yearly income/expense report")
     public ResponseEntity<Map<String, Object>> getYearlyReport(
-            @RequestParam Long userId,
             @RequestParam(required = false) Integer year) {
+        Long userId = SecurityUtils.getCurrentUserId();
         int y = year != null ? year : LocalDate.now().getYear();
         return ResponseEntity.ok(reportService.getYearlyReport(userId, y));
     }
@@ -42,9 +45,9 @@ public class ReportController {
     @GetMapping("/category")
     @Operation(summary = "Get category-wise expense breakdown")
     public ResponseEntity<Map<String, Object>> getCategoryReport(
-            @RequestParam Long userId,
             @RequestParam(required = false) Integer month,
             @RequestParam(required = false) Integer year) {
+        Long userId = SecurityUtils.getCurrentUserId();
         LocalDate now = LocalDate.now();
         int m = month != null ? month : now.getMonthValue();
         int y = year != null ? year : now.getYear();
@@ -54,8 +57,8 @@ public class ReportController {
     @GetMapping("/income-vs-expense")
     @Operation(summary = "Get income vs expense comparison for the year")
     public ResponseEntity<Map<String, Object>> getIncomeVsExpenseReport(
-            @RequestParam Long userId,
             @RequestParam(required = false) Integer year) {
+        Long userId = SecurityUtils.getCurrentUserId();
         int y = year != null ? year : LocalDate.now().getYear();
         return ResponseEntity.ok(reportService.getIncomeVsExpenseReport(userId, y));
     }

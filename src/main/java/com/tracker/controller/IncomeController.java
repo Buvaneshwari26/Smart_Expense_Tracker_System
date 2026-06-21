@@ -1,9 +1,11 @@
 package com.tracker.controller;
 
 import com.tracker.dto.IncomeDTO;
+import com.tracker.security.SecurityUtils;
 import com.tracker.service.ExportService;
 import com.tracker.service.IncomeService;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.*;
@@ -19,6 +21,7 @@ import java.time.LocalDate;
 @RequestMapping("/api/incomes")
 @RequiredArgsConstructor
 @Tag(name = "Incomes", description = "Manage income records with CRUD and export")
+@SecurityRequirement(name = "bearerAuth")
 public class IncomeController {
 
     private final IncomeService incomeService;
@@ -26,45 +29,49 @@ public class IncomeController {
 
     @PostMapping
     @Operation(summary = "Add a new income record")
-    public ResponseEntity<IncomeDTO> addIncome(@RequestParam Long userId, @RequestBody IncomeDTO incomeDTO) {
+    public ResponseEntity<IncomeDTO> addIncome(@RequestBody IncomeDTO incomeDTO) {
+        Long userId = SecurityUtils.getCurrentUserId();
         return new ResponseEntity<>(incomeService.addIncome(userId, incomeDTO), HttpStatus.CREATED);
     }
 
     @GetMapping
     @Operation(summary = "Get all incomes with pagination")
     public ResponseEntity<Page<IncomeDTO>> getIncomes(
-            @RequestParam Long userId,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size,
             @RequestParam(defaultValue = "date") String sortBy,
             @RequestParam(defaultValue = "desc") String sortDir) {
+        Long userId = SecurityUtils.getCurrentUserId();
         Sort sort = sortDir.equalsIgnoreCase("asc") ? Sort.by(sortBy).ascending() : Sort.by(sortBy).descending();
         return ResponseEntity.ok(incomeService.getIncomesByUserId(userId, PageRequest.of(page, size, sort)));
     }
 
     @GetMapping("/{id}")
     @Operation(summary = "Get a specific income by ID")
-    public ResponseEntity<IncomeDTO> getIncomeById(@RequestParam Long userId, @PathVariable Long id) {
+    public ResponseEntity<IncomeDTO> getIncomeById(@PathVariable Long id) {
+        Long userId = SecurityUtils.getCurrentUserId();
         return ResponseEntity.ok(incomeService.getIncomeById(userId, id));
     }
 
     @PutMapping("/{id}")
     @Operation(summary = "Update an existing income record")
-    public ResponseEntity<IncomeDTO> updateIncome(@RequestParam Long userId, @PathVariable Long id,
-                                                   @RequestBody IncomeDTO incomeDTO) {
+    public ResponseEntity<IncomeDTO> updateIncome(@PathVariable Long id, @RequestBody IncomeDTO incomeDTO) {
+        Long userId = SecurityUtils.getCurrentUserId();
         return ResponseEntity.ok(incomeService.updateIncome(userId, id, incomeDTO));
     }
 
     @DeleteMapping("/{id}")
     @Operation(summary = "Soft-delete an income record")
-    public ResponseEntity<Void> deleteIncome(@RequestParam Long userId, @PathVariable Long id) {
+    public ResponseEntity<Void> deleteIncome(@PathVariable Long id) {
+        Long userId = SecurityUtils.getCurrentUserId();
         incomeService.deleteIncome(userId, id);
         return ResponseEntity.noContent().build();
     }
 
     @GetMapping("/export/excel")
     @Operation(summary = "Export incomes to Excel (.xlsx)")
-    public ResponseEntity<byte[]> exportToExcel(@RequestParam Long userId) throws IOException {
+    public ResponseEntity<byte[]> exportToExcel() throws IOException {
+        Long userId = SecurityUtils.getCurrentUserId();
         byte[] data = exportService.exportIncomesToExcel(userId);
         return ResponseEntity.ok()
                 .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=incomes.xlsx")
@@ -74,7 +81,8 @@ public class IncomeController {
 
     @GetMapping("/export/csv")
     @Operation(summary = "Export incomes to CSV")
-    public ResponseEntity<byte[]> exportToCsv(@RequestParam Long userId) {
+    public ResponseEntity<byte[]> exportToCsv() {
+        Long userId = SecurityUtils.getCurrentUserId();
         byte[] data = exportService.exportIncomesToCsv(userId);
         return ResponseEntity.ok()
                 .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=incomes.csv")
@@ -85,7 +93,6 @@ public class IncomeController {
     @GetMapping("/search")
     @Operation(summary = "Search and filter incomes dynamically")
     public ResponseEntity<Page<IncomeDTO>> searchIncomes(
-            @RequestParam Long userId,
             @RequestParam(required = false) String keyword,
             @RequestParam(required = false) Long categoryId,
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate,
@@ -96,8 +103,9 @@ public class IncomeController {
             @RequestParam(defaultValue = "10") int size,
             @RequestParam(defaultValue = "date") String sortBy,
             @RequestParam(defaultValue = "desc") String sortDir) {
+        Long userId = SecurityUtils.getCurrentUserId();
         Sort sort = sortDir.equalsIgnoreCase("asc") ? Sort.by(sortBy).ascending() : Sort.by(sortBy).descending();
-        return ResponseEntity.ok(incomeService.searchIncomes(userId, keyword, categoryId, startDate, endDate, minAmount, maxAmount,
-                PageRequest.of(page, size, sort)));
+        return ResponseEntity.ok(incomeService.searchIncomes(userId, keyword, categoryId, startDate, endDate,
+                minAmount, maxAmount, PageRequest.of(page, size, sort)));
     }
 }
