@@ -66,8 +66,8 @@
 									"    var jsonData = pm.response.json();",
 									"    pm.collectionVariables.set('accessToken', jsonData.accessToken);",
 									"    pm.collectionVariables.set('refreshToken', jsonData.refreshToken);",
-									"    if (jsonData.user && jsonData.user.id) {",
-									"        pm.collectionVariables.set('userId', jsonData.user.id);",
+									"    if (jsonData.userId) {",
+									"        pm.collectionVariables.set('userId', jsonData.userId);",
 									"    }",
 									"    console.log('Access token saved successfully');",
 									"}"
