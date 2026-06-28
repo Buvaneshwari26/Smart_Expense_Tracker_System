@@ -8,6 +8,7 @@ import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.*;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -22,7 +23,8 @@ public class BudgetController {
     private final BudgetService budgetService;
 
     @PostMapping
-    @Operation(summary = "Create a new budget")
+    @PreAuthorize("hasAnyRole('ADMIN', 'USER')")
+    @Operation(summary = "Create a new budget (USER and ADMIN only)")
     public ResponseEntity<BudgetDTO> createBudget(@RequestBody BudgetDTO budgetDTO) {
         Long userId = SecurityUtils.getCurrentUserId();
         return new ResponseEntity<>(budgetService.createBudget(userId, budgetDTO), HttpStatus.CREATED);
@@ -43,14 +45,16 @@ public class BudgetController {
     }
 
     @PutMapping("/{id}")
-    @Operation(summary = "Update a budget")
+    @PreAuthorize("hasAnyRole('ADMIN', 'USER')")
+    @Operation(summary = "Update a budget (USER and ADMIN only)")
     public ResponseEntity<BudgetDTO> updateBudget(@PathVariable Long id, @RequestBody BudgetDTO budgetDTO) {
         Long userId = SecurityUtils.getCurrentUserId();
         return ResponseEntity.ok(budgetService.updateBudget(userId, id, budgetDTO));
     }
 
     @DeleteMapping("/{id}")
-    @Operation(summary = "Soft-delete a budget")
+    @PreAuthorize("hasAnyRole('ADMIN', 'USER')")
+    @Operation(summary = "Soft-delete a budget (USER and ADMIN only)")
     public ResponseEntity<Void> deleteBudget(@PathVariable Long id) {
         Long userId = SecurityUtils.getCurrentUserId();
         budgetService.deleteBudget(userId, id);

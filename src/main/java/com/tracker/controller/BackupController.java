@@ -20,7 +20,7 @@ import java.util.List;
 @RequiredArgsConstructor
 @Tag(name = "Admin Backups", description = "Backup export systems (Admin only)")
 @SecurityRequirement(name = "bearerAuth")
-@PreAuthorize("hasRole('ADMIN')")
+@PreAuthorize("hasAnyRole('ADMIN', 'AUDITOR')")
 public class BackupController {
 
     private final UserRepository userRepository;

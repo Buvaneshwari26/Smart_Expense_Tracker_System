@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Admin Panel — Smart Expense Tracker</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"/>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css"/>
+  <link rel="stylesheet" href="css/globals.css"/>
+</head>
+<body>
+<button class="sidebar-toggle d-md-none"><i class="bi bi-list"></i></button>
+<div class="app-layout">
+  <aside class="sidebar">
+    <div class="sidebar-brand">
+      <div class="logo-icon"><i class="bi bi-wallet2"></i></div>
+      <span class="brand-text">ExpenseTracker</span>
+    </div>
+    <nav class="sidebar-nav">
+      <a href="dashboard.html" class="nav-link"><i class="bi bi-grid-1x2"></i><span>Dashboard</span></a>
+      <a href="income.html" class="nav-link"><i class="bi bi-cash-stack"></i><span>Income</span></a>
+      <a href="expense.html" class="nav-link"><i class="bi bi-credit-card"></i><span>Expenses</span></a>
+      <a href="category.html" class="nav-link"><i class="bi bi-tags"></i><span>Categories</span></a>
+      <a href="budget.html" class="nav-link"><i class="bi bi-pie-chart"></i><span>Budgets</span></a>
+      <a href="savings.html" class="nav-link"><i class="bi bi-piggy-bank"></i><span>Savings Goals</span></a>
+      <a href="reports.html" class="nav-link"><i class="bi bi-graph-up"></i><span>Reports</span></a>
+      <a href="profile.html" class="nav-link"><i class="bi bi-person-circle"></i><span>Profile</span></a>
+    </nav>
+    <div class="sidebar-footer">
+      <span id="sidebar-username">User</span>
+      <button onclick="Auth.logout()" class="btn btn-sm btn-outline-danger"><i class="bi bi-box-arrow-right"></i> Logout</button>
+    </div>
+  </aside>
+  <main class="main-content">
+    <!-- Header injected dynamically -->
+
+    <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3 mb-4 animate-in">
+      <div>
+        <h2 class="mb-1">Admin Panel</h2>
+        <p class="text-secondary mb-0">Manage user accounts, assign security roles, and manage system backups</p>
+      </div>
+      <div>
+        <button class="btn btn-glow" id="btn-export-backup" onclick="downloadBackup()">
+          <i class="bi bi-database-down me-2"></i>Export System Backup
+        </button>
+      </div>
+    </div>
+
+    <!-- Search & Filter Controls -->
+    <div class="glass-card mb-4 animate-in">
+      <div class="row g-3">
+        <div class="col-md-6 col-lg-8">
+          <div class="input-group">
+            <span class="input-group-text" style="background:rgba(255,255,255,0.03);border:1px solid var(--glass-border);color:var(--text-secondary);">
+              <i class="bi bi-search"></i>
+            </span>
+            <input type="text" class="form-control" id="search-input" placeholder="Search by name, username, or email..." oninput="filterUsers()"/>
+          </div>
+        </div>
+        <div class="col-md-6 col-lg-4">
+          <select class="form-select" id="role-filter" onchange="filterUsers()">
+            <option value="">All Roles</option>
+            <option value="ADMIN">ADMIN</option>
+            <option value="USER">USER</option>
+            <option value="ANALYST">ANALYST</option>
+            <option value="AUDITOR">AUDITOR</option>
+          </select>
+        </div>
+      </div>
+    </div>
+
+    <!-- Users List Table/Cards -->
+    <div class="glass-card p-0 overflow-hidden animate-in">
+      <div class="table-responsive">
+        <table class="table table-custom align-middle m-0">
+          <thead>
+            <tr>
+              <th scope="col" style="padding-left:1.5rem;">User</th>
+              <th scope="col">Email</th>
+              <th scope="col">Phone</th>
+              <th scope="col">Role</th>
+              <th scope="col">Joined Date</th>
+              <th scope="col" class="text-end admin-write-action" style="padding-right:1.5rem;">Actions</th>
+            </tr>
+          </thead>
+          <tbody id="users-table-body">
+            <!-- Loaded dynamically -->
+          </tbody>
+        </table>
+      </div>
+      <div class="py-3 px-4 d-flex justify-content-between align-items-center" style="border-top:1px solid var(--glass-border);">
+        <span class="text-secondary" style="font-size:0.85rem;" id="user-count-display">Showing 0 users</span>
+      </div>
+    </div>
+  </main>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<script src="js/api.js"></script>
+<script src="js/auth.js"></script>
+<script src="js/ui.js"></script>
+<script>
+  Auth.requireAuth();
+  Auth.requireRole('ADMIN', 'AUDITOR');
+  UI.initSidebar();
+  UI.initHeader();
+
+  // Enforce read-only UI controls for Auditor
+  if (Auth.isAuditor()) {
+    document.querySelectorAll('.admin-write-action').forEach(el => el.remove());
+  }
+
+  let allUsers = [];
+
+  async function loadUsers() {
+    const tbody = document.getElementById('users-table-body');
+    UI.showSkeletonTable(tbody, 5, 6);
+    try {
+      allUsers = await Api.get('/users');
+      renderUsers(allUsers);
+    } catch (err) {
+      UI.showToast(err.message || 'Failed to load users', 'error');
+      tbody.innerHTML = `<tr><td colspan="6" class="text-center text-danger py-4"><i class="bi bi-exclamation-triangle-fill me-2"></i>Failed to load user records.</td></tr>`;
+    }
+  }
+
+  function renderUsers(usersList) {
+    const tbody = document.getElementById('users-table-body');
+    tbody.innerHTML = '';
+    
+    document.getElementById('user-count-display').textContent = `Showing ${usersList.length} of ${allUsers.length} users`;
+
+    if (usersList.length === 0) {
+      tbody.innerHTML = `<tr><td colspan="6" class="text-center text-secondary py-5"><i class="bi bi-people-fill fs-2 d-block mb-2"></i>No users found.</td></tr>`;
+      return;
+    }
+
+    usersList.forEach(user => {
+      const displayName = user.fullName || user.username || 'User';
+      const initials = (displayName || 'U')[0].toUpperCase();
+      const role = user.role || 'USER';
+      const isSelf = String(user.id) === String(Api.getUserId());
+
+      let roleSelect = '';
+      if (Auth.isAdmin() && !isSelf) {
+        roleSelect = `
+          <select class="form-select form-select-sm d-inline-block w-auto" onchange="changeUserRole(${user.id}, this.value)">
+            <option value="ADMIN" ${role === 'ADMIN' ? 'selected' : ''}>ADMIN</option>
+            <option value="USER" ${role === 'USER' ? 'selected' : ''}>USER</option>
+            <option value="ANALYST" ${role === 'ANALYST' ? 'selected' : ''}>ANALYST</option>
+            <option value="AUDITOR" ${role === 'AUDITOR' ? 'selected' : ''}>AUDITOR</option>
+          </select>
+        `;
+      } else {
+        roleSelect = `<span class="badge" style="background:rgba(78,204,163,0.2);color:var(--accent); font-size:0.78rem;">${role}</span>`;
+      }
+
+      let actions = '—';
+      if (Auth.isAdmin() && !isSelf) {
+        actions = `
+          <button class="btn btn-sm btn-outline-danger" onclick="deleteUser(${user.id}, '${displayName}')" title="Delete User">
+            <i class="bi bi-trash"></i>
+          </button>
+        `;
+      }
+
+      const rowHtml = `
+        <tr class="animate-in">
+          <td style="padding-left:1.5rem;">
+            <div class="d-flex align-items-center gap-3">
+              <div style="
+                width:40px;height:40px;border-radius:50%;
+                background:linear-gradient(135deg,var(--accent),#3b82f6);
+                display:flex;align-items:center;justify-content:center;
+                font-weight:700;color:#000;
+              ">${initials}</div>
+              <div>
+                <div class="fw-bold">${displayName} ${isSelf ? '<span class="text-secondary" style="font-size:0.75rem;">(You)</span>' : ''}</div>
+                <div class="text-secondary" style="font-size:0.78rem;">@${user.username || 'username'}</div>
+              </div>
+            </div>
+          </td>
+          <td>${user.email || '—'}</td>
+          <td>${user.phoneNumber || '—'}</td>
+          <td>${roleSelect}</td>
+          <td>${UI.formatDate(user.createdAt)}</td>
+          <td class="text-end admin-write-action" style="padding-right:1.5rem;">${isSelf ? '—' : actions}</td>
+        </tr>
+      `;
+      tbody.insertAdjacentHTML('beforeend', rowHtml);
+    });
+  }
+
+  function filterUsers() {
+    const query = document.getElementById('search-input').value.toLowerCase().trim();
+    const roleVal = document.getElementById('role-filter').value;
+
+    const filtered = allUsers.filter(u => {
+      const matchesSearch = 
+        (u.fullName && u.fullName.toLowerCase().includes(query)) ||
+        (u.username && u.username.toLowerCase().includes(query)) ||
+        (u.email && u.email.toLowerCase().includes(query));
+      
+      const matchesRole = !roleVal || u.role === roleVal;
+      return matchesSearch && matchesRole;
+    });
+
+    renderUsers(filtered);
+  }
+
+  async function changeUserRole(userId, newRole) {
+    UI.showLoading();
+    try {
+      const updated = await Api.patch(`/users/${userId}/role?role=${newRole}`);
+      UI.showToast(`Updated user role to ${newRole}`);
+      // Refresh user list
+      await loadUsers();
+    } catch (err) {
+      UI.showToast(err.message || 'Failed to update role', 'error');
+    } finally {
+      UI.hideLoading();
+    }
+  }
+
+  async function deleteUser(userId, name) {
+    if (!confirm(`Are you sure you want to delete user "${name}"? This action soft-deletes the account and removes their access.`)) {
+      return;
+    }
+    UI.showLoading();
+    try {
+      await Api.del(`/users/${userId}`);
+      UI.showToast(`User "${name}" deleted successfully.`);
+      await loadUsers();
+    } catch (err) {
+      UI.showToast(err.message || 'Failed to delete user', 'error');
+    } finally {
+      UI.hideLoading();
+    }
+  }
+
+  function downloadBackup() {
+    UI.showLoading();
+    Api.download('/admin/backup/export', 'smart-expense-tracker-backup.json')
+      .then(() => {
+        UI.showToast('Backup dump downloaded successfully!');
+      })
+      .catch(err => {
+        UI.showToast(err.message || 'Backup download failed', 'error');
+      })
+      .finally(() => {
+        UI.hideLoading();
+      });
+  }
+
+  loadUsers();
+</script>
+</body>
+</html>

@@ -77,15 +77,146 @@ const UI = {
       sidebar.classList.add('collapsed');
     }
 
+    const user = Auth.getUser();
+    const role = Auth.getRole();
+
+    // Dynamically inject the Admin Panel navigation link for ADMIN/AUDITOR roles if not already present
+    const navContainer = document.querySelector('.sidebar-nav');
+    if (navContainer && (role === 'ADMIN' || role === 'AUDITOR')) {
+      const hasAdminLink = Array.from(navContainer.querySelectorAll('.nav-link'))
+                               .some(link => link.getAttribute('href') === 'admin.html');
+      if (!hasAdminLink) {
+        const adminLink = document.createElement('a');
+        adminLink.href = 'admin.html';
+        adminLink.className = 'nav-link';
+        adminLink.innerHTML = '<i class="bi bi-shield-lock-fill"></i><span>Admin Panel</span>';
+        navContainer.appendChild(adminLink);
+      }
+    }
+
+    // ── Role-based sidebar nav visibility ──────────────────────────────────
+    const rolePages = {
+      ADMIN:   ['dashboard.html','income.html','expense.html','category.html','budget.html','savings.html','reports.html','profile.html','admin.html'],
+      USER:    ['dashboard.html','income.html','expense.html','category.html','budget.html','savings.html','reports.html','profile.html'],
+      ANALYST: ['dashboard.html','reports.html','profile.html'],
+      AUDITOR: ['dashboard.html','reports.html','profile.html','admin.html']
+    };
+    const allowedPages = rolePages[role] || rolePages['USER'];
+
+    // Hide nav links the current role cannot access
+    document.querySelectorAll('.sidebar-nav .nav-link').forEach(link => {
+      const href = link.getAttribute('href');
+      if (!allowedPages.includes(href)) {
+        link.style.display = 'none';
+      } else {
+        link.style.display = 'flex'; // Ensure allowed ones are visible
+      }
+    });
+
     // Set active nav link
     const currentPage = window.location.pathname.split('/').pop() || 'dashboard.html';
     document.querySelectorAll('.nav-link').forEach(link => {
       if (link.getAttribute('href') === currentPage) link.classList.add('active');
     });
-    // Set username in sidebar
-    const user = Auth.getUser();
+
+    // Set username and role badge in sidebar footer
     const el = document.getElementById('sidebar-username');
-    if (el) el.textContent = user.username || 'User';
+    if (el) {
+      el.textContent = user.fullName || user.username || 'User';
+    }
+
+    // Add role badge next to username in sidebar if not already present
+    const sidebarFooter = document.querySelector('.sidebar-footer');
+    if (sidebarFooter && !document.getElementById('sidebar-role-badge')) {
+      const badge = document.createElement('span');
+      badge.id = 'sidebar-role-badge';
+      badge.className = 'badge ms-2';
+      badge.style.cssText = 'background:rgba(78,204,163,0.2);color:var(--accent);font-size:0.65rem;vertical-align:middle;';
+      badge.textContent = role;
+      const usernameEl = document.getElementById('sidebar-username');
+      if (usernameEl) usernameEl.after(badge);
+    }
+
+    // Enforce read-only mode dynamically for ANALYST and AUDITOR roles
+    this.enforceReadOnly();
+  },
+
+  enforceReadOnly() {
+    if (!Auth.isReadOnly()) return;
+
+    const enforce = () => {
+      // 1. Hide buttons/links with write keywords
+      const writeKeywords = [/add/i, /save/i, /create/i, /delete/i, /edit/i, /update/i, /remove/i, /new/i, /upload/i];
+      document.querySelectorAll('button, a.btn, input[type="submit"], input[type="button"], #empty-state-action').forEach(btn => {
+        const text = btn.textContent || btn.value || '';
+        // Skip safe controls like export/download reports or filters
+        if (text.toLowerCase().includes('logout') || 
+            text.toLowerCase().includes('theme') || 
+            text.toLowerCase().includes('export') || 
+            text.toLowerCase().includes('download') || 
+            text.toLowerCase().includes('search') || 
+            text.toLowerCase().includes('clear')) {
+          return;
+        }
+
+        const hasWriteKeyword = writeKeywords.some(regex => regex.test(text));
+        const hasWriteIcon = btn.querySelector('.bi-plus-lg, .bi-pencil, .bi-trash, .bi-check-lg, .bi-plus-circle, .bi-pencil-square');
+        const hasWriteClass = btn.classList.contains('write-only') || 
+                              btn.classList.contains('btn-outline-danger') || 
+                              btn.classList.contains('btn-outline-info') ||
+                              btn.classList.contains('btn-danger');
+
+        if (hasWriteKeyword || hasWriteIcon || hasWriteClass) {
+          btn.remove();
+        }
+      });
+
+      // 2. Hide edit/delete Actions columns inside tables
+      document.querySelectorAll('table').forEach(table => {
+        let actionColIndex = -1;
+        table.querySelectorAll('thead th').forEach((th, idx) => {
+          const text = th.textContent.trim().toLowerCase();
+          if (text === 'actions' || text === 'action') {
+            actionColIndex = idx;
+            th.style.display = 'none';
+          }
+        });
+
+        if (actionColIndex !== -1) {
+          table.querySelectorAll('tbody tr').forEach(tr => {
+            const cells = tr.querySelectorAll('td');
+            if (cells[actionColIndex]) {
+              cells[actionColIndex].style.display = 'none';
+            }
+          });
+        }
+      });
+
+      // 3. Remove any elements explicitly marked as write-only
+      document.querySelectorAll('.write-only').forEach(el => el.remove());
+    };
+
+    // Run immediately on page load
+    enforce();
+
+    // Set up MutationObserver to enforce constraints when data elements are rendered dynamically
+    const observer = new MutationObserver(enforce);
+    observer.observe(document.body, { childList: true, subtree: true });
+  },
+
+  renderEmptyState(container, title, subtitle, iconClass = 'bi-wallet2', actionText = null, actionCallback = null) {
+    container.innerHTML = `
+      <div class="empty-state-container animate-in">
+        <div class="empty-state-icon"><i class="bi ${iconClass}"></i></div>
+        <div class="empty-state-title">${title}</div>
+        <div class="empty-state-subtitle">${subtitle}</div>
+        ${actionText ? `<button class="btn btn-glow btn-sm" id="empty-state-action"><i class="bi bi-plus-lg me-1"></i>${actionText}</button>` : ''}
+      </div>
+    `;
+    if (actionText && actionCallback) {
+      const btn = container.querySelector('#empty-state-action');
+      if (btn) btn.addEventListener('click', actionCallback);
+    }
   },
 
   initHeader() {
@@ -96,7 +227,7 @@ const UI = {
     if (document.querySelector('.dashboard-header')) return;
 
     const user = Auth.getUser();
-    const username = user.username || 'User';
+    const displayName = user.fullName || user.username || 'User';
     
     // Determine greeting
     const hours = new Date().getHours();
@@ -111,7 +242,7 @@ const UI = {
     const headerHtml = `
       <header class="dashboard-header animate-in">
         <div class="header-welcome">
-          <h2>${greeting}, ${username} 👋</h2>
+          <h2>${greeting}, ${displayName} 👋</h2>
           <p id="header-datetime"><i class="bi bi-calendar3 me-2"></i>Loading date & time...</p>
         </div>
         <div class="header-actions">

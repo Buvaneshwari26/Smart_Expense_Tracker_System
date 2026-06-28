@@ -8,6 +8,7 @@ import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.*;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -22,7 +23,8 @@ public class CategoryController {
     private final CategoryService categoryService;
 
     @PostMapping
-    @Operation(summary = "Create a new category")
+    @PreAuthorize("hasAnyRole('ADMIN', 'USER')")
+    @Operation(summary = "Create a new category (USER and ADMIN only)")
     public ResponseEntity<CategoryDTO> createCategory(@RequestBody CategoryDTO categoryDTO) {
         Long userId = SecurityUtils.getCurrentUserId();
         return new ResponseEntity<>(categoryService.createCategory(userId, categoryDTO), HttpStatus.CREATED);
@@ -49,14 +51,16 @@ public class CategoryController {
     }
 
     @PutMapping("/{id}")
-    @Operation(summary = "Update a category")
+    @PreAuthorize("hasAnyRole('ADMIN', 'USER')")
+    @Operation(summary = "Update a category (USER and ADMIN only)")
     public ResponseEntity<CategoryDTO> updateCategory(@PathVariable Long id, @RequestBody CategoryDTO categoryDTO) {
         Long userId = SecurityUtils.getCurrentUserId();
         return ResponseEntity.ok(categoryService.updateCategory(userId, id, categoryDTO));
     }
 
     @DeleteMapping("/{id}")
-    @Operation(summary = "Soft-delete a category")
+    @PreAuthorize("hasRole('ADMIN')")
+    @Operation(summary = "Delete a category (ADMIN only)")
     public ResponseEntity<Void> deleteCategory(@PathVariable Long id) {
         Long userId = SecurityUtils.getCurrentUserId();
         categoryService.deleteCategory(userId, id);

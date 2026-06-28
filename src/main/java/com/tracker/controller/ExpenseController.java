@@ -13,6 +13,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.*;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.io.IOException;
@@ -31,7 +32,8 @@ public class ExpenseController {
     private final ExportService exportService;
 
     @PostMapping
-    @Operation(summary = "Add a new expense")
+    @PreAuthorize("hasAnyRole('ADMIN', 'USER')")
+    @Operation(summary = "Add a new expense (USER and ADMIN only)")
     public ResponseEntity<ExpenseDTO> addExpense(@RequestBody ExpenseDTO expenseDTO) {
         Long userId = SecurityUtils.getCurrentUserId();
         return new ResponseEntity<>(expenseService.addExpense(userId, expenseDTO), HttpStatus.CREATED);
@@ -57,14 +59,16 @@ public class ExpenseController {
     }
 
     @PutMapping("/{id}")
-    @Operation(summary = "Update an existing expense")
+    @PreAuthorize("hasAnyRole('ADMIN', 'USER')")
+    @Operation(summary = "Update an existing expense (USER and ADMIN only)")
     public ResponseEntity<ExpenseDTO> updateExpense(@PathVariable Long id, @RequestBody ExpenseDTO expenseDTO) {
         Long userId = SecurityUtils.getCurrentUserId();
         return ResponseEntity.ok(expenseService.updateExpense(userId, id, expenseDTO));
     }
 
     @DeleteMapping("/{id}")
-    @Operation(summary = "Soft-delete an expense")
+    @PreAuthorize("hasAnyRole('ADMIN', 'USER')")
+    @Operation(summary = "Soft-delete an expense (USER and ADMIN only)")
     public ResponseEntity<Void> deleteExpense(@PathVariable Long id) {
         Long userId = SecurityUtils.getCurrentUserId();
         expenseService.deleteExpense(userId, id);

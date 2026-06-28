@@ -9,6 +9,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.*;
 import org.springframework.http.*;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.math.BigDecimal;
@@ -23,7 +24,8 @@ public class SavingsGoalController {
     private final SavingsGoalService savingsGoalService;
 
     @PostMapping
-    @Operation(summary = "Create a new savings goal")
+    @PreAuthorize("hasAnyRole('ADMIN', 'USER')")
+    @Operation(summary = "Create a new savings goal (USER and ADMIN only)")
     public ResponseEntity<SavingsGoalDTO> createGoal(@RequestBody SavingsGoalDTO goalDTO) {
         Long userId = SecurityUtils.getCurrentUserId();
         return new ResponseEntity<>(savingsGoalService.createGoal(userId, goalDTO), HttpStatus.CREATED);
@@ -46,21 +48,24 @@ public class SavingsGoalController {
     }
 
     @PutMapping("/{id}")
-    @Operation(summary = "Update a savings goal")
+    @PreAuthorize("hasAnyRole('ADMIN', 'USER')")
+    @Operation(summary = "Update a savings goal (USER and ADMIN only)")
     public ResponseEntity<SavingsGoalDTO> updateGoal(@PathVariable Long id, @RequestBody SavingsGoalDTO goalDTO) {
         Long userId = SecurityUtils.getCurrentUserId();
         return ResponseEntity.ok(savingsGoalService.updateGoal(userId, id, goalDTO));
     }
 
     @PatchMapping("/{id}/add-savings")
-    @Operation(summary = "Add or subtract amount from a savings goal")
+    @PreAuthorize("hasAnyRole('ADMIN', 'USER')")
+    @Operation(summary = "Add or subtract amount from a savings goal (USER and ADMIN only)")
     public ResponseEntity<SavingsGoalDTO> addSavings(@PathVariable Long id, @RequestParam BigDecimal amount) {
         Long userId = SecurityUtils.getCurrentUserId();
         return ResponseEntity.ok(savingsGoalService.addSavings(userId, id, amount));
     }
 
     @DeleteMapping("/{id}")
-    @Operation(summary = "Soft-delete a savings goal")
+    @PreAuthorize("hasAnyRole('ADMIN', 'USER')")
+    @Operation(summary = "Soft-delete a savings goal (USER and ADMIN only)")
     public ResponseEntity<Void> deleteGoal(@PathVariable Long id) {
         Long userId = SecurityUtils.getCurrentUserId();
         savingsGoalService.deleteGoal(userId, id);

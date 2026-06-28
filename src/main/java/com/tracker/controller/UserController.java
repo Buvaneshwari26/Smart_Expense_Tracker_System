@@ -1,5 +1,6 @@
 package com.tracker.controller;
 
+import com.tracker.dto.ChangePasswordRequest;
 import com.tracker.dto.UserProfileDTO;
 import com.tracker.security.SecurityUtils;
 import com.tracker.service.UserService;
@@ -15,24 +16,44 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 import java.util.Map;
 
+/**
+ * User management and profile endpoints.
+ *
+ * RBAC Summary:
+ *  GET  /api/users          → ADMIN, AUDITOR
+ *  DELETE /api/users/{id}   → ADMIN only
+ *  GET  /api/users/{id}     → ADMIN, AUDITOR, or own profile (USER, ANALYST)
+ *  PUT  /api/users/{id}     → ADMIN or own profile (USER)
+ *  POST /api/users/{id}/change-password → own profile only (USER, ADMIN)
+ *  GET  /api/users/profile  → any authenticated user
+ *  PUT  /api/users/profile  → USER, ADMIN
+ */
 @RestController
 @RequestMapping("/api/users")
 @RequiredArgsConstructor
-@Tag(name = "Users", description = "User management (Admin) and Profile management")
+@Tag(name = "Users", description = "User management (Admin/Auditor) and Profile management")
 @SecurityRequirement(name = "bearerAuth")
 public class UserController {
 
     private final UserService userService;
 
-    // ── Admin-only endpoints ──────────────────────────────────────────────────
+    // ── Admin + Auditor: list all users ──────────────────────────────────────
 
+    /**
+     * GET /api/users — get all users.
+     * Accessible by ADMIN (full details) and AUDITOR (read-only compliance view).
+     */
     @GetMapping
-    @PreAuthorize("hasRole('ADMIN')")
-    @Operation(summary = "Get all users (Admin only)")
+    @PreAuthorize("hasAnyRole('ADMIN', 'AUDITOR')")
+    @Operation(summary = "Get all users (Admin/Auditor only)")
     public ResponseEntity<List<UserProfileDTO>> getAllUsers() {
         return ResponseEntity.ok(userService.getAllUsers());
     }
 
+    /**
+     * DELETE /api/users/{id} — soft-delete a user.
+     * Accessible by ADMIN only.
+     */
     @DeleteMapping("/{id}")
     @PreAuthorize("hasRole('ADMIN')")
     @Operation(summary = "Soft-delete a user (Admin only)")
@@ -41,13 +62,14 @@ public class UserController {
         return ResponseEntity.noContent().build();
     }
 
-    // ── Profile endpoints — any authenticated user accessing their own profile ─
+    // ── Current user profile shortcuts ────────────────────────────────────────
 
     /**
      * GET /api/users/profile — returns the profile of the currently logged-in user.
+     * All roles can access.
      */
     @GetMapping("/profile")
-    @Operation(summary = "Get current user's profile")
+    @Operation(summary = "Get current user's own profile")
     public ResponseEntity<UserProfileDTO> getMyProfile() {
         Long userId = SecurityUtils.getCurrentUserId();
         return ResponseEntity.ok(userService.getProfile(userId));
@@ -55,41 +77,53 @@ public class UserController {
 
     /**
      * PUT /api/users/profile — update the currently logged-in user's profile.
+     * Only USER and ADMIN can update (ANALYST and AUDITOR are read-only).
      */
     @PutMapping("/profile")
-    @Operation(summary = "Update current user's profile")
+    @PreAuthorize("hasAnyRole('ADMIN', 'USER')")
+    @Operation(summary = "Update current user's own profile")
     public ResponseEntity<UserProfileDTO> updateMyProfile(@RequestBody UserProfileDTO dto) {
         Long userId = SecurityUtils.getCurrentUserId();
         return ResponseEntity.ok(userService.updateProfile(userId, dto));
     }
 
     /**
-     * PATCH /api/users/profile/change-password — change password for the currently logged-in user.
+     * POST /api/users/profile/change-password — change password (body-based for security).
+     * Only USER and ADMIN.
      */
-    @PatchMapping("/profile/change-password")
+    @PostMapping("/profile/change-password")
+    @PreAuthorize("hasAnyRole('ADMIN', 'USER')")
     @Operation(summary = "Change current user's password")
-    public ResponseEntity<Map<String, String>> changeMyPassword(
-            @RequestParam String currentPassword,
-            @RequestParam String newPassword) {
+    public ResponseEntity<Map<String, String>> changeMyPassword(@RequestBody ChangePasswordRequest req) {
         Long userId = SecurityUtils.getCurrentUserId();
-        userService.changePassword(userId, currentPassword, newPassword);
+        userService.changePassword(userId, req.getCurrentPassword(), req.getNewPassword());
         return ResponseEntity.ok(Map.of("message", "Password changed successfully"));
     }
 
-    // ── Admin or self — access by ID ─────────────────────────────────────────
+    // ── Admin / self — access by explicit ID ─────────────────────────────────
 
+    /**
+     * GET /api/users/{id} — get user by ID.
+     * ADMIN and AUDITOR can access any user; USER/ANALYST can only access their own.
+     */
     @GetMapping("/{id}")
-    @Operation(summary = "Get user by ID (Admin or own profile)")
+    @Operation(summary = "Get user by ID (Admin/Auditor full access; own profile otherwise)")
     public ResponseEntity<UserProfileDTO> getUserById(@PathVariable Long id) {
         Long currentUserId = SecurityUtils.getCurrentUserId();
         String role = SecurityUtils.getCurrentUser().getRole();
-        if (!"ADMIN".equals(role) && !currentUserId.equals(id)) {
+        // ADMIN and AUDITOR can see any user; others can only see their own
+        if (!"ADMIN".equals(role) && !"AUDITOR".equals(role) && !currentUserId.equals(id)) {
             throw new AccessDeniedException("You can only view your own profile");
         }
         return ResponseEntity.ok(userService.getProfile(id));
     }
 
+    /**
+     * PUT /api/users/{id} — update user profile by ID.
+     * Only ADMIN or the user themselves.
+     */
     @PutMapping("/{id}")
+    @PreAuthorize("hasAnyRole('ADMIN', 'USER')")
     @Operation(summary = "Update user profile by ID (Admin or own profile)")
     public ResponseEntity<UserProfileDTO> updateProfile(@PathVariable Long id, @RequestBody UserProfileDTO dto) {
         Long currentUserId = SecurityUtils.getCurrentUserId();
@@ -100,17 +134,34 @@ public class UserController {
         return ResponseEntity.ok(userService.updateProfile(id, dto));
     }
 
-    @PatchMapping("/{id}/change-password")
+    /**
+     * POST /api/users/{id}/change-password — change password by user ID.
+     * Only ADMIN or the user themselves can change their password.
+     */
+    @PostMapping("/{id}/change-password")
+    @PreAuthorize("hasAnyRole('ADMIN', 'USER')")
     @Operation(summary = "Change password by user ID (own account only)")
     public ResponseEntity<Map<String, String>> changePassword(
             @PathVariable Long id,
-            @RequestParam String currentPassword,
-            @RequestParam String newPassword) {
+            @RequestBody ChangePasswordRequest req) {
         Long currentUserId = SecurityUtils.getCurrentUserId();
-        if (!currentUserId.equals(id)) {
+        String role = SecurityUtils.getCurrentUser().getRole();
+        if (!"ADMIN".equals(role) && !currentUserId.equals(id)) {
             throw new AccessDeniedException("You can only change your own password");
         }
-        userService.changePassword(id, currentPassword, newPassword);
+        userService.changePassword(id, req.getCurrentPassword(), req.getNewPassword());
         return ResponseEntity.ok(Map.of("message", "Password changed successfully"));
+    }
+
+    /**
+     * PATCH /api/users/{id}/role — assign role to a user (Admin only).
+     */
+    @PatchMapping("/{id}/role")
+    @PreAuthorize("hasRole('ADMIN')")
+    @Operation(summary = "Assign role to a user (Admin only)")
+    public ResponseEntity<UserProfileDTO> assignRole(
+            @PathVariable Long id,
+            @RequestParam String role) {
+        return ResponseEntity.ok(userService.assignRole(id, role));
     }
 }

@@ -121,13 +121,9 @@
           <div id="tab-profile" class="tab-pane p-4 glass-form">
             <form id="profileForm">
               <div class="row g-3">
-                <div class="col-md-6">
-                  <label class="form-label">First Name</label>
-                  <input type="text" class="form-control" id="firstName" placeholder="First Name">
-                </div>
-                <div class="col-md-6">
-                  <label class="form-label">Last Name</label>
-                  <input type="text" class="form-control" id="lastName" placeholder="Last Name">
+                <div class="col-md-12">
+                  <label class="form-label">Full Name</label>
+                  <input type="text" class="form-control" id="fullName" placeholder="Full Name">
                 </div>
                 <div class="col-md-12">
                   <label class="form-label">Username</label>
@@ -135,14 +131,15 @@
                 </div>
                 <div class="col-md-12">
                   <label class="form-label">Email</label>
-                  <input type="email" class="form-control" id="email" placeholder="your@email.com">
+                  <input type="email" class="form-control" id="email" placeholder="your@email.com" readonly>
+                  <small class="text-secondary">Email cannot be changed for security reasons.</small>
                 </div>
                 <div class="col-md-12">
                   <label class="form-label">Phone</label>
                   <input type="tel" class="form-control" id="phone" placeholder="+91 99999 00000">
                 </div>
                 <div class="col-12 d-flex justify-content-end">
-                  <button type="button" class="btn btn-glow" onclick="saveProfile()"><i class="bi bi-check-lg me-1"></i>Save Changes</button>
+                  <button type="button" class="btn btn-glow write-only" onclick="saveProfile()"><i class="bi bi-check-lg me-1"></i>Save Changes</button>
                 </div>
               </div>
             </form>
@@ -164,7 +161,7 @@
                 <label class="form-label">Confirm New Password</label>
                 <input type="password" class="form-control" id="confirmPassword" placeholder="Confirm new password">
               </div>
-              <button type="button" class="btn btn-glow" onclick="changePassword()"><i class="bi bi-shield-check me-1"></i>Update Password</button>
+              <button type="button" class="btn btn-glow write-only" onclick="changePassword()"><i class="bi bi-shield-check me-1"></i>Update Password</button>
             </form>
 
             <!-- Active Sessions -->
@@ -233,12 +230,12 @@
             <div class="glass-card mb-3" style="border:1px solid rgba(233,69,96,0.3);">
               <h6 class="fw-600 mb-1" style="color:var(--expense-red);"><i class="bi bi-trash me-2"></i>Delete All Data</h6>
               <p class="text-secondary mb-3" style="font-size:0.85rem;">Permanently delete all your transactions, budgets, and goals. This cannot be undone.</p>
-              <button class="btn btn-sm btn-outline-danger" onclick="confirmDeleteData()"><i class="bi bi-trash me-1"></i>Delete All My Data</button>
+              <button class="btn btn-sm btn-outline-danger write-only" onclick="confirmDeleteData()"><i class="bi bi-trash me-1"></i>Delete All My Data</button>
             </div>
             <div class="glass-card" style="border:1px solid rgba(233,69,96,0.5);">
               <h6 class="fw-600 mb-1" style="color:var(--expense-red);"><i class="bi bi-person-x me-2"></i>Delete Account</h6>
               <p class="text-secondary mb-3" style="font-size:0.85rem;">Permanently delete your account and all associated data. This action is irreversible.</p>
-              <button class="btn btn-sm btn-danger" onclick="confirmDeleteAccount()"><i class="bi bi-person-x me-1"></i>Delete My Account</button>
+              <button class="btn btn-sm btn-danger write-only" onclick="confirmDeleteAccount()"><i class="bi bi-person-x me-1"></i>Delete My Account</button>
             </div>
           </div>
         </div>
@@ -255,6 +252,9 @@
   Auth.requireAuth();
   UI.initSidebar();
   UI.initHeader();
+
+  // Enforce read-only mode for ANALYST/AUDITOR (hide Save/Delete buttons)
+  Auth.enforceReadOnly('.write-only');
 
   const style = document.createElement('style');
   style.textContent = `
@@ -274,28 +274,42 @@
     return false;
   }
 
+  /**
+   * Load profile from API → populate form fields and sidebar card.
+   * Falls back to localStorage data if the API call fails.
+   */
   async function loadProfile() {
     try {
       const user = await Api.get(`/users/${Api.getUserId()}`);
-      document.getElementById('profile-name').textContent = user.username || `${user.firstName || ''} ${user.lastName || ''}`.trim() || '—';
-      document.getElementById('profile-email').textContent = user.email || '—';
-      document.getElementById('profile-role').textContent = user.role || 'USER';
-      document.getElementById('avatar-display').textContent = (user.username || user.email || 'U')[0].toUpperCase();
-      document.getElementById('firstName').value = user.firstName || '';
-      document.getElementById('lastName').value = user.lastName || '';
-      document.getElementById('username').value = user.username || '';
-      document.getElementById('email').value = user.email || '';
-      document.getElementById('phone').value = user.phone || '';
+      populateProfileUI(user);
     } catch (err) {
       // Fallback to localStorage
       const u = Auth.getUser();
-      document.getElementById('profile-name').textContent = u.username || '—';
+      document.getElementById('profile-name').textContent = u.fullName || u.username || '—';
       document.getElementById('profile-email').textContent = u.email || '—';
       document.getElementById('profile-role').textContent = u.role || 'USER';
-      document.getElementById('avatar-display').textContent = (u.username || u.email || 'U')[0].toUpperCase();
+      document.getElementById('avatar-display').textContent = (u.fullName || u.username || u.email || 'U')[0].toUpperCase();
+      document.getElementById('fullName').value = u.fullName || '';
       document.getElementById('username').value = u.username || '';
       document.getElementById('email').value = u.email || '';
     }
+  }
+
+  /**
+   * Populate all profile UI elements from an API response object.
+   */
+  function populateProfileUI(user) {
+    const displayName = user.fullName || user.username || '—';
+    document.getElementById('profile-name').textContent = displayName;
+    document.getElementById('profile-email').textContent = user.email || '—';
+    document.getElementById('profile-role').textContent = user.role || 'USER';
+    document.getElementById('avatar-display').textContent = (displayName || 'U')[0].toUpperCase();
+
+    // Form fields
+    document.getElementById('fullName').value = user.fullName || '';
+    document.getElementById('username').value = user.username || '';
+    document.getElementById('email').value = user.email || '';
+    document.getElementById('phone').value = user.phoneNumber || user.phone || '';
   }
 
   async function loadStats() {
@@ -308,39 +322,65 @@
     } catch (err) { console.error(err); }
   }
 
+  /**
+   * Save profile — sends the updated fields to the API, then
+   * syncs localStorage and re-renders sidebar/header immediately.
+   */
   async function saveProfile() {
     const payload = {
-      firstName: document.getElementById('firstName').value,
-      lastName: document.getElementById('lastName').value,
-      username: document.getElementById('username').value,
-      email: document.getElementById('email').value,
-      phone: document.getElementById('phone').value
+      fullName:    document.getElementById('fullName').value.trim(),
+      username:    document.getElementById('username').value.trim(),
+      phoneNumber: document.getElementById('phone').value.trim()
     };
+
+    // Basic client-side validation
+    if (!payload.fullName) { UI.showToast('Full name is required', 'error'); return; }
+    if (!payload.username) { UI.showToast('Username is required', 'error'); return; }
+
     UI.showLoading();
     try {
-      await Api.put(`/users/${Api.getUserId()}`, payload);
-      if (payload.username) localStorage.setItem('username', payload.username);
-      if (payload.email) localStorage.setItem('email', payload.email);
+      const updated = await Api.put(`/users/${Api.getUserId()}`, payload);
+
+      // ── Real-time sync: update localStorage + UI immediately ──────────
+      Auth.syncProfile(updated);
+
+      // Re-populate the profile card with the latest data
+      populateProfileUI(updated);
+
       UI.showToast('Profile updated successfully!');
-      loadProfile();
-    } catch (err) { UI.showToast(err.message, 'error'); }
-    finally { UI.hideLoading(); }
+    } catch (err) {
+      UI.showToast(err.message || 'Failed to update profile', 'error');
+    } finally {
+      UI.hideLoading();
+    }
   }
 
+  /**
+   * Change password — sends JSON body to the API (not query params).
+   */
   async function changePassword() {
     const current = document.getElementById('currentPassword').value;
-    const newPw = document.getElementById('newPassword').value;
+    const newPw   = document.getElementById('newPassword').value;
     const confirm = document.getElementById('confirmPassword').value;
+
     if (!current || !newPw || !confirm) { UI.showToast('All fields are required', 'error'); return; }
-    if (newPw !== confirm) { UI.showToast('Passwords do not match', 'error'); return; }
-    if (newPw.length < 8) { UI.showToast('Password must be at least 8 characters', 'error'); return; }
+    if (newPw !== confirm)              { UI.showToast('Passwords do not match', 'error'); return; }
+    if (newPw.length < 8)              { UI.showToast('Password must be at least 8 characters', 'error'); return; }
+
     UI.showLoading();
     try {
-      await Api.post(`/users/${Api.getUserId()}/change-password`, { currentPassword: current, newPassword: newPw });
-      UI.showToast('Password updated!');
+      await Api.post(`/users/${Api.getUserId()}/change-password`, {
+        currentPassword: current,
+        newPassword: newPw
+      });
+      UI.showToast('Password updated successfully!');
       document.getElementById('passwordForm').reset();
-    } catch (err) { UI.showToast(err.message, 'error'); }
-    finally { UI.hideLoading(); }
+      document.getElementById('pw-strength').innerHTML = '';
+    } catch (err) {
+      UI.showToast(err.message || 'Failed to change password', 'error');
+    } finally {
+      UI.hideLoading();
+    }
   }
 
   // Password strength indicator

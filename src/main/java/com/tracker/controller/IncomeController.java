@@ -11,6 +11,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.*;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.*;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.io.IOException;
@@ -28,7 +29,8 @@ public class IncomeController {
     private final ExportService exportService;
 
     @PostMapping
-    @Operation(summary = "Add a new income record")
+    @PreAuthorize("hasAnyRole('ADMIN', 'USER')")
+    @Operation(summary = "Add a new income record (USER and ADMIN only)")
     public ResponseEntity<IncomeDTO> addIncome(@RequestBody IncomeDTO incomeDTO) {
         Long userId = SecurityUtils.getCurrentUserId();
         return new ResponseEntity<>(incomeService.addIncome(userId, incomeDTO), HttpStatus.CREATED);
@@ -54,14 +56,16 @@ public class IncomeController {
     }
 
     @PutMapping("/{id}")
-    @Operation(summary = "Update an existing income record")
+    @PreAuthorize("hasAnyRole('ADMIN', 'USER')")
+    @Operation(summary = "Update an existing income record (USER and ADMIN only)")
     public ResponseEntity<IncomeDTO> updateIncome(@PathVariable Long id, @RequestBody IncomeDTO incomeDTO) {
         Long userId = SecurityUtils.getCurrentUserId();
         return ResponseEntity.ok(incomeService.updateIncome(userId, id, incomeDTO));
     }
 
     @DeleteMapping("/{id}")
-    @Operation(summary = "Soft-delete an income record")
+    @PreAuthorize("hasAnyRole('ADMIN', 'USER')")
+    @Operation(summary = "Soft-delete an income record (USER and ADMIN only)")
     public ResponseEntity<Void> deleteIncome(@PathVariable Long id) {
         Long userId = SecurityUtils.getCurrentUserId();
         incomeService.deleteIncome(userId, id);

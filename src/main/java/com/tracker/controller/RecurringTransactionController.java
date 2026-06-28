@@ -10,6 +10,7 @@ import lombok.Data;
 import lombok.RequiredArgsConstructor;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDate;
@@ -20,6 +21,7 @@ import java.util.List;
 @RequiredArgsConstructor
 @Tag(name = "Recurring Transactions", description = "Schedules for recurring expenses")
 @SecurityRequirement(name = "bearerAuth")
+@PreAuthorize("hasAnyRole('ADMIN', 'USER')")
 public class RecurringTransactionController {
 
     private final RecurringTransactionService recurringTransactionService;
@@ -57,7 +59,8 @@ public class RecurringTransactionController {
     }
 
     @PostMapping("/trigger-process")
-    @Operation(summary = "Manually trigger the processing check of pending schedules")
+    @PreAuthorize("hasRole('ADMIN')")
+    @Operation(summary = "Manually trigger the processing check of pending schedules (Admin only)")
     public ResponseEntity<String> triggerProcess() {
         recurringTransactionService.processRecurringTransactions();
         return ResponseEntity.ok("Scheduler processed successfully");
