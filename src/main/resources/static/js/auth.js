@@ -46,19 +46,28 @@ const Auth = {
     if (profileDTO.phoneNumber) localStorage.setItem('phone',     profileDTO.phoneNumber);
     if (profileDTO.role)        localStorage.setItem('role',      profileDTO.role);
 
-    // Re-render any header/sidebar elements that show username
-    const sidebarEl = document.getElementById('sidebar-username');
-    if (sidebarEl) sidebarEl.textContent = profileDTO.username || sidebarEl.textContent;
+    // Determine the best display name
+    const displayName = profileDTO.fullName || profileDTO.username || '';
 
-    const headerEl = document.querySelector('.dashboard-header h2');
-    if (headerEl) {
-      const displayName = profileDTO.fullName || profileDTO.username || '';
-      if (displayName) {
-        const hours = new Date().getHours();
-        const greeting = hours < 12 ? 'Good Morning' : (hours < 17 ? 'Good Afternoon' : 'Good Evening');
-        headerEl.textContent = `${greeting}, ${displayName} 👋`;
-      }
+    // ── 1. Update sidebar footer username ──────────────────────────────────
+    const sidebarEl = document.getElementById('sidebar-username');
+    if (sidebarEl && displayName) sidebarEl.textContent = displayName;
+
+    // ── 2. Update header greeting h2 (injected by UI.initHeader) ──────────
+    const greetingEl = document.getElementById('header-greeting');
+    if (greetingEl && displayName) {
+      const hours = new Date().getHours();
+      const greeting = hours < 12 ? 'Good Morning' : (hours < 17 ? 'Good Afternoon' : 'Good Evening');
+      greetingEl.textContent = `${greeting}, ${displayName} \u{1F44B}`;
     }
+
+    // ── 3. Update profile card name (on profile.html) ─────────────────────
+    const profileNameEl = document.getElementById('profile-name');
+    if (profileNameEl && displayName) profileNameEl.textContent = displayName;
+
+    // ── 4. Update avatar initial ───────────────────────────────────────────
+    const avatarEl = document.getElementById('avatar-display');
+    if (avatarEl && displayName) avatarEl.textContent = displayName[0].toUpperCase();
   },
 
   logout() {

@@ -36,6 +36,11 @@ public class GlobalResponseHandler implements ResponseBodyAdvice<Object> {
             return body; 
         }
 
+        // Do not wrap byte arrays (used for file exports like Excel, CSV, PDF)
+        if (body instanceof byte[]) {
+            return body;
+        }
+
         return ApiResponse.builder()
                 .success(true)
                 .message("Operation completed successfully")

@@ -15,6 +15,8 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.stream.Collectors;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 
 @Slf4j
 @Service
@@ -58,15 +60,22 @@ public class ExpenseService {
 
     @Transactional(readOnly = true)
     public ExpenseDTO getExpenseById(Long userId, Long expenseId) {
-        Expense expense = expenseRepository.findByIdAndUserId(expenseId, userId)
-                .orElseThrow(() -> new ResourceNotFoundException("Expense not found with id: " + expenseId));
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        boolean hasAccess = auth != null && auth.getAuthorities().stream().anyMatch(a -> 
+            a.getAuthority().equals("ROLE_ADMIN") || a.getAuthority().equals("ROLE_ANALYST") || a.getAuthority().equals("ROLE_AUDITOR"));
+        Expense expense = hasAccess
+                ? expenseRepository.findById(expenseId).orElseThrow(() -> new ResourceNotFoundException("Expense not found with id: " + expenseId))
+                : expenseRepository.findByIdAndUserId(expenseId, userId).orElseThrow(() -> new ResourceNotFoundException("Expense not found with id: " + expenseId));
         return mapToDTO(expense);
     }
 
     @Transactional
     public ExpenseDTO updateExpense(Long userId, Long expenseId, ExpenseDTO expenseDTO) {
-        Expense expense = expenseRepository.findByIdAndUserId(expenseId, userId)
-                .orElseThrow(() -> new ResourceNotFoundException("Expense not found with id: " + expenseId));
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        boolean isAdmin = auth != null && auth.getAuthorities().stream().anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN"));
+        Expense expense = isAdmin
+                ? expenseRepository.findById(expenseId).orElseThrow(() -> new ResourceNotFoundException("Expense not found with id: " + expenseId))
+                : expenseRepository.findByIdAndUserId(expenseId, userId).orElseThrow(() -> new ResourceNotFoundException("Expense not found with id: " + expenseId));
 
         Category category = categoryService.getCategoryEntity(expenseDTO.getCategoryId(), userId);
         expense.setAmount(expenseDTO.getAmount());
@@ -79,8 +88,11 @@ public class ExpenseService {
 
     @Transactional
     public void deleteExpense(Long userId, Long expenseId) {
-        Expense expense = expenseRepository.findByIdAndUserId(expenseId, userId)
-                .orElseThrow(() -> new ResourceNotFoundException("Expense not found with id: " + expenseId));
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        boolean isAdmin = auth != null && auth.getAuthorities().stream().anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN"));
+        Expense expense = isAdmin
+                ? expenseRepository.findById(expenseId).orElseThrow(() -> new ResourceNotFoundException("Expense not found with id: " + expenseId))
+                : expenseRepository.findByIdAndUserId(expenseId, userId).orElseThrow(() -> new ResourceNotFoundException("Expense not found with id: " + expenseId));
         expenseRepository.delete(expense); // Triggers soft delete via @SQLDelete
         log.info("Expense soft-deleted: {} for user {}", expenseId, userId);
     }
@@ -135,8 +147,8 @@ public class ExpenseService {
                 .amount(expense.getAmount())
                 .date(expense.getDate())
                 .description(expense.getDescription())
-                .categoryId(expense.getCategory().getId())
-                .categoryName(expense.getCategory().getName())
+                .categoryId(expense.getCategory() != null ? expense.getCategory().getId() : null)
+                .categoryName(expense.getCategory() != null ? expense.getCategory().getName() : "Deleted Category")
                 .createdAt(expense.getCreatedAt())
                 .build();
     }

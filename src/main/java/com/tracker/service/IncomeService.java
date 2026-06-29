@@ -13,6 +13,8 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
 import java.util.List;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 
 @Slf4j
 @Service
@@ -59,15 +61,21 @@ public class IncomeService {
 
     @Transactional(readOnly = true)
     public IncomeDTO getIncomeById(Long userId, Long incomeId) {
-        Income income = incomeRepository.findByIdAndUserId(incomeId, userId)
-                .orElseThrow(() -> new ResourceNotFoundException("Income not found with id: " + incomeId));
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        boolean isAdmin = auth != null && auth.getAuthorities().stream().anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN"));
+        Income income = isAdmin
+                ? incomeRepository.findById(incomeId).orElseThrow(() -> new ResourceNotFoundException("Income not found with id: " + incomeId))
+                : incomeRepository.findByIdAndUserId(incomeId, userId).orElseThrow(() -> new ResourceNotFoundException("Income not found with id: " + incomeId));
         return mapToDTO(income);
     }
 
     @Transactional
     public IncomeDTO updateIncome(Long userId, Long incomeId, IncomeDTO incomeDTO) {
-        Income income = incomeRepository.findByIdAndUserId(incomeId, userId)
-                .orElseThrow(() -> new ResourceNotFoundException("Income not found with id: " + incomeId));
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        boolean isAdmin = auth != null && auth.getAuthorities().stream().anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN"));
+        Income income = isAdmin
+                ? incomeRepository.findById(incomeId).orElseThrow(() -> new ResourceNotFoundException("Income not found with id: " + incomeId))
+                : incomeRepository.findByIdAndUserId(incomeId, userId).orElseThrow(() -> new ResourceNotFoundException("Income not found with id: " + incomeId));
 
         Category category = categoryService.getCategoryEntity(incomeDTO.getCategoryId(), userId);
         income.setSource(incomeDTO.getSource());
@@ -81,8 +89,11 @@ public class IncomeService {
 
     @Transactional
     public void deleteIncome(Long userId, Long incomeId) {
-        Income income = incomeRepository.findByIdAndUserId(incomeId, userId)
-                .orElseThrow(() -> new ResourceNotFoundException("Income not found with id: " + incomeId));
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        boolean isAdmin = auth != null && auth.getAuthorities().stream().anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN"));
+        Income income = isAdmin
+                ? incomeRepository.findById(incomeId).orElseThrow(() -> new ResourceNotFoundException("Income not found with id: " + incomeId))
+                : incomeRepository.findByIdAndUserId(incomeId, userId).orElseThrow(() -> new ResourceNotFoundException("Income not found with id: " + incomeId));
         incomeRepository.delete(income);
         log.info("Income soft-deleted: {} for user {}", incomeId, userId);
     }
@@ -94,8 +105,8 @@ public class IncomeService {
                 .amount(income.getAmount())
                 .date(income.getDate())
                 .description(income.getDescription())
-                .categoryId(income.getCategory().getId())
-                .categoryName(income.getCategory().getName())
+                .categoryId(income.getCategory() != null ? income.getCategory().getId() : null)
+                .categoryName(income.getCategory() != null ? income.getCategory().getName() : "Deleted Category")
                 .createdAt(income.getCreatedAt())
                 .build();
     }

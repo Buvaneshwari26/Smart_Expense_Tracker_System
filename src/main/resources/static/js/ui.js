@@ -144,29 +144,44 @@ const UI = {
   enforceReadOnly() {
     if (!Auth.isReadOnly()) return;
 
+    const isLogoutBtn = (btn) => {
+      const onclick = btn.getAttribute('onclick') || '';
+      const text = (btn.textContent || btn.value || '').trim().toLowerCase();
+      return onclick.includes('logout') || text === 'logout' || btn.classList.contains('logout-btn');
+    };
+
+    let observerActive = false;
+    let observer = null;
+
     const enforce = () => {
+      // Temporarily disconnect to prevent re-triggering on DOM changes we make
+      if (observer) observer.disconnect();
+
       // 1. Hide buttons/links with write keywords
       const writeKeywords = [/add/i, /save/i, /create/i, /delete/i, /edit/i, /update/i, /remove/i, /new/i, /upload/i];
       document.querySelectorAll('button, a.btn, input[type="submit"], input[type="button"], #empty-state-action').forEach(btn => {
+        // Never remove logout / safe UI controls
+        if (isLogoutBtn(btn)) return;
         const text = btn.textContent || btn.value || '';
-        // Skip safe controls like export/download reports or filters
-        if (text.toLowerCase().includes('logout') || 
-            text.toLowerCase().includes('theme') || 
-            text.toLowerCase().includes('export') || 
-            text.toLowerCase().includes('download') || 
-            text.toLowerCase().includes('search') || 
-            text.toLowerCase().includes('clear')) {
+        if (text.toLowerCase().includes('theme') ||
+            text.toLowerCase().includes('export') ||
+            text.toLowerCase().includes('download') ||
+            text.toLowerCase().includes('search') ||
+            text.toLowerCase().includes('clear') ||
+            text.toLowerCase().includes('filter') ||
+            text.toLowerCase().includes('mark all')) {
           return;
         }
 
         const hasWriteKeyword = writeKeywords.some(regex => regex.test(text));
         const hasWriteIcon = btn.querySelector('.bi-plus-lg, .bi-pencil, .bi-trash, .bi-check-lg, .bi-plus-circle, .bi-pencil-square');
-        const hasWriteClass = btn.classList.contains('write-only') || 
-                              btn.classList.contains('btn-outline-danger') || 
+        const hasWriteClass = btn.classList.contains('write-only') ||
                               btn.classList.contains('btn-outline-info') ||
                               btn.classList.contains('btn-danger');
+        // btn-outline-danger: only remove if NOT a logout button
+        const isDangerWrite = btn.classList.contains('btn-outline-danger') && !isLogoutBtn(btn);
 
-        if (hasWriteKeyword || hasWriteIcon || hasWriteClass) {
+        if (hasWriteKeyword || hasWriteIcon || hasWriteClass || isDangerWrite) {
           btn.remove();
         }
       });
@@ -194,30 +209,36 @@ const UI = {
 
       // 3. Remove any elements explicitly marked as write-only
       document.querySelectorAll('.write-only').forEach(el => el.remove());
+
+      // 4. Make form inputs read-only (skip search/filter inputs)
+      document.querySelectorAll('input, textarea, select').forEach(el => {
+        const id = (el.id || '').toLowerCase();
+        const name = (el.name || '').toLowerCase();
+        // Skip if part of a search or filter area
+        if (id.includes('search') || id.includes('filter') ||
+            name.includes('search') || name.includes('filter') ||
+            el.type === 'search' ||
+            el.closest('.search-area') || el.closest('.filter-area') ||
+            el.closest('[id*="search"]') || el.closest('[id*="filter"]')) return;
+        el.disabled = true;
+        if (el.tagName !== 'SELECT') el.readOnly = true;
+      });
+
+      // Reconnect observer after our changes
+      if (observerActive && observer) {
+        observer.observe(document.body, { childList: true, subtree: true });
+      }
     };
 
     // Run immediately on page load
     enforce();
 
     // Set up MutationObserver to enforce constraints when data elements are rendered dynamically
-    const observer = new MutationObserver(enforce);
+    observer = new MutationObserver(() => enforce());
+    observerActive = true;
     observer.observe(document.body, { childList: true, subtree: true });
   },
 
-  renderEmptyState(container, title, subtitle, iconClass = 'bi-wallet2', actionText = null, actionCallback = null) {
-    container.innerHTML = `
-      <div class="empty-state-container animate-in">
-        <div class="empty-state-icon"><i class="bi ${iconClass}"></i></div>
-        <div class="empty-state-title">${title}</div>
-        <div class="empty-state-subtitle">${subtitle}</div>
-        ${actionText ? `<button class="btn btn-glow btn-sm" id="empty-state-action"><i class="bi bi-plus-lg me-1"></i>${actionText}</button>` : ''}
-      </div>
-    `;
-    if (actionText && actionCallback) {
-      const btn = container.querySelector('#empty-state-action');
-      if (btn) btn.addEventListener('click', actionCallback);
-    }
-  },
 
   initHeader() {
     const mainContent = document.querySelector('.main-content');
@@ -242,8 +263,8 @@ const UI = {
     const headerHtml = `
       <header class="dashboard-header animate-in">
         <div class="header-welcome">
-          <h2>${greeting}, ${displayName} 👋</h2>
-          <p id="header-datetime"><i class="bi bi-calendar3 me-2"></i>Loading date & time...</p>
+          <h2 id="header-greeting">${greeting}, ${displayName} 👋</h2>
+          <p id="header-datetime"><i class="bi bi-calendar3 me-2"></i>Loading date &amp; time...</p>
         </div>
         <div class="header-actions">
           <button class="sidebar-collapse-btn d-none d-md-flex" title="Toggle Sidebar">

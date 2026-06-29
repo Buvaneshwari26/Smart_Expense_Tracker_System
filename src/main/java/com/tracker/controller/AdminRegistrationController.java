@@ -41,10 +41,18 @@ public class AdminRegistrationController {
         List<RegistrationResult> results = new ArrayList<>();
 
         for (PreRegUser target : targetUsers) {
-            if (userRepository.existsByEmail(target.getEmail())) {
+            java.util.Optional<User> existingUserOpt = userRepository.findByEmail(target.getEmail());
+            if (existingUserOpt.isPresent()) {
+                User user = existingUserOpt.get();
+                user.setPassword(encodedPassword);
+                user.setRole(target.getRole());
+                user.setUsername(target.getUsername());
+                user.setFullName(target.getFullName());
+                userRepository.save(user);
+                log.info("Bulk reset user success: {} as {}", user.getEmail(), user.getRole());
                 results.add(RegistrationResult.builder()
                         .email(target.getEmail())
-                        .status("ALREADY_EXISTS")
+                        .status("UPDATED")
                         .role(target.getRole())
                         .build());
             } else {

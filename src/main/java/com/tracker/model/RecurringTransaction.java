@@ -1,6 +1,9 @@
 package com.tracker.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
+import org.hibernate.annotations.NotFound;
+import org.hibernate.annotations.NotFoundAction;
 import lombok.*;
 import java.time.LocalDate;
 
@@ -24,6 +27,8 @@ public class RecurringTransaction extends Auditable {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "category_id", nullable = false)
+    @NotFound(action = NotFoundAction.IGNORE)
+    @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
     private Category category;
 
     @Column(nullable = false)
@@ -43,5 +48,7 @@ public class RecurringTransaction extends Auditable {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", nullable = false)
+    @NotFound(action = NotFoundAction.IGNORE)
+    @JsonIgnoreProperties({"hibernateLazyInitializer", "handler", "password", "role"})
     private User user;
 }

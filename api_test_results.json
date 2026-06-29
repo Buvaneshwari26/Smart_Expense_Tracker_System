@@ -1,0 +1,1856 @@
+[
+  {
+    "testName": "Bulk Pre-Registration",
+    "url": "/auth/pre-register-bulk",
+    "method": "POST",
+    "role": "None",
+    "expectedStatus": 200,
+    "actualStatus": 200,
+    "responseBody": {
+      "success": true,
+      "message": "Bulk registration execution completed",
+      "data": [
+        {
+          "email": "buvaneshwarip6002@gmail.com",
+          "status": "UPDATED",
+          "role": "ADMIN"
+        },
+        {
+          "email": "buvanap1712@gmail.com",
+          "status": "UPDATED",
+          "role": "USER"
+        },
+        {
+          "email": "buvanesh6421@gmail.com",
+          "status": "UPDATED",
+          "role": "ANALYST"
+        },
+        {
+          "email": "2k23cse021@kiot.ac.in",
+          "status": "UPDATED",
+          "role": "AUDITOR"
+        }
+      ]
+    },
+    "pass": true
+  },
+  {
+    "testName": "Login as ADMIN",
+    "url": "/auth/login",
+    "method": "POST",
+    "role": "ADMIN",
+    "expectedStatus": 200,
+    "actualStatus": 200,
+    "responseBody": {
+      "success": true,
+      "message": "Operation completed successfully",
+      "data": {
+        "userId": 3,
+        "username": "buvaneshwarip6002",
+        "fullName": "Buvaneshwari P",
+        "email": "buvaneshwarip6002@gmail.com",
+        "role": "ADMIN",
+        "accessToken": "eyJhbGciOiJIUzM4NCJ9.eyJyb2xlIjoiQURNSU4iLCJ1c2VySWQiOjMsInN1YiI6ImJ1dmFuZXNod2FyaXA2MDAyQGdtYWlsLmNvbSIsImlhdCI6MTc4MjYzMDk1MSwiZXhwIjoxNzgyNzE3MzUxfQ.R54HCw_JTnyp1WDNGcJLHhbmW5Z_N7Hob51KvH-JpGR7iCKtJceUPEO2SHACQ9tX",
+        "token": "eyJhbGciOiJIUzM4NCJ9.eyJyb2xlIjoiQURNSU4iLCJ1c2VySWQiOjMsInN1YiI6ImJ1dmFuZXNod2FyaXA2MDAyQGdtYWlsLmNvbSIsImlhdCI6MTc4MjYzMDk1MSwiZXhwIjoxNzgyNzE3MzUxfQ.R54HCw_JTnyp1WDNGcJLHhbmW5Z_N7Hob51KvH-JpGR7iCKtJceUPEO2SHACQ9tX",
+        "refreshToken": "f7fdf950-0485-4739-842c-a7f763710525",
+        "tokenType": "Bearer",
+        "message": "Login successful"
+      }
+    },
+    "pass": "eyJhbGciOiJIUzM4NCJ9.eyJyb2xlIjoiQURNSU4iLCJ1c2VySWQiOjMsInN1YiI6ImJ1dmFuZXNod2FyaXA2MDAyQGdtYWlsLmNvbSIsImlhdCI6MTc4MjYzMDk1MSwiZXhwIjoxNzgyNzE3MzUxfQ.R54HCw_JTnyp1WDNGcJLHhbmW5Z_N7Hob51KvH-JpGR7iCKtJceUPEO2SHACQ9tX"
+  },
+  {
+    "testName": "Login as USER",
+    "url": "/auth/login",
+    "method": "POST",
+    "role": "USER",
+    "expectedStatus": 200,
+    "actualStatus": 200,
+    "responseBody": {
+      "success": true,
+      "message": "Operation completed successfully",
+      "data": {
+        "userId": 4,
+        "username": "buvanap1712",
+        "fullName": "Buvana P",
+        "email": "buvanap1712@gmail.com",
+        "role": "USER",
+        "accessToken": "eyJhbGciOiJIUzM4NCJ9.eyJyb2xlIjoiVVNFUiIsInVzZXJJZCI6NCwic3ViIjoiYnV2YW5hcDE3MTJAZ21haWwuY29tIiwiaWF0IjoxNzgyNjMwOTUxLCJleHAiOjE3ODI3MTczNTF9.QBHglGHpIxjjSjLzMnw5GtpNMS7vSD7fkI9rIZdHXBCbEDZp2kjIqaBAUpex6Rbr",
+        "token": "eyJhbGciOiJIUzM4NCJ9.eyJyb2xlIjoiVVNFUiIsInVzZXJJZCI6NCwic3ViIjoiYnV2YW5hcDE3MTJAZ21haWwuY29tIiwiaWF0IjoxNzgyNjMwOTUxLCJleHAiOjE3ODI3MTczNTF9.QBHglGHpIxjjSjLzMnw5GtpNMS7vSD7fkI9rIZdHXBCbEDZp2kjIqaBAUpex6Rbr",
+        "refreshToken": "d7ab12e6-fbca-4f52-9061-2601f348e5fb",
+        "tokenType": "Bearer",
+        "message": "Login successful"
+      }
+    },
+    "pass": "eyJhbGciOiJIUzM4NCJ9.eyJyb2xlIjoiVVNFUiIsInVzZXJJZCI6NCwic3ViIjoiYnV2YW5hcDE3MTJAZ21haWwuY29tIiwiaWF0IjoxNzgyNjMwOTUxLCJleHAiOjE3ODI3MTczNTF9.QBHglGHpIxjjSjLzMnw5GtpNMS7vSD7fkI9rIZdHXBCbEDZp2kjIqaBAUpex6Rbr"
+  },
+  {
+    "testName": "Login as ANALYST",
+    "url": "/auth/login",
+    "method": "POST",
+    "role": "ANALYST",
+    "expectedStatus": 200,
+    "actualStatus": 200,
+    "responseBody": {
+      "success": true,
+      "message": "Operation completed successfully",
+      "data": {
+        "userId": 5,
+        "username": "buvanesh6421",
+        "fullName": "Buvanesh",
+        "email": "buvanesh6421@gmail.com",
+        "role": "ANALYST",
+        "accessToken": "eyJhbGciOiJIUzM4NCJ9.eyJyb2xlIjoiQU5BTFlTVCIsInVzZXJJZCI6NSwic3ViIjoiYnV2YW5lc2g2NDIxQGdtYWlsLmNvbSIsImlhdCI6MTc4MjYzMDk1MSwiZXhwIjoxNzgyNzE3MzUxfQ.wtJsThbdyI-1BBldynMHFKcS6aasStGgq4LIs47h71O9wtPBaHyEZrCpGtb7xnmd",
+        "token": "eyJhbGciOiJIUzM4NCJ9.eyJyb2xlIjoiQU5BTFlTVCIsInVzZXJJZCI6NSwic3ViIjoiYnV2YW5lc2g2NDIxQGdtYWlsLmNvbSIsImlhdCI6MTc4MjYzMDk1MSwiZXhwIjoxNzgyNzE3MzUxfQ.wtJsThbdyI-1BBldynMHFKcS6aasStGgq4LIs47h71O9wtPBaHyEZrCpGtb7xnmd",
+        "refreshToken": "e57e17ae-7e39-44ec-901a-dba8caea5fb6",
+        "tokenType": "Bearer",
+        "message": "Login successful"
+      }
+    },
+    "pass": "eyJhbGciOiJIUzM4NCJ9.eyJyb2xlIjoiQU5BTFlTVCIsInVzZXJJZCI6NSwic3ViIjoiYnV2YW5lc2g2NDIxQGdtYWlsLmNvbSIsImlhdCI6MTc4MjYzMDk1MSwiZXhwIjoxNzgyNzE3MzUxfQ.wtJsThbdyI-1BBldynMHFKcS6aasStGgq4LIs47h71O9wtPBaHyEZrCpGtb7xnmd"
+  },
+  {
+    "testName": "Login as AUDITOR",
+    "url": "/auth/login",
+    "method": "POST",
+    "role": "AUDITOR",
+    "expectedStatus": 200,
+    "actualStatus": 200,
+    "responseBody": {
+      "success": true,
+      "message": "Operation completed successfully",
+      "data": {
+        "userId": 1,
+        "username": "student_cse21",
+        "fullName": "KIOT CSE Student",
+        "email": "2k23cse021@kiot.ac.in",
+        "role": "AUDITOR",
+        "accessToken": "eyJhbGciOiJIUzM4NCJ9.eyJyb2xlIjoiQVVESVRPUiIsInVzZXJJZCI6MSwic3ViIjoiMmsyM2NzZTAyMUBraW90LmFjLmluIiwiaWF0IjoxNzgyNjMwOTUyLCJleHAiOjE3ODI3MTczNTJ9.vz_588B4RMh17GA_cIAYFnKQLruNTmGvoXVfXiS9SFCrtBCfZEaOp6v7SDirqaU2",
+        "token": "eyJhbGciOiJIUzM4NCJ9.eyJyb2xlIjoiQVVESVRPUiIsInVzZXJJZCI6MSwic3ViIjoiMmsyM2NzZTAyMUBraW90LmFjLmluIiwiaWF0IjoxNzgyNjMwOTUyLCJleHAiOjE3ODI3MTczNTJ9.vz_588B4RMh17GA_cIAYFnKQLruNTmGvoXVfXiS9SFCrtBCfZEaOp6v7SDirqaU2",
+        "refreshToken": "dd01d808-9151-4050-8874-ef0b82d79374",
+        "tokenType": "Bearer",
+        "message": "Login successful"
+      }
+    },
+    "pass": "eyJhbGciOiJIUzM4NCJ9.eyJyb2xlIjoiQVVESVRPUiIsInVzZXJJZCI6MSwic3ViIjoiMmsyM2NzZTAyMUBraW90LmFjLmluIiwiaWF0IjoxNzgyNjMwOTUyLCJleHAiOjE3ODI3MTczNTJ9.vz_588B4RMh17GA_cIAYFnKQLruNTmGvoXVfXiS9SFCrtBCfZEaOp6v7SDirqaU2"
+  },
+  {
+    "testName": "Refresh Token Validation",
+    "url": "/auth/refresh-token",
+    "method": "POST",
+    "role": "USER",
+    "expectedStatus": 200,
+    "actualStatus": 200,
+    "responseBody": {
+      "success": true,
+      "message": "Operation completed successfully",
+      "data": {
+        "userId": 4,
+        "username": "buvanap1712",
+        "fullName": "Buvana P",
+        "email": "buvanap1712@gmail.com",
+        "role": "USER",
+        "accessToken": "eyJhbGciOiJIUzM4NCJ9.eyJyb2xlIjoiVVNFUiIsInVzZXJJZCI6NCwic3ViIjoiYnV2YW5hcDE3MTJAZ21haWwuY29tIiwiaWF0IjoxNzgyNjMwOTUyLCJleHAiOjE3ODI3MTczNTJ9.VEKkNBLlPdF1gjdQop16P4iFbgoWWldbyI-Fc0kX7I_j8_3KrAsKcm4fJX4qariM",
+        "token": "eyJhbGciOiJIUzM4NCJ9.eyJyb2xlIjoiVVNFUiIsInVzZXJJZCI6NCwic3ViIjoiYnV2YW5hcDE3MTJAZ21haWwuY29tIiwiaWF0IjoxNzgyNjMwOTUyLCJleHAiOjE3ODI3MTczNTJ9.VEKkNBLlPdF1gjdQop16P4iFbgoWWldbyI-Fc0kX7I_j8_3KrAsKcm4fJX4qariM",
+        "refreshToken": "128b35f3-1927-4b43-be37-bcc77ce04128",
+        "tokenType": "Bearer",
+        "message": "Token refreshed successfully"
+      }
+    },
+    "pass": true
+  },
+  {
+    "testName": "Get All Users as ADMIN",
+    "url": "/users",
+    "method": "GET",
+    "role": "ADMIN",
+    "expectedStatus": 200,
+    "actualStatus": 200,
+    "responseBody": {
+      "success": true,
+      "message": "Operation completed successfully",
+      "data": [
+        {
+          "id": 1,
+          "fullName": "KIOT CSE Student",
+          "username": "student_cse21",
+          "email": "2k23cse021@kiot.ac.in",
+          "phoneNumber": "",
+          "role": "AUDITOR",
+          "createdAt": "2026-06-20T15:25:44.618665"
+        },
+        {
+          "id": 2,
+          "fullName": "Test User",
+          "username": "TestUser999",
+          "email": "test999@example.com",
+          "phoneNumber": null,
+          "role": "USER",
+          "createdAt": "2026-06-21T17:40:33.841798"
+        },
+        {
+          "id": 3,
+          "fullName": "Buvaneshwari P",
+          "username": "buvaneshwarip6002",
+          "email": "buvaneshwarip6002@gmail.com",
+          "phoneNumber": "",
+          "role": "ADMIN",
+          "createdAt": "2026-06-21T18:25:47.987128"
+        },
+        {
+          "id": 4,
+          "fullName": "Buvana P",
+          "username": "buvanap1712",
+          "email": "buvanap1712@gmail.com",
+          "phoneNumber": "9876543210",
+          "role": "USER",
+          "createdAt": "2026-06-21T18:25:48.031347"
+        },
+        {
+          "id": 5,
+          "fullName": "Buvanesh",
+          "username": "buvanesh6421",
+          "email": "buvanesh6421@gmail.com",
+          "phoneNumber": null,
+          "role": "ANALYST",
+          "createdAt": "2026-06-21T18:25:48.041689"
+        },
+        {
+          "id": 6,
+          "fullName": "Buvana",
+          "username": "Buvana",
+          "email": "buvaneshpt1712@gmail.com",
+          "phoneNumber": null,
+          "role": "ADMIN",
+          "createdAt": "2026-06-28T12:18:17.531283"
+        }
+      ]
+    },
+    "pass": true
+  },
+  {
+    "testName": "Get All Users as AUDITOR",
+    "url": "/users",
+    "method": "GET",
+    "role": "AUDITOR",
+    "expectedStatus": 200,
+    "actualStatus": 200,
+    "responseBody": {
+      "success": true,
+      "message": "Operation completed successfully",
+      "data": [
+        {
+          "id": 1,
+          "fullName": "KIOT CSE Student",
+          "username": "student_cse21",
+          "email": "2k23cse021@kiot.ac.in",
+          "phoneNumber": "",
+          "role": "AUDITOR",
+          "createdAt": "2026-06-20T15:25:44.618665"
+        },
+        {
+          "id": 2,
+          "fullName": "Test User",
+          "username": "TestUser999",
+          "email": "test999@example.com",
+          "phoneNumber": null,
+          "role": "USER",
+          "createdAt": "2026-06-21T17:40:33.841798"
+        },
+        {
+          "id": 3,
+          "fullName": "Buvaneshwari P",
+          "username": "buvaneshwarip6002",
+          "email": "buvaneshwarip6002@gmail.com",
+          "phoneNumber": "",
+          "role": "ADMIN",
+          "createdAt": "2026-06-21T18:25:47.987128"
+        },
+        {
+          "id": 4,
+          "fullName": "Buvana P",
+          "username": "buvanap1712",
+          "email": "buvanap1712@gmail.com",
+          "phoneNumber": "9876543210",
+          "role": "USER",
+          "createdAt": "2026-06-21T18:25:48.031347"
+        },
+        {
+          "id": 5,
+          "fullName": "Buvanesh",
+          "username": "buvanesh6421",
+          "email": "buvanesh6421@gmail.com",
+          "phoneNumber": null,
+          "role": "ANALYST",
+          "createdAt": "2026-06-21T18:25:48.041689"
+        },
+        {
+          "id": 6,
+          "fullName": "Buvana",
+          "username": "Buvana",
+          "email": "buvaneshpt1712@gmail.com",
+          "phoneNumber": null,
+          "role": "ADMIN",
+          "createdAt": "2026-06-28T12:18:17.531283"
+        }
+      ]
+    },
+    "pass": true
+  },
+  {
+    "testName": "Get All Users as USER (Denied)",
+    "url": "/users",
+    "method": "GET",
+    "role": "USER",
+    "expectedStatus": 403,
+    "actualStatus": 403,
+    "responseBody": "",
+    "pass": true
+  },
+  {
+    "testName": "Get Own User Info as ANALYST",
+    "url": "/users/5",
+    "method": "GET",
+    "role": "ANALYST",
+    "expectedStatus": 200,
+    "actualStatus": 200,
+    "responseBody": {
+      "success": true,
+      "message": "Operation completed successfully",
+      "data": {
+        "id": 5,
+        "fullName": "Buvanesh",
+        "username": "buvanesh6421",
+        "email": "buvanesh6421@gmail.com",
+        "phoneNumber": null,
+        "role": "ANALYST",
+        "createdAt": "2026-06-21T18:25:48.041689"
+      }
+    },
+    "pass": true
+  },
+  {
+    "testName": "Get Other User Info as USER (Denied)",
+    "url": "/users/5",
+    "method": "GET",
+    "role": "USER",
+    "expectedStatus": 403,
+    "actualStatus": 403,
+    "responseBody": {
+      "success": false,
+      "message": "Access Denied",
+      "data": {
+        "timestamp": "2026-06-28T12:45:52.2575231",
+        "message": "Access Denied: You can only view your own profile",
+        "details": "uri=/api/users/5"
+      }
+    },
+    "pass": true
+  },
+  {
+    "testName": "Get Own Profile Endpoint as ANALYST",
+    "url": "/users/profile",
+    "method": "GET",
+    "role": "ANALYST",
+    "expectedStatus": 200,
+    "actualStatus": 200,
+    "responseBody": {
+      "success": true,
+      "message": "Operation completed successfully",
+      "data": {
+        "id": 5,
+        "fullName": "Buvanesh",
+        "username": "buvanesh6421",
+        "email": "buvanesh6421@gmail.com",
+        "phoneNumber": null,
+        "role": "ANALYST",
+        "createdAt": "2026-06-21T18:25:48.041689"
+      }
+    },
+    "pass": true
+  },
+  {
+    "testName": "Update Own Profile as USER",
+    "url": "/users/4",
+    "method": "PUT",
+    "role": "USER",
+    "expectedStatus": 200,
+    "actualStatus": 200,
+    "responseBody": {
+      "success": true,
+      "message": "Operation completed successfully",
+      "data": {
+        "id": 4,
+        "fullName": "Buvana Updated",
+        "username": "buvanap1712",
+        "email": "buvanap1712@gmail.com",
+        "phoneNumber": "9876543210",
+        "role": "USER",
+        "createdAt": "2026-06-21T18:25:48.031347"
+      }
+    },
+    "pass": true
+  },
+  {
+    "testName": "Update Own Profile as ANALYST (Denied)",
+    "url": "/users/5",
+    "method": "PUT",
+    "role": "ANALYST",
+    "expectedStatus": 403,
+    "actualStatus": 403,
+    "responseBody": "",
+    "pass": true
+  },
+  {
+    "testName": "Patch User Role as USER (Denied)",
+    "url": "/users/4/role?role=USER",
+    "method": "PATCH",
+    "role": "USER",
+    "expectedStatus": 403,
+    "actualStatus": 403,
+    "responseBody": {
+      "success": false,
+      "message": "Access Denied",
+      "data": {
+        "timestamp": "2026-06-28T12:45:52.3003145",
+        "message": "Access Denied: Access Denied",
+        "details": "uri=/api/users/4/role"
+      }
+    },
+    "pass": true
+  },
+  {
+    "testName": "Patch User Role as ADMIN (Allowed)",
+    "url": "/users/4/role?role=USER",
+    "method": "PATCH",
+    "role": "ADMIN",
+    "expectedStatus": 200,
+    "actualStatus": 200,
+    "responseBody": {
+      "success": true,
+      "message": "Operation completed successfully",
+      "data": {
+        "id": 4,
+        "fullName": "Buvana Updated",
+        "username": "buvanap1712",
+        "email": "buvanap1712@gmail.com",
+        "phoneNumber": "9876543210",
+        "role": "USER",
+        "createdAt": "2026-06-21T18:25:48.031347"
+      }
+    },
+    "pass": true
+  },
+  {
+    "testName": "Create Category as USER",
+    "url": "/categories",
+    "method": "POST",
+    "role": "USER",
+    "expectedStatus": 201,
+    "actualStatus": 201,
+    "responseBody": {
+      "success": true,
+      "message": "Operation completed successfully",
+      "data": {
+        "id": 20,
+        "name": "TestCategoryUser_1782630951499",
+        "type": "EXPENSE",
+        "description": "User category"
+      }
+    },
+    "pass": true
+  },
+  {
+    "testName": "Create Category as ANALYST (Denied)",
+    "url": "/categories",
+    "method": "POST",
+    "role": "ANALYST",
+    "expectedStatus": 403,
+    "actualStatus": 403,
+    "responseBody": "",
+    "pass": true
+  },
+  {
+    "testName": "Get Categories List as ANALYST",
+    "url": "/categories",
+    "method": "GET",
+    "role": "ANALYST",
+    "expectedStatus": 200,
+    "actualStatus": 200,
+    "responseBody": {
+      "success": true,
+      "message": "Operation completed successfully",
+      "data": []
+    },
+    "pass": true
+  },
+  {
+    "testName": "Get Category by ID as AUDITOR",
+    "url": "/categories/20",
+    "method": "GET",
+    "role": "AUDITOR",
+    "expectedStatus": 200,
+    "actualStatus": 200,
+    "responseBody": {
+      "success": true,
+      "message": "Operation completed successfully",
+      "data": {
+        "id": 20,
+        "name": "TestCategoryUser_1782630951499",
+        "type": "EXPENSE",
+        "description": "User category"
+      }
+    },
+    "pass": true
+  },
+  {
+    "testName": "Update Category as USER",
+    "url": "/categories/20",
+    "method": "PUT",
+    "role": "USER",
+    "expectedStatus": 200,
+    "actualStatus": 200,
+    "responseBody": {
+      "success": true,
+      "message": "Operation completed successfully",
+      "data": {
+        "id": 20,
+        "name": "TestCategoryUser_Updated_1782630951499",
+        "type": "EXPENSE",
+        "description": "Updated description"
+      }
+    },
+    "pass": true
+  },
+  {
+    "testName": "Delete Category as USER (Denied)",
+    "url": "/categories/20",
+    "method": "DELETE",
+    "role": "USER",
+    "expectedStatus": 403,
+    "actualStatus": 403,
+    "responseBody": "",
+    "pass": true
+  },
+  {
+    "testName": "Delete Category as ADMIN",
+    "url": "/categories/20",
+    "method": "DELETE",
+    "role": "ADMIN",
+    "expectedStatus": 204,
+    "actualStatus": 204,
+    "responseBody": "",
+    "pass": true
+  },
+  {
+    "testName": "Create Expense as USER",
+    "url": "/expenses",
+    "method": "POST",
+    "role": "USER",
+    "expectedStatus": 201,
+    "actualStatus": 201,
+    "responseBody": {
+      "success": true,
+      "message": "Operation completed successfully",
+      "data": {
+        "id": 12,
+        "amount": 150,
+        "date": "2026-06-28",
+        "description": "Office supplies shipment",
+        "categoryId": 21,
+        "categoryName": "Logistics_1782630951499",
+        "createdAt": "2026-06-28T12:45:52.4610374"
+      }
+    },
+    "pass": true
+  },
+  {
+    "testName": "Create Expense as ANALYST (Denied)",
+    "url": "/expenses",
+    "method": "POST",
+    "role": "ANALYST",
+    "expectedStatus": 403,
+    "actualStatus": 403,
+    "responseBody": "",
+    "pass": true
+  },
+  {
+    "testName": "Get Expenses List as USER",
+    "url": "/expenses",
+    "method": "GET",
+    "role": "USER",
+    "expectedStatus": 200,
+    "actualStatus": 200,
+    "responseBody": {
+      "success": true,
+      "message": "Operation completed successfully",
+      "data": {
+        "content": [
+          {
+            "id": 12,
+            "amount": 150,
+            "date": "2026-06-28",
+            "description": "Office supplies shipment",
+            "categoryId": 21,
+            "categoryName": "Logistics_1782630951499",
+            "createdAt": "2026-06-28T12:45:52.461037"
+          },
+          {
+            "id": 4,
+            "amount": 18.99,
+            "date": "2026-06-01",
+            "description": "Spotify Premium Family",
+            "categoryId": 7,
+            "categoryName": "Logistics",
+            "createdAt": "2026-06-28T09:53:33.28708"
+          },
+          {
+            "id": 6,
+            "amount": 18.99,
+            "date": "2026-06-01",
+            "description": "Spotify Premium Family",
+            "categoryId": null,
+            "categoryName": "Deleted Category",
+            "createdAt": "2026-06-28T10:47:29.804303"
+          },
+          {
+            "id": 9,
+            "amount": 18.99,
+            "date": "2026-06-01",
+            "description": "Spotify Premium Family",
+            "categoryId": null,
+            "categoryName": "Deleted Category",
+            "createdAt": "2026-06-28T11:04:45.731787"
+          },
+          {
+            "id": 11,
+            "amount": 18.99,
+            "date": "2026-06-01",
+            "description": "Spotify Premium Family",
+            "categoryId": null,
+            "categoryName": "Deleted Category",
+            "createdAt": "2026-06-28T11:09:52.724229"
+          }
+        ],
+        "pageable": {
+          "pageNumber": 0,
+          "pageSize": 5,
+          "sort": {
+            "empty": false,
+            "sorted": true,
+            "unsorted": false
+          },
+          "offset": 0,
+          "unpaged": false,
+          "paged": true
+        },
+        "last": true,
+        "totalElements": 5,
+        "totalPages": 1,
+        "size": 5,
+        "number": 0,
+        "first": true,
+        "numberOfElements": 5,
+        "sort": {
+          "empty": false,
+          "sorted": true,
+          "unsorted": false
+        },
+        "empty": false
+      }
+    },
+    "pass": true
+  },
+  {
+    "testName": "Get Expense by ID as ANALYST",
+    "url": "/expenses/12",
+    "method": "GET",
+    "role": "ANALYST",
+    "expectedStatus": 200,
+    "actualStatus": 200,
+    "responseBody": {
+      "success": true,
+      "message": "Operation completed successfully",
+      "data": {
+        "id": 12,
+        "amount": 150,
+        "date": "2026-06-28",
+        "description": "Office supplies shipment",
+        "categoryId": 21,
+        "categoryName": "Logistics_1782630951499",
+        "createdAt": "2026-06-28T12:45:52.461037"
+      }
+    },
+    "pass": true
+  },
+  {
+    "testName": "Search Expenses as USER",
+    "url": "/expenses/search?keyword=shipment&categoryId=21&minAmount=100",
+    "method": "GET",
+    "role": "USER",
+    "expectedStatus": 200,
+    "actualStatus": 200,
+    "responseBody": {
+      "success": true,
+      "message": "Operation completed successfully",
+      "data": {
+        "content": [
+          {
+            "id": 12,
+            "amount": 150,
+            "date": "2026-06-28",
+            "description": "Office supplies shipment",
+            "categoryId": 21,
+            "categoryName": "Logistics_1782630951499",
+            "createdAt": "2026-06-28T12:45:52.461037"
+          }
+        ],
+        "pageable": {
+          "pageNumber": 0,
+          "pageSize": 10,
+          "sort": {
+            "empty": false,
+            "sorted": true,
+            "unsorted": false
+          },
+          "offset": 0,
+          "unpaged": false,
+          "paged": true
+        },
+        "last": true,
+        "totalElements": 1,
+        "totalPages": 1,
+        "size": 10,
+        "number": 0,
+        "first": true,
+        "numberOfElements": 1,
+        "sort": {
+          "empty": false,
+          "sorted": true,
+          "unsorted": false
+        },
+        "empty": false
+      }
+    },
+    "pass": true
+  },
+  {
+    "testName": "Get Expenses by Category",
+    "url": "/expenses/category/21",
+    "method": "GET",
+    "role": "USER",
+    "expectedStatus": 200,
+    "actualStatus": 200,
+    "responseBody": {
+      "success": true,
+      "message": "Operation completed successfully",
+      "data": [
+        {
+          "id": 12,
+          "amount": 150,
+          "date": "2026-06-28",
+          "description": "Office supplies shipment",
+          "categoryId": 21,
+          "categoryName": "Logistics_1782630951499",
+          "createdAt": "2026-06-28T12:45:52.461037"
+        }
+      ]
+    },
+    "pass": true
+  },
+  {
+    "testName": "Update Expense as USER",
+    "url": "/expenses/12",
+    "method": "PUT",
+    "role": "USER",
+    "expectedStatus": 200,
+    "actualStatus": 200,
+    "responseBody": {
+      "success": true,
+      "message": "Operation completed successfully",
+      "data": {
+        "id": 12,
+        "amount": 175,
+        "date": "2026-06-28",
+        "description": "Office supplies shipment updated",
+        "categoryId": 21,
+        "categoryName": "Logistics_1782630951499",
+        "createdAt": "2026-06-28T12:45:52.461037"
+      }
+    },
+    "pass": true
+  },
+  {
+    "testName": "Export Expenses Excel",
+    "url": "/expenses/export/excel",
+    "method": "GET",
+    "role": "USER",
+    "expectedStatus": 200,
+    "actualStatus": 200,
+    "responseBody": "Binary data",
+    "pass": true
+  },
+  {
+    "testName": "Export Expenses CSV",
+    "url": "/expenses/export/csv",
+    "method": "GET",
+    "role": "USER",
+    "expectedStatus": 200,
+    "actualStatus": 200,
+    "responseBody": "CSV text data",
+    "pass": true
+  },
+  {
+    "testName": "Export Expenses PDF",
+    "url": "/expenses/export/pdf",
+    "method": "GET",
+    "role": "USER",
+    "expectedStatus": 200,
+    "actualStatus": 200,
+    "responseBody": "Binary PDF data",
+    "pass": true
+  },
+  {
+    "testName": "Delete Expense as USER",
+    "url": "/expenses/12",
+    "method": "DELETE",
+    "role": "USER",
+    "expectedStatus": 204,
+    "actualStatus": 204,
+    "responseBody": "",
+    "pass": true
+  },
+  {
+    "testName": "Create Income as USER",
+    "url": "/incomes",
+    "method": "POST",
+    "role": "USER",
+    "expectedStatus": 201,
+    "actualStatus": 201,
+    "responseBody": {
+      "success": true,
+      "message": "Operation completed successfully",
+      "data": {
+        "id": 7,
+        "source": "Upwork",
+        "amount": 800,
+        "date": "2026-06-28",
+        "description": "Web development contract",
+        "categoryId": 22,
+        "categoryName": "Side Hustle_1782630951499",
+        "createdAt": "2026-06-28T12:45:53.7287341"
+      }
+    },
+    "pass": true
+  },
+  {
+    "testName": "Get Incomes List as USER",
+    "url": "/incomes",
+    "method": "GET",
+    "role": "USER",
+    "expectedStatus": 200,
+    "actualStatus": 200,
+    "responseBody": {
+      "success": true,
+      "message": "Operation completed successfully",
+      "data": {
+        "content": [
+          {
+            "id": 7,
+            "source": "Upwork",
+            "amount": 800,
+            "date": "2026-06-28",
+            "description": "Web development contract",
+            "categoryId": 22,
+            "categoryName": "Side Hustle_1782630951499",
+            "createdAt": "2026-06-28T12:45:53.728734"
+          }
+        ],
+        "pageable": {
+          "pageNumber": 0,
+          "pageSize": 5,
+          "sort": {
+            "empty": false,
+            "sorted": true,
+            "unsorted": false
+          },
+          "offset": 0,
+          "unpaged": false,
+          "paged": true
+        },
+        "last": true,
+        "totalElements": 1,
+        "totalPages": 1,
+        "size": 5,
+        "number": 0,
+        "first": true,
+        "numberOfElements": 1,
+        "sort": {
+          "empty": false,
+          "sorted": true,
+          "unsorted": false
+        },
+        "empty": false
+      }
+    },
+    "pass": true
+  },
+  {
+    "testName": "Get Income by ID as USER",
+    "url": "/incomes/7",
+    "method": "GET",
+    "role": "USER",
+    "expectedStatus": 200,
+    "actualStatus": 200,
+    "responseBody": {
+      "success": true,
+      "message": "Operation completed successfully",
+      "data": {
+        "id": 7,
+        "source": "Upwork",
+        "amount": 800,
+        "date": "2026-06-28",
+        "description": "Web development contract",
+        "categoryId": 22,
+        "categoryName": "Side Hustle_1782630951499",
+        "createdAt": "2026-06-28T12:45:53.728734"
+      }
+    },
+    "pass": true
+  },
+  {
+    "testName": "Search Incomes as USER",
+    "url": "/incomes/search?keyword=Upwork&categoryId=22",
+    "method": "GET",
+    "role": "USER",
+    "expectedStatus": 200,
+    "actualStatus": 200,
+    "responseBody": {
+      "success": true,
+      "message": "Operation completed successfully",
+      "data": {
+        "content": [
+          {
+            "id": 7,
+            "source": "Upwork",
+            "amount": 800,
+            "date": "2026-06-28",
+            "description": "Web development contract",
+            "categoryId": 22,
+            "categoryName": "Side Hustle_1782630951499",
+            "createdAt": "2026-06-28T12:45:53.728734"
+          }
+        ],
+        "pageable": {
+          "pageNumber": 0,
+          "pageSize": 10,
+          "sort": {
+            "empty": false,
+            "sorted": true,
+            "unsorted": false
+          },
+          "offset": 0,
+          "unpaged": false,
+          "paged": true
+        },
+        "last": true,
+        "totalElements": 1,
+        "totalPages": 1,
+        "size": 10,
+        "number": 0,
+        "first": true,
+        "numberOfElements": 1,
+        "sort": {
+          "empty": false,
+          "sorted": true,
+          "unsorted": false
+        },
+        "empty": false
+      }
+    },
+    "pass": true
+  },
+  {
+    "testName": "Update Income as USER",
+    "url": "/incomes/7",
+    "method": "PUT",
+    "role": "USER",
+    "expectedStatus": 200,
+    "actualStatus": 200,
+    "responseBody": {
+      "success": true,
+      "message": "Operation completed successfully",
+      "data": {
+        "id": 7,
+        "source": "Upwork Updated",
+        "amount": 900,
+        "date": "2026-06-28",
+        "description": "Web development contract updated",
+        "categoryId": 22,
+        "categoryName": "Side Hustle_1782630951499",
+        "createdAt": "2026-06-28T12:45:53.728734"
+      }
+    },
+    "pass": true
+  },
+  {
+    "testName": "Export Incomes Excel",
+    "url": "/incomes/export/excel",
+    "method": "GET",
+    "role": "USER",
+    "expectedStatus": 200,
+    "actualStatus": 200,
+    "responseBody": "Binary data",
+    "pass": true
+  },
+  {
+    "testName": "Export Incomes CSV",
+    "url": "/incomes/export/csv",
+    "method": "GET",
+    "role": "USER",
+    "expectedStatus": 200,
+    "actualStatus": 200,
+    "responseBody": "CSV data",
+    "pass": true
+  },
+  {
+    "testName": "Delete Income as USER",
+    "url": "/incomes/7",
+    "method": "DELETE",
+    "role": "USER",
+    "expectedStatus": 204,
+    "actualStatus": 204,
+    "responseBody": "",
+    "pass": true
+  },
+  {
+    "testName": "Create Budget as USER",
+    "url": "/budgets",
+    "method": "POST",
+    "role": "USER",
+    "expectedStatus": 201,
+    "actualStatus": 201,
+    "responseBody": {
+      "success": true,
+      "message": "Operation completed successfully",
+      "data": {
+        "id": 5,
+        "categoryId": 21,
+        "categoryName": "Logistics_1782630951499",
+        "budgetAmount": 600,
+        "month": 6,
+        "year": 2026
+      }
+    },
+    "pass": true
+  },
+  {
+    "testName": "Get Budgets List as USER",
+    "url": "/budgets",
+    "method": "GET",
+    "role": "USER",
+    "expectedStatus": 200,
+    "actualStatus": 200,
+    "responseBody": {
+      "success": true,
+      "message": "Operation completed successfully",
+      "data": [
+        {
+          "id": 5,
+          "categoryId": 21,
+          "categoryName": "Logistics_1782630951499",
+          "budgetAmount": 600,
+          "month": 6,
+          "year": 2026
+        }
+      ]
+    },
+    "pass": true
+  },
+  {
+    "testName": "Get Budget by ID as USER",
+    "url": "/budgets/5",
+    "method": "GET",
+    "role": "USER",
+    "expectedStatus": 200,
+    "actualStatus": 200,
+    "responseBody": {
+      "success": true,
+      "message": "Operation completed successfully",
+      "data": {
+        "id": 5,
+        "categoryId": 21,
+        "categoryName": "Logistics_1782630951499",
+        "budgetAmount": 600,
+        "month": 6,
+        "year": 2026
+      }
+    },
+    "pass": true
+  },
+  {
+    "testName": "Update Budget as USER",
+    "url": "/budgets/5",
+    "method": "PUT",
+    "role": "USER",
+    "expectedStatus": 200,
+    "actualStatus": 200,
+    "responseBody": {
+      "success": true,
+      "message": "Operation completed successfully",
+      "data": {
+        "id": 5,
+        "categoryId": 21,
+        "categoryName": "Logistics_1782630951499",
+        "budgetAmount": 800,
+        "month": 6,
+        "year": 2026
+      }
+    },
+    "pass": true
+  },
+  {
+    "testName": "Delete Budget as USER",
+    "url": "/budgets/5",
+    "method": "DELETE",
+    "role": "USER",
+    "expectedStatus": 204,
+    "actualStatus": 204,
+    "responseBody": "",
+    "pass": true
+  },
+  {
+    "testName": "Create Savings Goal as USER",
+    "url": "/goals",
+    "method": "POST",
+    "role": "USER",
+    "expectedStatus": 201,
+    "actualStatus": 201,
+    "responseBody": {
+      "success": true,
+      "message": "Operation completed successfully",
+      "data": {
+        "id": 6,
+        "goalName": "Vacation Savings",
+        "targetAmount": 5000,
+        "currentAmount": 500,
+        "targetDate": "2027-08-31",
+        "percentage": 10
+      }
+    },
+    "pass": true
+  },
+  {
+    "testName": "Get Savings Goals List as USER",
+    "url": "/goals",
+    "method": "GET",
+    "role": "USER",
+    "expectedStatus": 200,
+    "actualStatus": 200,
+    "responseBody": {
+      "success": true,
+      "message": "Operation completed successfully",
+      "data": {
+        "content": [
+          {
+            "id": 6,
+            "goalName": "Vacation Savings",
+            "targetAmount": 5000,
+            "currentAmount": 500,
+            "targetDate": "2027-08-31",
+            "percentage": 10
+          }
+        ],
+        "pageable": {
+          "pageNumber": 0,
+          "pageSize": 5,
+          "sort": {
+            "empty": true,
+            "sorted": false,
+            "unsorted": true
+          },
+          "offset": 0,
+          "unpaged": false,
+          "paged": true
+        },
+        "last": true,
+        "totalElements": 1,
+        "totalPages": 1,
+        "size": 5,
+        "number": 0,
+        "first": true,
+        "numberOfElements": 1,
+        "sort": {
+          "empty": true,
+          "sorted": false,
+          "unsorted": true
+        },
+        "empty": false
+      }
+    },
+    "pass": true
+  },
+  {
+    "testName": "Get Savings Goal by ID as USER",
+    "url": "/goals/6",
+    "method": "GET",
+    "role": "USER",
+    "expectedStatus": 200,
+    "actualStatus": 200,
+    "responseBody": {
+      "success": true,
+      "message": "Operation completed successfully",
+      "data": {
+        "id": 6,
+        "goalName": "Vacation Savings",
+        "targetAmount": 5000,
+        "currentAmount": 500,
+        "targetDate": "2027-08-31",
+        "percentage": 10
+      }
+    },
+    "pass": true
+  },
+  {
+    "testName": "Add Savings to Goal",
+    "url": "/goals/6/add-savings?amount=200.00",
+    "method": "PATCH",
+    "role": "USER",
+    "expectedStatus": 200,
+    "actualStatus": 200,
+    "responseBody": {
+      "success": true,
+      "message": "Operation completed successfully",
+      "data": {
+        "id": 6,
+        "goalName": "Vacation Savings",
+        "targetAmount": 5000,
+        "currentAmount": 700,
+        "targetDate": "2027-08-31",
+        "percentage": 14
+      }
+    },
+    "pass": true
+  },
+  {
+    "testName": "Update Savings Goal as USER",
+    "url": "/goals/6",
+    "method": "PUT",
+    "role": "USER",
+    "expectedStatus": 200,
+    "actualStatus": 200,
+    "responseBody": {
+      "success": true,
+      "message": "Operation completed successfully",
+      "data": {
+        "id": 6,
+        "goalName": "Hawaii Vacation Savings",
+        "targetAmount": 6000,
+        "currentAmount": 700,
+        "targetDate": "2027-08-31",
+        "percentage": 11.67
+      }
+    },
+    "pass": true
+  },
+  {
+    "testName": "Delete Savings Goal as USER",
+    "url": "/goals/6",
+    "method": "DELETE",
+    "role": "USER",
+    "expectedStatus": 204,
+    "actualStatus": 204,
+    "responseBody": "",
+    "pass": true
+  },
+  {
+    "testName": "Create Recurring Schedule as USER",
+    "url": "/recurring",
+    "method": "POST",
+    "role": "USER",
+    "expectedStatus": 200,
+    "actualStatus": 200,
+    "responseBody": {
+      "success": true,
+      "message": "Operation completed successfully",
+      "data": {
+        "createdAt": "2026-06-28T12:45:54.0966635",
+        "updatedAt": "2026-06-28T12:45:54.0966635",
+        "createdBy": "buvanap1712@gmail.com",
+        "modifiedBy": "buvanap1712@gmail.com",
+        "id": 5,
+        "amount": 15,
+        "description": "Spotify Premium",
+        "category": {
+          "createdAt": "2026-06-28T12:45:52.433842",
+          "updatedAt": "2026-06-28T12:45:52.433842",
+          "createdBy": "buvanap1712@gmail.com",
+          "modifiedBy": "buvanap1712@gmail.com",
+          "id": 21,
+          "name": "Logistics_1782630951499",
+          "type": "EXPENSE",
+          "description": "Business logistics",
+          "user": {
+            "createdAt": "2026-06-21T18:25:48.031347",
+            "updatedAt": "2026-06-28T12:45:52.283161",
+            "createdBy": "SYSTEM",
+            "modifiedBy": "buvanap1712@gmail.com",
+            "id": 4,
+            "username": "buvanap1712",
+            "fullName": "Buvana Updated",
+            "email": "buvanap1712@gmail.com",
+            "phoneNumber": "9876543210",
+            "deleted": false
+          },
+          "deleted": false
+        },
+        "frequency": "MONTHLY",
+        "startDate": "2026-06-01",
+        "nextExecutionDate": "2026-06-01",
+        "lastExecutionDate": null,
+        "user": {
+          "createdAt": "2026-06-21T18:25:48.031347",
+          "updatedAt": "2026-06-28T12:45:52.283161",
+          "createdBy": "SYSTEM",
+          "modifiedBy": "buvanap1712@gmail.com",
+          "id": 4,
+          "username": "buvanap1712",
+          "fullName": "Buvana Updated",
+          "email": "buvanap1712@gmail.com",
+          "phoneNumber": "9876543210",
+          "deleted": false
+        },
+        "active": true,
+        "deleted": false
+      }
+    },
+    "pass": true
+  },
+  {
+    "testName": "Get Recurring List as USER",
+    "url": "/recurring",
+    "method": "GET",
+    "role": "USER",
+    "expectedStatus": 200,
+    "actualStatus": 200,
+    "responseBody": {
+      "success": true,
+      "message": "Operation completed successfully",
+      "data": [
+        {
+          "createdAt": "2026-06-28T12:45:54.096664",
+          "updatedAt": "2026-06-28T12:45:54.096664",
+          "createdBy": "buvanap1712@gmail.com",
+          "modifiedBy": "buvanap1712@gmail.com",
+          "id": 5,
+          "amount": 15,
+          "description": "Spotify Premium",
+          "category": {
+            "createdAt": "2026-06-28T12:45:52.433842",
+            "updatedAt": "2026-06-28T12:45:52.433842",
+            "createdBy": "buvanap1712@gmail.com",
+            "modifiedBy": "buvanap1712@gmail.com",
+            "id": 21,
+            "name": "Logistics_1782630951499",
+            "type": "EXPENSE",
+            "description": "Business logistics",
+            "user": {
+              "createdAt": "2026-06-21T18:25:48.031347",
+              "updatedAt": "2026-06-28T12:45:52.283161",
+              "createdBy": "SYSTEM",
+              "modifiedBy": "buvanap1712@gmail.com",
+              "id": 4,
+              "username": "buvanap1712",
+              "fullName": "Buvana Updated",
+              "email": "buvanap1712@gmail.com",
+              "phoneNumber": "9876543210",
+              "deleted": false
+            },
+            "deleted": false
+          },
+          "frequency": "MONTHLY",
+          "startDate": "2026-06-01",
+          "nextExecutionDate": "2026-06-01",
+          "lastExecutionDate": null,
+          "user": {
+            "createdAt": "2026-06-21T18:25:48.031347",
+            "updatedAt": "2026-06-28T12:45:52.283161",
+            "createdBy": "SYSTEM",
+            "modifiedBy": "buvanap1712@gmail.com",
+            "id": 4,
+            "username": "buvanap1712",
+            "fullName": "Buvana Updated",
+            "email": "buvanap1712@gmail.com",
+            "phoneNumber": "9876543210",
+            "deleted": false
+          },
+          "active": true,
+          "deleted": false
+        }
+      ]
+    },
+    "pass": true
+  },
+  {
+    "testName": "Update Recurring Schedule as USER",
+    "url": "/recurring/5",
+    "method": "PUT",
+    "role": "USER",
+    "expectedStatus": 200,
+    "actualStatus": 200,
+    "responseBody": {
+      "success": true,
+      "message": "Operation completed successfully",
+      "data": {
+        "createdAt": "2026-06-28T12:45:54.096664",
+        "updatedAt": "2026-06-28T12:45:54.1453673",
+        "createdBy": "buvanap1712@gmail.com",
+        "modifiedBy": "buvanap1712@gmail.com",
+        "id": 5,
+        "amount": 18.99,
+        "description": "Spotify Premium Family",
+        "category": {
+          "createdAt": "2026-06-28T12:45:52.433842",
+          "updatedAt": "2026-06-28T12:45:52.433842",
+          "createdBy": "buvanap1712@gmail.com",
+          "modifiedBy": "buvanap1712@gmail.com",
+          "id": 21,
+          "name": "Logistics_1782630951499",
+          "type": "EXPENSE",
+          "description": "Business logistics",
+          "user": {
+            "createdAt": "2026-06-21T18:25:48.031347",
+            "updatedAt": "2026-06-28T12:45:52.283161",
+            "createdBy": "SYSTEM",
+            "modifiedBy": "buvanap1712@gmail.com",
+            "id": 4,
+            "username": "buvanap1712",
+            "fullName": "Buvana Updated",
+            "email": "buvanap1712@gmail.com",
+            "phoneNumber": "9876543210",
+            "deleted": false
+          },
+          "deleted": false
+        },
+        "frequency": "MONTHLY",
+        "startDate": "2026-06-01",
+        "nextExecutionDate": "2026-06-01",
+        "lastExecutionDate": null,
+        "user": {
+          "createdAt": "2026-06-21T18:25:48.031347",
+          "updatedAt": "2026-06-28T12:45:52.283161",
+          "createdBy": "SYSTEM",
+          "modifiedBy": "buvanap1712@gmail.com",
+          "id": 4,
+          "username": "buvanap1712",
+          "fullName": "Buvana Updated",
+          "email": "buvanap1712@gmail.com",
+          "phoneNumber": "9876543210",
+          "deleted": false
+        },
+        "active": true,
+        "deleted": false
+      }
+    },
+    "pass": true
+  },
+  {
+    "testName": "Trigger Recurring Process as ADMIN",
+    "url": "/recurring/trigger-process",
+    "method": "POST",
+    "role": "ADMIN",
+    "expectedStatus": 200,
+    "actualStatus": 200,
+    "responseBody": "Scheduler processed successfully",
+    "pass": true
+  },
+  {
+    "testName": "Delete Recurring Schedule as USER",
+    "url": "/recurring/5",
+    "method": "DELETE",
+    "role": "USER",
+    "expectedStatus": 204,
+    "actualStatus": 204,
+    "responseBody": "",
+    "pass": true
+  },
+  {
+    "testName": "Get Notifications List",
+    "url": "/notifications?page=0&size=5",
+    "method": "GET",
+    "role": "USER",
+    "expectedStatus": 200,
+    "actualStatus": 200,
+    "responseBody": {
+      "success": true,
+      "message": "Operation completed successfully",
+      "data": {
+        "content": [],
+        "pageable": {
+          "pageNumber": 0,
+          "pageSize": 5,
+          "sort": {
+            "empty": true,
+            "sorted": false,
+            "unsorted": true
+          },
+          "offset": 0,
+          "unpaged": false,
+          "paged": true
+        },
+        "last": true,
+        "totalElements": 0,
+        "totalPages": 0,
+        "size": 5,
+        "number": 0,
+        "first": true,
+        "numberOfElements": 0,
+        "sort": {
+          "empty": true,
+          "sorted": false,
+          "unsorted": true
+        },
+        "empty": true
+      }
+    },
+    "pass": true
+  },
+  {
+    "testName": "Get Unread Notifications Count",
+    "url": "/notifications/unread-count",
+    "method": "GET",
+    "role": "USER",
+    "expectedStatus": 200,
+    "actualStatus": 200,
+    "responseBody": {
+      "success": true,
+      "message": "Operation completed successfully",
+      "data": 0
+    },
+    "pass": true
+  },
+  {
+    "testName": "Get Dashboard Summary",
+    "url": "/dashboard",
+    "method": "GET",
+    "role": "USER",
+    "expectedStatus": 200,
+    "actualStatus": 200,
+    "responseBody": {
+      "success": true,
+      "message": "Operation completed successfully",
+      "data": {
+        "totalIncome": 0,
+        "totalExpense": 94.95,
+        "currentBalance": -94.95,
+        "monthlyIncome": 0,
+        "monthlyExpense": 94.95,
+        "monthlySavingsRate": 0,
+        "topSpendingCategory": "Logistics",
+        "budgets": [],
+        "recentTransactions": [
+          {
+            "id": 4,
+            "type": "EXPENSE",
+            "amount": 18.99,
+            "date": "2026-06-01",
+            "categoryName": "Logistics",
+            "description": "Spotify Premium Family"
+          },
+          {
+            "id": 6,
+            "type": "EXPENSE",
+            "amount": 18.99,
+            "date": "2026-06-01",
+            "categoryName": "Deleted Category",
+            "description": "Spotify Premium Family"
+          },
+          {
+            "id": 9,
+            "type": "EXPENSE",
+            "amount": 18.99,
+            "date": "2026-06-01",
+            "categoryName": "Deleted Category",
+            "description": "Spotify Premium Family"
+          },
+          {
+            "id": 11,
+            "type": "EXPENSE",
+            "amount": 18.99,
+            "date": "2026-06-01",
+            "categoryName": "Deleted Category",
+            "description": "Spotify Premium Family"
+          },
+          {
+            "id": 13,
+            "type": "EXPENSE",
+            "amount": 18.99,
+            "date": "2026-06-01",
+            "categoryName": "Logistics_1782630951499",
+            "description": "Spotify Premium Family"
+          }
+        ],
+        "savingsGoals": []
+      }
+    },
+    "pass": true
+  },
+  {
+    "testName": "Get Monthly Report",
+    "url": "/reports/monthly?month=6&year=2026",
+    "method": "GET",
+    "role": "USER",
+    "expectedStatus": 200,
+    "actualStatus": 200,
+    "responseBody": {
+      "success": true,
+      "message": "Operation completed successfully",
+      "data": {
+        "month": 6,
+        "year": 2026,
+        "totalIncome": 0,
+        "totalExpense": 94.95,
+        "balance": -94.95,
+        "categoryBreakdown": [
+          {
+            "amount": 18.99,
+            "category": "Logistics"
+          },
+          {
+            "amount": 18.99,
+            "category": "Logistics_1782630951499"
+          }
+        ]
+      }
+    },
+    "pass": true
+  },
+  {
+    "testName": "Get Yearly Report",
+    "url": "/reports/yearly?year=2026",
+    "method": "GET",
+    "role": "USER",
+    "expectedStatus": 200,
+    "actualStatus": 200,
+    "responseBody": {
+      "success": true,
+      "message": "Operation completed successfully",
+      "data": {
+        "year": 2026,
+        "totalIncome": 0,
+        "totalExpense": 94.95,
+        "balance": -94.95,
+        "monthlyData": [
+          {
+            "month": 1,
+            "income": 0,
+            "expense": 0,
+            "balance": 0
+          },
+          {
+            "month": 2,
+            "income": 0,
+            "expense": 0,
+            "balance": 0
+          },
+          {
+            "month": 3,
+            "income": 0,
+            "expense": 0,
+            "balance": 0
+          },
+          {
+            "month": 4,
+            "income": 0,
+            "expense": 0,
+            "balance": 0
+          },
+          {
+            "month": 5,
+            "income": 0,
+            "expense": 0,
+            "balance": 0
+          },
+          {
+            "month": 6,
+            "income": 0,
+            "expense": 94.95,
+            "balance": -94.95
+          },
+          {
+            "month": 7,
+            "income": 0,
+            "expense": 0,
+            "balance": 0
+          },
+          {
+            "month": 8,
+            "income": 0,
+            "expense": 0,
+            "balance": 0
+          },
+          {
+            "month": 9,
+            "income": 0,
+            "expense": 0,
+            "balance": 0
+          },
+          {
+            "month": 10,
+            "income": 0,
+            "expense": 0,
+            "balance": 0
+          },
+          {
+            "month": 11,
+            "income": 0,
+            "expense": 0,
+            "balance": 0
+          },
+          {
+            "month": 12,
+            "income": 0,
+            "expense": 0,
+            "balance": 0
+          }
+        ]
+      }
+    },
+    "pass": true
+  },
+  {
+    "testName": "Get Category Report",
+    "url": "/reports/category?month=6&year=2026",
+    "method": "GET",
+    "role": "USER",
+    "expectedStatus": 200,
+    "actualStatus": 200,
+    "responseBody": {
+      "success": true,
+      "message": "Operation completed successfully",
+      "data": {
+        "month": 6,
+        "year": 2026,
+        "categories": [
+          {
+            "category": "Logistics",
+            "totalSpent": 18.99
+          },
+          {
+            "category": "Logistics_1782630951499",
+            "totalSpent": 18.99
+          }
+        ]
+      }
+    },
+    "pass": true
+  },
+  {
+    "testName": "Get Income vs Expense Comparison",
+    "url": "/reports/income-vs-expense?year=2026",
+    "method": "GET",
+    "role": "USER",
+    "expectedStatus": 200,
+    "actualStatus": 200,
+    "responseBody": {
+      "success": true,
+      "message": "Operation completed successfully",
+      "data": {
+        "year": 2026,
+        "data": [
+          {
+            "month": 1,
+            "income": 0,
+            "expense": 0
+          },
+          {
+            "month": 2,
+            "income": 0,
+            "expense": 0
+          },
+          {
+            "month": 3,
+            "income": 0,
+            "expense": 0
+          },
+          {
+            "month": 4,
+            "income": 0,
+            "expense": 0
+          },
+          {
+            "month": 5,
+            "income": 0,
+            "expense": 0
+          },
+          {
+            "month": 6,
+            "income": 0,
+            "expense": 94.95
+          },
+          {
+            "month": 7,
+            "income": 0,
+            "expense": 0
+          },
+          {
+            "month": 8,
+            "income": 0,
+            "expense": 0
+          },
+          {
+            "month": 9,
+            "income": 0,
+            "expense": 0
+          },
+          {
+            "month": 10,
+            "income": 0,
+            "expense": 0
+          },
+          {
+            "month": 11,
+            "income": 0,
+            "expense": 0
+          },
+          {
+            "month": 12,
+            "income": 0,
+            "expense": 0
+          }
+        ]
+      }
+    },
+    "pass": true
+  },
+  {
+    "testName": "Export Backup as ADMIN",
+    "url": "/admin/backup/export",
+    "method": "GET",
+    "role": "ADMIN",
+    "expectedStatus": 200,
+    "actualStatus": 200,
+    "responseBody": "Backup dump JSON",
+    "pass": true
+  },
+  {
+    "testName": "Export Backup as AUDITOR",
+    "url": "/admin/backup/export",
+    "method": "GET",
+    "role": "AUDITOR",
+    "expectedStatus": 200,
+    "actualStatus": 200,
+    "responseBody": "Backup dump JSON",
+    "pass": true
+  },
+  {
+    "testName": "Export Backup as USER (Denied)",
+    "url": "/admin/backup/export",
+    "method": "GET",
+    "role": "USER",
+    "expectedStatus": 403,
+    "actualStatus": 403,
+    "responseBody": "",
+    "pass": true
+  }
+]

@@ -6,6 +6,8 @@ import com.tracker.exception.ResourceNotFoundException;
 import com.tracker.model.Category;
 import com.tracker.model.User;
 import com.tracker.repository.CategoryRepository;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -79,8 +81,23 @@ public class CategoryService {
 
     @Transactional(readOnly = true)
     public Category getCategoryEntity(Long id, Long userId) {
+        // ADMIN users can access any category regardless of ownership
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        boolean isAdmin = auth != null && auth.getAuthorities().stream()
+                .anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN"));
+        if (isAdmin) {
+            return categoryRepository.findById(id)
+                    .orElseThrow(() -> new ResourceNotFoundException("Category not found with id: " + id));
+        }
         return categoryRepository.findByIdAndUserId(id, userId)
                 .orElseThrow(() -> new ResourceNotFoundException("Category not found with id: " + id + " for user id: " + userId));
+    }
+
+    /** Fetch a category by ID only (no userId filter) — for ADMIN/AUDITOR read access. */
+    @Transactional(readOnly = true)
+    public Category getCategoryEntityById(Long id) {
+        return categoryRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Category not found with id: " + id));
     }
 
     private CategoryDTO mapToDTO(Category category) {

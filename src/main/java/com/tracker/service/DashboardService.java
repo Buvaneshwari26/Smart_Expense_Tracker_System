@@ -63,7 +63,7 @@ public class DashboardService {
                     : BigDecimal.ZERO;
             return BudgetProgressDTO.builder()
                     .budgetId(budget.getId())
-                    .categoryName(budget.getCategory().getName())
+                    .categoryName(budget.getCategory() != null ? budget.getCategory().getName() : "Deleted Category")
                     .limitAmount(budget.getBudgetAmount())
                     .spentAmount(spent)
                     .remainingAmount(remaining.max(BigDecimal.ZERO))
@@ -76,11 +76,11 @@ public class DashboardService {
         List<RecentTransactionDTO> recent = new ArrayList<>();
         allIncomes.stream().map(inc -> RecentTransactionDTO.builder()
                 .id(inc.getId()).type("INCOME").amount(inc.getAmount())
-                .date(inc.getDate()).categoryName(inc.getCategory().getName())
+                .date(inc.getDate()).categoryName(inc.getCategory() != null ? inc.getCategory().getName() : "Deleted Category")
                 .description(inc.getDescription()).build()).forEach(recent::add);
         allExpenses.stream().map(exp -> RecentTransactionDTO.builder()
                 .id(exp.getId()).type("EXPENSE").amount(exp.getAmount())
-                .date(exp.getDate()).categoryName(exp.getCategory().getName())
+                .date(exp.getDate()).categoryName(exp.getCategory() != null ? exp.getCategory().getName() : "Deleted Category")
                 .description(exp.getDescription()).build()).forEach(recent::add);
         recent = recent.stream()
                 .sorted(Comparator.comparing(RecentTransactionDTO::getDate).reversed())

@@ -65,7 +65,7 @@ public class ExportService {
                 Row row = sheet.createRow(rowNum++);
                 row.createCell(0).setCellValue(e.getId());
                 row.createCell(1).setCellValue(e.getDate().format(FORMATTER));
-                row.createCell(2).setCellValue(e.getCategory().getName());
+                row.createCell(2).setCellValue(e.getCategory() != null ? e.getCategory().getName() : "Deleted Category");
                 row.createCell(3).setCellValue(e.getAmount().doubleValue());
                 row.createCell(4).setCellValue(e.getDescription() != null ? e.getDescription() : "");
                 total = total.add(e.getAmount());
@@ -101,7 +101,7 @@ public class ExportService {
                 row.createCell(0).setCellValue(inc.getId());
                 row.createCell(1).setCellValue(inc.getDate().format(FORMATTER));
                 row.createCell(2).setCellValue(inc.getSource() != null ? inc.getSource() : "");
-                row.createCell(3).setCellValue(inc.getCategory().getName());
+                row.createCell(3).setCellValue(inc.getCategory() != null ? inc.getCategory().getName() : "Deleted Category");
                 row.createCell(4).setCellValue(inc.getAmount().doubleValue());
                 row.createCell(5).setCellValue(inc.getDescription() != null ? inc.getDescription() : "");
                 total = total.add(inc.getAmount());
@@ -125,7 +125,7 @@ public class ExportService {
         for (Expense e : expenses) {
             sb.append(e.getId()).append(",")
               .append(e.getDate().format(FORMATTER)).append(",")
-              .append(e.getCategory().getName()).append(",")
+              .append(e.getCategory() != null ? e.getCategory().getName() : "Deleted Category").append(",")
               .append(e.getAmount()).append(",")
               .append(e.getDescription() != null ? e.getDescription().replace(",", " ") : "").append("\n");
         }
@@ -140,7 +140,7 @@ public class ExportService {
             sb.append(inc.getId()).append(",")
               .append(inc.getDate().format(FORMATTER)).append(",")
               .append(inc.getSource() != null ? inc.getSource() : "").append(",")
-              .append(inc.getCategory().getName()).append(",")
+              .append(inc.getCategory() != null ? inc.getCategory().getName() : "Deleted Category").append(",")
               .append(inc.getAmount()).append(",")
               .append(inc.getDescription() != null ? inc.getDescription().replace(",", " ") : "").append("\n");
         }
@@ -186,7 +186,7 @@ public class ExportService {
             for (Expense e : expenses) {
                 table.addCell(new Phrase(String.valueOf(e.getId()), bodyFont));
                 table.addCell(new Phrase(e.getDate().format(FORMATTER), bodyFont));
-                table.addCell(new Phrase(e.getCategory().getName(), bodyFont));
+                table.addCell(new Phrase(e.getCategory() != null ? e.getCategory().getName() : "Deleted Category", bodyFont));
                 table.addCell(new Phrase("₹" + e.getAmount(), bodyFont));
                 table.addCell(new Phrase(e.getDescription() != null ? e.getDescription() : "", bodyFont));
                 total = total.add(e.getAmount());

@@ -9,6 +9,8 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.*;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -41,12 +43,19 @@ public class CategoryController {
     @Operation(summary = "Get a category by ID")
     public ResponseEntity<CategoryDTO> getCategoryById(@PathVariable Long id) {
         Long userId = SecurityUtils.getCurrentUserId();
-        CategoryDTO dto = CategoryDTO.builder().build();
-        var entity = categoryService.getCategoryEntity(id, userId);
-        dto.setId(entity.getId());
-        dto.setName(entity.getName());
-        dto.setType(entity.getType());
-        dto.setDescription(entity.getDescription());
+        // AUDITOR and ADMIN can read any category; others only their own
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        boolean isAdminOrAuditor = auth != null && auth.getAuthorities().stream()
+                .anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN") || a.getAuthority().equals("ROLE_AUDITOR"));
+        var entity = isAdminOrAuditor
+                ? categoryService.getCategoryEntityById(id)
+                : categoryService.getCategoryEntity(id, userId);
+        CategoryDTO dto = CategoryDTO.builder()
+                .id(entity.getId())
+                .name(entity.getName())
+                .type(entity.getType())
+                .description(entity.getDescription())
+                .build();
         return ResponseEntity.ok(dto);
     }
 
