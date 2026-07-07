@@ -62,8 +62,13 @@
         document.getElementById('email').value,
         document.getElementById('password').value
       );
+      const role = res.role || 'USER';
+      let redirectUrl = 'dashboard.html';
+      if (role === 'ADMIN' || role === 'AUDITOR') redirectUrl = 'admin.html';
+      else if (role === 'ANALYST') redirectUrl = 'reports.html';
+      
       showAlert('success', '✅ Login successful! Redirecting…');
-      setTimeout(() => window.location.href = 'dashboard.html', 1000);
+      setTimeout(() => window.location.href = redirectUrl, 1000);
     } catch (err) {
       showAlert('danger', '❌ ' + (err.message || 'Invalid credentials'));
     } finally {
