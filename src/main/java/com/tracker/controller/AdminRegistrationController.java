@@ -32,8 +32,7 @@ public class AdminRegistrationController {
         List<PreRegUser> targetUsers = List.of(
             PreRegUser.builder().email("buvaneshwarip6002@gmail.com").username("buvaneshwarip6002").fullName("Buvaneshwari P").role("ADMIN").build(),
             PreRegUser.builder().email("buvanap1712@gmail.com").username("buvanap1712").fullName("Buvana P").role("USER").build(),
-            PreRegUser.builder().email("buvanesh6421@gmail.com").username("buvanesh6421").fullName("Buvanesh").role("ANALYST").build(),
-            PreRegUser.builder().email("2k23cse021@kiot.ac.in").username("student_cse21").fullName("KIOT CSE Student").role("AUDITOR").build()
+            PreRegUser.builder().email("buvanesh6421@gmail.com").username("buvanesh6421").fullName("Buvanesh").role("ANALYST").build()
         );
 
         String strongPassword = "Buvana@1712!Secure";

@@ -63,7 +63,6 @@
             <option value="ADMIN">ADMIN</option>
             <option value="USER">USER</option>
             <option value="ANALYST">ANALYST</option>
-            <option value="AUDITOR">AUDITOR</option>
           </select>
         </div>
       </div>
@@ -101,14 +100,9 @@
 <script src="js/ui.js"></script>
 <script>
   Auth.requireAuth();
-  Auth.requireRole('ADMIN', 'AUDITOR');
+  Auth.requireRole('ADMIN');
   UI.initSidebar();
   UI.initHeader();
-
-  // Enforce read-only UI controls for Auditor
-  if (Auth.isAuditor()) {
-    document.querySelectorAll('.admin-write-action').forEach(el => el.remove());
-  }
 
   let allUsers = [];
 
@@ -148,7 +142,6 @@
             <option value="ADMIN" ${role === 'ADMIN' ? 'selected' : ''}>ADMIN</option>
             <option value="USER" ${role === 'USER' ? 'selected' : ''}>USER</option>
             <option value="ANALYST" ${role === 'ANALYST' ? 'selected' : ''}>ANALYST</option>
-            <option value="AUDITOR" ${role === 'AUDITOR' ? 'selected' : ''}>AUDITOR</option>
           </select>
         `;
       } else {

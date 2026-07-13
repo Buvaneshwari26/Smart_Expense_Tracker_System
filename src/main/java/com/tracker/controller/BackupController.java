@@ -25,7 +25,7 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 @Tag(name = "Admin Backups", description = "Backup export systems (Admin only)")
 @SecurityRequirement(name = "bearerAuth")
-@PreAuthorize("hasAnyRole('ADMIN', 'AUDITOR')")
+@PreAuthorize("hasRole('ADMIN')")
 public class BackupController {
 
     private final UserRepository userRepository;

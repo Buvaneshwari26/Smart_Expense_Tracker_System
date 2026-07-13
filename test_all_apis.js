@@ -97,8 +97,7 @@ async function run() {
     const credentials = {
         ADMIN: { email: "buvaneshwarip6002@gmail.com", password: "Buvana@1712!Secure" },
         USER: { email: "buvanap1712@gmail.com", password: "Buvana@1712!Secure" },
-        ANALYST: { email: "buvanesh6421@gmail.com", password: "Buvana@1712!Secure" },
-        AUDITOR: { email: "2k23cse021@kiot.ac.in", password: "Buvana@1712!Secure" }
+        ANALYST: { email: "buvanesh6421@gmail.com", password: "Buvana@1712!Secure" }
     };
 
     const tokens = {};
@@ -125,7 +124,7 @@ async function run() {
         );
     }
 
-    if (!tokens.ADMIN || !tokens.USER || !tokens.ANALYST || !tokens.AUDITOR) {
+    if (!tokens.ADMIN || !tokens.USER || !tokens.ANALYST) {
         console.error("Critical Failure: Could not obtain tokens for all roles. Exiting.");
         process.exit(1);
     }
@@ -153,12 +152,9 @@ async function run() {
     // 4. Test User Profiles and User Management APIs
     console.log("\n--- Testing User Management (RBAC) ---");
     
-    // GET /api/users (ADMIN: 200, AUDITOR: 200, USER: 403, ANALYST: 403)
+    // GET /api/users (ADMIN: 200, USER: 403, ANALYST: 403)
     const getUsersAdmin = await apiRequest('/users', 'GET', tokens.ADMIN);
     recordResult("Get All Users as ADMIN", "/users", "GET", "ADMIN", 200, getUsersAdmin.status, getUsersAdmin.body, getUsersAdmin.status === 200);
-
-    const getUsersAuditor = await apiRequest('/users', 'GET', tokens.AUDITOR);
-    recordResult("Get All Users as AUDITOR", "/users", "GET", "AUDITOR", 200, getUsersAuditor.status, getUsersAuditor.body, getUsersAuditor.status === 200);
 
     const getUsersUser = await apiRequest('/users', 'GET', tokens.USER);
     recordResult("Get All Users as USER (Denied)", "/users", "GET", "USER", 403, getUsersUser.status, getUsersUser.body, getUsersUser.status === 403);
@@ -171,11 +167,11 @@ async function run() {
     const getUserOther = await apiRequest(`/users/${analystUserId}`, 'GET', tokens.USER);
     recordResult("Get Other User Info as USER (Denied)", `/users/${analystUserId}`, "GET", "USER", 403, getUserOther.status, getUserOther.body, getUserOther.status === 403);
 
-    // GET /api/users/profile (Allauthenticated roles can get their own profile)
+    // GET /api/users/profile (All authenticated roles can get their own profile)
     const getProfileRes = await apiRequest('/users/profile', 'GET', tokens.ANALYST);
     recordResult("Get Own Profile Endpoint as ANALYST", '/users/profile', 'GET', "ANALYST", 200, getProfileRes.status, getProfileRes.body, getProfileRes.status === 200);
 
-    // PUT /api/users/{id} (Update Profile - ADMIN or USER only; ANALYST/AUDITOR denied)
+    // PUT /api/users/{id} (Update Profile - ADMIN or USER only; ANALYST denied)
     const updateOwnUserRes = await apiRequest(`/users/${userIds.USER}`, 'PUT', tokens.USER, {
         fullName: "Buvana Updated",
         username: "buvanap1712",
@@ -197,7 +193,7 @@ async function run() {
     recordResult("Patch User Role as ADMIN (Allowed)", `/users/${userIds.USER}/role?role=USER`, "PATCH", "ADMIN", 200, patchRoleAdmin.status, patchRoleAdmin.body, patchRoleAdmin.status === 200);
 
 
-    // 5. Test Categories CRUD (ADMIN / USER write, ANALYST / AUDITOR read-only)
+    // 5. Test Categories CRUD (ADMIN / USER write, ANALYST read-only)
     console.log("\n--- Testing Categories CRUD ---");
     
     // Create
@@ -222,8 +218,8 @@ async function run() {
 
     // Read by ID
     if (userCatId) {
-        const getCatById = await apiRequest(`/categories/${userCatId}`, 'GET', tokens.AUDITOR);
-        recordResult("Get Category by ID as AUDITOR", `/categories/${userCatId}`, "GET", "AUDITOR", 200, getCatById.status, getCatById.body, getCatById.status === 200);
+        const getCatById = await apiRequest(`/categories/${userCatId}`, 'GET', tokens.ADMIN);
+        recordResult("Get Category by ID as ADMIN", `/categories/${userCatId}`, "GET", "ADMIN", 200, getCatById.status, getCatById.body, getCatById.status === 200);
 
         // Update
         const updateCat = await apiRequest(`/categories/${userCatId}`, 'PUT', tokens.USER, {
@@ -526,8 +522,8 @@ async function run() {
     const backupAdmin = await apiRequest('/admin/backup/export', 'GET', tokens.ADMIN);
     recordResult("Export Backup as ADMIN", "/admin/backup/export", "GET", "ADMIN", 200, backupAdmin.status, "Backup dump JSON", backupAdmin.status === 200);
 
-    const backupAuditor = await apiRequest('/admin/backup/export', 'GET', tokens.AUDITOR);
-    recordResult("Export Backup as AUDITOR", "/admin/backup/export", "GET", "AUDITOR", 200, backupAuditor.status, "Backup dump JSON", backupAuditor.status === 200);
+    const backupAnalyst = await apiRequest('/admin/backup/export', 'GET', tokens.ANALYST);
+    recordResult("Export Backup as ANALYST (Denied)", "/admin/backup/export", "GET", "ANALYST", 403, backupAnalyst.status, backupAnalyst.body, backupAnalyst.status === 403);
 
     const backupUser = await apiRequest('/admin/backup/export', 'GET', tokens.USER);
     recordResult("Export Backup as USER (Denied)", "/admin/backup/export", "GET", "USER", 403, backupUser.status, backupUser.body, backupUser.status === 403);

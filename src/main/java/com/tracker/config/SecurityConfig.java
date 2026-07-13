@@ -69,10 +69,10 @@ public class SecurityConfig {
                 .requestMatchers("/*.html", "/css/**", "/js/**", "/images/**", "/").permitAll()
                 .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
 
-                // ── User Management: ADMIN full access, AUDITOR read-only ────────────
-                .requestMatchers(HttpMethod.GET,    "/api/users").hasAnyRole("ADMIN", "AUDITOR")
+                // ── User Management: ADMIN full access ───────────────────────────────
+                .requestMatchers(HttpMethod.GET,    "/api/users").hasRole("ADMIN")
                 .requestMatchers(HttpMethod.DELETE, "/api/users/**").hasRole("ADMIN")
-                .requestMatchers("/api/admin/**").hasAnyRole("ADMIN", "AUDITOR")
+                .requestMatchers("/api/admin/**").hasRole("ADMIN")
 
                 // ── Profile: any authenticated user can read/update their own profile ─
                 .requestMatchers(HttpMethod.GET,    "/api/users/{id}").authenticated()

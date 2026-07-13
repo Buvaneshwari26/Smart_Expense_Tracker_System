@@ -102,21 +102,20 @@ const Auth = {
   isAdmin()   { return this.getRole() === 'ADMIN'; },
   isUser()    { return this.getRole() === 'USER'; },
   isAnalyst() { return this.getRole() === 'ANALYST'; },
-  isAuditor() { return this.getRole() === 'AUDITOR'; },
 
   /** Returns true if the current role can create/update/delete records. */
   canWrite() {
     return this.isAdmin() || this.isUser();
   },
 
-  /** Returns true if the current role has read-only access (ANALYST or AUDITOR). */
+  /** Returns true if the current role has read-only access (ANALYST). */
   isReadOnly() {
-    return this.isAnalyst() || this.isAuditor();
+    return this.isAnalyst();
   },
 
   /**
    * Hide all elements matching the selector for read-only roles.
-   * Call this on page load to remove write buttons for ANALYST/AUDITOR.
+   * Call this on page load to remove write buttons for ANALYST.
    *
    * @param {string} selector - CSS selector to hide (e.g. '.write-only-btn')
    */
@@ -128,7 +127,7 @@ const Auth = {
 
   /**
    * Redirect to dashboard if current user does NOT have one of the allowed roles.
-   * @param {...string} roles - e.g. 'ADMIN', 'AUDITOR'
+   * @param {...string} roles - e.g. 'ADMIN', 'ANALYST'
    */
   requireRole(...roles) {
     const r = this.getRole();

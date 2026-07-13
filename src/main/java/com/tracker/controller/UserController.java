@@ -37,15 +37,15 @@ public class UserController {
 
     private final UserService userService;
 
-    // ── Admin + Auditor: list all users ──────────────────────────────────────
+    // ── Admin: list all users ───────────────────────────────────────────────
 
     /**
      * GET /api/users — get all users.
-     * Accessible by ADMIN (full details) and AUDITOR (read-only compliance view).
+     * Accessible by ADMIN (full details).
      */
     @GetMapping
-    @PreAuthorize("hasAnyRole('ADMIN', 'AUDITOR')")
-    @Operation(summary = "Get all users (Admin/Auditor only)")
+    @PreAuthorize("hasRole('ADMIN')")
+    @Operation(summary = "Get all users (Admin only)")
     public ResponseEntity<List<UserProfileDTO>> getAllUsers() {
         return ResponseEntity.ok(userService.getAllUsers());
     }
@@ -107,12 +107,12 @@ public class UserController {
      * ADMIN and AUDITOR can access any user; USER/ANALYST can only access their own.
      */
     @GetMapping("/{id}")
-    @Operation(summary = "Get user by ID (Admin/Auditor full access; own profile otherwise)")
+    @Operation(summary = "Get user by ID (Admin full access; own profile otherwise)")
     public ResponseEntity<UserProfileDTO> getUserById(@PathVariable Long id) {
         Long currentUserId = SecurityUtils.getCurrentUserId();
         String role = SecurityUtils.getCurrentUser().getRole();
-        // ADMIN and AUDITOR can see any user; others can only see their own
-        if (!"ADMIN".equals(role) && !"AUDITOR".equals(role) && !currentUserId.equals(id)) {
+        // ADMIN can see any user; others can only see their own
+        if (!"ADMIN".equals(role) && !currentUserId.equals(id)) {
             throw new AccessDeniedException("You can only view your own profile");
         }
         return ResponseEntity.ok(userService.getProfile(id));

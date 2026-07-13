@@ -62,7 +62,7 @@ public class ExpenseService {
     public ExpenseDTO getExpenseById(Long userId, Long expenseId) {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         boolean hasAccess = auth != null && auth.getAuthorities().stream().anyMatch(a -> 
-            a.getAuthority().equals("ROLE_ADMIN") || a.getAuthority().equals("ROLE_ANALYST") || a.getAuthority().equals("ROLE_AUDITOR"));
+            a.getAuthority().equals("ROLE_ADMIN") || a.getAuthority().equals("ROLE_ANALYST"));
         Expense expense = hasAccess
                 ? expenseRepository.findById(expenseId).orElseThrow(() -> new ResourceNotFoundException("Expense not found with id: " + expenseId))
                 : expenseRepository.findByIdAndUserId(expenseId, userId).orElseThrow(() -> new ResourceNotFoundException("Expense not found with id: " + expenseId));

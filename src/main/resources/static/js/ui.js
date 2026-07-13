@@ -80,9 +80,9 @@ const UI = {
     const user = Auth.getUser();
     const role = Auth.getRole();
 
-    // Dynamically inject the Admin Panel navigation link for ADMIN/AUDITOR roles if not already present
+    // Dynamically inject the Admin Panel navigation link for ADMIN role if not already present
     const navContainer = document.querySelector('.sidebar-nav');
-    if (navContainer && (role === 'ADMIN' || role === 'AUDITOR')) {
+    if (navContainer && role === 'ADMIN') {
       const hasAdminLink = Array.from(navContainer.querySelectorAll('.nav-link'))
                                .some(link => link.getAttribute('href') === 'admin.html');
       if (!hasAdminLink) {
@@ -98,8 +98,7 @@ const UI = {
     const rolePages = {
       ADMIN:   ['dashboard.html','income.html','expense.html','category.html','budget.html','savings.html','reports.html','profile.html','admin.html'],
       USER:    ['dashboard.html','income.html','expense.html','category.html','budget.html','savings.html','reports.html','profile.html'],
-      ANALYST: ['dashboard.html','reports.html','profile.html'],
-      AUDITOR: ['dashboard.html','reports.html','profile.html','admin.html']
+      ANALYST: ['dashboard.html','reports.html','profile.html']
     };
     const allowedPages = rolePages[role] || rolePages['USER'];
 

@@ -127,13 +127,13 @@ public class UserService {
 
     /**
      * Assign a role to a user. Only ADMIN-callable (enforced at controller layer).
-     * Accepts: ADMIN, USER, ANALYST, AUDITOR
+     * Accepts: ADMIN, USER, ANALYST
      */
     @Transactional
     public UserProfileDTO assignRole(Long userId, String role) {
         String normalizedRole = role.toUpperCase().trim();
-        if (!List.of("ADMIN", "USER", "ANALYST", "AUDITOR").contains(normalizedRole)) {
-            throw new BadRequestException("Invalid role: " + role + ". Allowed: ADMIN, USER, ANALYST, AUDITOR");
+        if (!List.of("ADMIN", "USER", "ANALYST").contains(normalizedRole)) {
+            throw new BadRequestException("Invalid role: " + role + ". Allowed: ADMIN, USER, ANALYST");
         }
         User user = getUserEntity(userId);
         user.setRole(normalizedRole);

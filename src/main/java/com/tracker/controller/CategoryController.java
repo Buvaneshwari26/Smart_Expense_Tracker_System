@@ -43,11 +43,11 @@ public class CategoryController {
     @Operation(summary = "Get a category by ID")
     public ResponseEntity<CategoryDTO> getCategoryById(@PathVariable Long id) {
         Long userId = SecurityUtils.getCurrentUserId();
-        // AUDITOR and ADMIN can read any category; others only their own
+        // ADMIN can read any category; others only their own
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-        boolean isAdminOrAuditor = auth != null && auth.getAuthorities().stream()
-                .anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN") || a.getAuthority().equals("ROLE_AUDITOR"));
-        var entity = isAdminOrAuditor
+        boolean isAdmin = auth != null && auth.getAuthorities().stream()
+                .anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN"));
+        var entity = isAdmin
                 ? categoryService.getCategoryEntityById(id)
                 : categoryService.getCategoryEntity(id, userId);
         CategoryDTO dto = CategoryDTO.builder()

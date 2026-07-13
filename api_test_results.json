@@ -24,11 +24,6 @@
           "email": "buvanesh6421@gmail.com",
           "status": "UPDATED",
           "role": "ANALYST"
-        },
-        {
-          "email": "2k23cse021@kiot.ac.in",
-          "status": "UPDATED",
-          "role": "AUDITOR"
         }
       ]
     },
@@ -50,14 +45,14 @@
         "fullName": "Buvaneshwari P",
         "email": "buvaneshwarip6002@gmail.com",
         "role": "ADMIN",
-        "accessToken": "eyJhbGciOiJIUzM4NCJ9.eyJyb2xlIjoiQURNSU4iLCJ1c2VySWQiOjMsInN1YiI6ImJ1dmFuZXNod2FyaXA2MDAyQGdtYWlsLmNvbSIsImlhdCI6MTc4MjYzMDk1MSwiZXhwIjoxNzgyNzE3MzUxfQ.R54HCw_JTnyp1WDNGcJLHhbmW5Z_N7Hob51KvH-JpGR7iCKtJceUPEO2SHACQ9tX",
-        "token": "eyJhbGciOiJIUzM4NCJ9.eyJyb2xlIjoiQURNSU4iLCJ1c2VySWQiOjMsInN1YiI6ImJ1dmFuZXNod2FyaXA2MDAyQGdtYWlsLmNvbSIsImlhdCI6MTc4MjYzMDk1MSwiZXhwIjoxNzgyNzE3MzUxfQ.R54HCw_JTnyp1WDNGcJLHhbmW5Z_N7Hob51KvH-JpGR7iCKtJceUPEO2SHACQ9tX",
-        "refreshToken": "f7fdf950-0485-4739-842c-a7f763710525",
+        "accessToken": "eyJhbGciOiJIUzM4NCJ9.eyJyb2xlIjoiQURNSU4iLCJ1c2VySWQiOjMsInN1YiI6ImJ1dmFuZXNod2FyaXA2MDAyQGdtYWlsLmNvbSIsImlhdCI6MTc4MzkzODExMiwiZXhwIjoxNzg0MDI0NTEyfQ.nA_IFeZSBMW9imS_4fj0v8yzwaW82Y8RqCYPgnfiIvzt32bBb-Cmi6Z_tr82UZWF",
+        "token": "eyJhbGciOiJIUzM4NCJ9.eyJyb2xlIjoiQURNSU4iLCJ1c2VySWQiOjMsInN1YiI6ImJ1dmFuZXNod2FyaXA2MDAyQGdtYWlsLmNvbSIsImlhdCI6MTc4MzkzODExMiwiZXhwIjoxNzg0MDI0NTEyfQ.nA_IFeZSBMW9imS_4fj0v8yzwaW82Y8RqCYPgnfiIvzt32bBb-Cmi6Z_tr82UZWF",
+        "refreshToken": "2d332a05-a865-4a6d-a949-3a6a470b6db1",
         "tokenType": "Bearer",
         "message": "Login successful"
       }
     },
-    "pass": "eyJhbGciOiJIUzM4NCJ9.eyJyb2xlIjoiQURNSU4iLCJ1c2VySWQiOjMsInN1YiI6ImJ1dmFuZXNod2FyaXA2MDAyQGdtYWlsLmNvbSIsImlhdCI6MTc4MjYzMDk1MSwiZXhwIjoxNzgyNzE3MzUxfQ.R54HCw_JTnyp1WDNGcJLHhbmW5Z_N7Hob51KvH-JpGR7iCKtJceUPEO2SHACQ9tX"
+    "pass": "eyJhbGciOiJIUzM4NCJ9.eyJyb2xlIjoiQURNSU4iLCJ1c2VySWQiOjMsInN1YiI6ImJ1dmFuZXNod2FyaXA2MDAyQGdtYWlsLmNvbSIsImlhdCI6MTc4MzkzODExMiwiZXhwIjoxNzg0MDI0NTEyfQ.nA_IFeZSBMW9imS_4fj0v8yzwaW82Y8RqCYPgnfiIvzt32bBb-Cmi6Z_tr82UZWF"
   },
   {
     "testName": "Login as USER",
@@ -75,14 +70,14 @@
         "fullName": "Buvana P",
         "email": "buvanap1712@gmail.com",
         "role": "USER",
-        "accessToken": "eyJhbGciOiJIUzM4NCJ9.eyJyb2xlIjoiVVNFUiIsInVzZXJJZCI6NCwic3ViIjoiYnV2YW5hcDE3MTJAZ21haWwuY29tIiwiaWF0IjoxNzgyNjMwOTUxLCJleHAiOjE3ODI3MTczNTF9.QBHglGHpIxjjSjLzMnw5GtpNMS7vSD7fkI9rIZdHXBCbEDZp2kjIqaBAUpex6Rbr",
-        "token": "eyJhbGciOiJIUzM4NCJ9.eyJyb2xlIjoiVVNFUiIsInVzZXJJZCI6NCwic3ViIjoiYnV2YW5hcDE3MTJAZ21haWwuY29tIiwiaWF0IjoxNzgyNjMwOTUxLCJleHAiOjE3ODI3MTczNTF9.QBHglGHpIxjjSjLzMnw5GtpNMS7vSD7fkI9rIZdHXBCbEDZp2kjIqaBAUpex6Rbr",
-        "refreshToken": "d7ab12e6-fbca-4f52-9061-2601f348e5fb",
+        "accessToken": "eyJhbGciOiJIUzM4NCJ9.eyJyb2xlIjoiVVNFUiIsInVzZXJJZCI6NCwic3ViIjoiYnV2YW5hcDE3MTJAZ21haWwuY29tIiwiaWF0IjoxNzgzOTM4MTEyLCJleHAiOjE3ODQwMjQ1MTJ9.gw9KjGZmq-8iRH7b1FVbGQ5xTQJHlgdx0aXvm42QrqGQxTRadIDVB4uDMQKohKtB",
+        "token": "eyJhbGciOiJIUzM4NCJ9.eyJyb2xlIjoiVVNFUiIsInVzZXJJZCI6NCwic3ViIjoiYnV2YW5hcDE3MTJAZ21haWwuY29tIiwiaWF0IjoxNzgzOTM4MTEyLCJleHAiOjE3ODQwMjQ1MTJ9.gw9KjGZmq-8iRH7b1FVbGQ5xTQJHlgdx0aXvm42QrqGQxTRadIDVB4uDMQKohKtB",
+        "refreshToken": "3b5e1a52-def0-4c22-a7c8-05cc78572e01",
         "tokenType": "Bearer",
         "message": "Login successful"
       }
     },
-    "pass": "eyJhbGciOiJIUzM4NCJ9.eyJyb2xlIjoiVVNFUiIsInVzZXJJZCI6NCwic3ViIjoiYnV2YW5hcDE3MTJAZ21haWwuY29tIiwiaWF0IjoxNzgyNjMwOTUxLCJleHAiOjE3ODI3MTczNTF9.QBHglGHpIxjjSjLzMnw5GtpNMS7vSD7fkI9rIZdHXBCbEDZp2kjIqaBAUpex6Rbr"
+    "pass": "eyJhbGciOiJIUzM4NCJ9.eyJyb2xlIjoiVVNFUiIsInVzZXJJZCI6NCwic3ViIjoiYnV2YW5hcDE3MTJAZ21haWwuY29tIiwiaWF0IjoxNzgzOTM4MTEyLCJleHAiOjE3ODQwMjQ1MTJ9.gw9KjGZmq-8iRH7b1FVbGQ5xTQJHlgdx0aXvm42QrqGQxTRadIDVB4uDMQKohKtB"
   },
   {
     "testName": "Login as ANALYST",
@@ -100,39 +95,14 @@
         "fullName": "Buvanesh",
         "email": "buvanesh6421@gmail.com",
         "role": "ANALYST",
-        "accessToken": "eyJhbGciOiJIUzM4NCJ9.eyJyb2xlIjoiQU5BTFlTVCIsInVzZXJJZCI6NSwic3ViIjoiYnV2YW5lc2g2NDIxQGdtYWlsLmNvbSIsImlhdCI6MTc4MjYzMDk1MSwiZXhwIjoxNzgyNzE3MzUxfQ.wtJsThbdyI-1BBldynMHFKcS6aasStGgq4LIs47h71O9wtPBaHyEZrCpGtb7xnmd",
-        "token": "eyJhbGciOiJIUzM4NCJ9.eyJyb2xlIjoiQU5BTFlTVCIsInVzZXJJZCI6NSwic3ViIjoiYnV2YW5lc2g2NDIxQGdtYWlsLmNvbSIsImlhdCI6MTc4MjYzMDk1MSwiZXhwIjoxNzgyNzE3MzUxfQ.wtJsThbdyI-1BBldynMHFKcS6aasStGgq4LIs47h71O9wtPBaHyEZrCpGtb7xnmd",
-        "refreshToken": "e57e17ae-7e39-44ec-901a-dba8caea5fb6",
+        "accessToken": "eyJhbGciOiJIUzM4NCJ9.eyJyb2xlIjoiQU5BTFlTVCIsInVzZXJJZCI6NSwic3ViIjoiYnV2YW5lc2g2NDIxQGdtYWlsLmNvbSIsImlhdCI6MTc4MzkzODExMiwiZXhwIjoxNzg0MDI0NTEyfQ.H0xlG-fcyekpz_rzRdac5PpG7xA4Mf-iQSz4WZ18Hj53Wtm2lQqgvbY3rsca_P5o",
+        "token": "eyJhbGciOiJIUzM4NCJ9.eyJyb2xlIjoiQU5BTFlTVCIsInVzZXJJZCI6NSwic3ViIjoiYnV2YW5lc2g2NDIxQGdtYWlsLmNvbSIsImlhdCI6MTc4MzkzODExMiwiZXhwIjoxNzg0MDI0NTEyfQ.H0xlG-fcyekpz_rzRdac5PpG7xA4Mf-iQSz4WZ18Hj53Wtm2lQqgvbY3rsca_P5o",
+        "refreshToken": "89b647a2-19bb-49f6-a60b-bedbb20311a7",
         "tokenType": "Bearer",
         "message": "Login successful"
       }
     },
-    "pass": "eyJhbGciOiJIUzM4NCJ9.eyJyb2xlIjoiQU5BTFlTVCIsInVzZXJJZCI6NSwic3ViIjoiYnV2YW5lc2g2NDIxQGdtYWlsLmNvbSIsImlhdCI6MTc4MjYzMDk1MSwiZXhwIjoxNzgyNzE3MzUxfQ.wtJsThbdyI-1BBldynMHFKcS6aasStGgq4LIs47h71O9wtPBaHyEZrCpGtb7xnmd"
-  },
-  {
-    "testName": "Login as AUDITOR",
-    "url": "/auth/login",
-    "method": "POST",
-    "role": "AUDITOR",
-    "expectedStatus": 200,
-    "actualStatus": 200,
-    "responseBody": {
-      "success": true,
-      "message": "Operation completed successfully",
-      "data": {
-        "userId": 1,
-        "username": "student_cse21",
-        "fullName": "KIOT CSE Student",
-        "email": "2k23cse021@kiot.ac.in",
-        "role": "AUDITOR",
-        "accessToken": "eyJhbGciOiJIUzM4NCJ9.eyJyb2xlIjoiQVVESVRPUiIsInVzZXJJZCI6MSwic3ViIjoiMmsyM2NzZTAyMUBraW90LmFjLmluIiwiaWF0IjoxNzgyNjMwOTUyLCJleHAiOjE3ODI3MTczNTJ9.vz_588B4RMh17GA_cIAYFnKQLruNTmGvoXVfXiS9SFCrtBCfZEaOp6v7SDirqaU2",
-        "token": "eyJhbGciOiJIUzM4NCJ9.eyJyb2xlIjoiQVVESVRPUiIsInVzZXJJZCI6MSwic3ViIjoiMmsyM2NzZTAyMUBraW90LmFjLmluIiwiaWF0IjoxNzgyNjMwOTUyLCJleHAiOjE3ODI3MTczNTJ9.vz_588B4RMh17GA_cIAYFnKQLruNTmGvoXVfXiS9SFCrtBCfZEaOp6v7SDirqaU2",
-        "refreshToken": "dd01d808-9151-4050-8874-ef0b82d79374",
-        "tokenType": "Bearer",
-        "message": "Login successful"
-      }
-    },
-    "pass": "eyJhbGciOiJIUzM4NCJ9.eyJyb2xlIjoiQVVESVRPUiIsInVzZXJJZCI6MSwic3ViIjoiMmsyM2NzZTAyMUBraW90LmFjLmluIiwiaWF0IjoxNzgyNjMwOTUyLCJleHAiOjE3ODI3MTczNTJ9.vz_588B4RMh17GA_cIAYFnKQLruNTmGvoXVfXiS9SFCrtBCfZEaOp6v7SDirqaU2"
+    "pass": "eyJhbGciOiJIUzM4NCJ9.eyJyb2xlIjoiQU5BTFlTVCIsInVzZXJJZCI6NSwic3ViIjoiYnV2YW5lc2g2NDIxQGdtYWlsLmNvbSIsImlhdCI6MTc4MzkzODExMiwiZXhwIjoxNzg0MDI0NTEyfQ.H0xlG-fcyekpz_rzRdac5PpG7xA4Mf-iQSz4WZ18Hj53Wtm2lQqgvbY3rsca_P5o"
   },
   {
     "testName": "Refresh Token Validation",
@@ -150,9 +120,9 @@
         "fullName": "Buvana P",
         "email": "buvanap1712@gmail.com",
         "role": "USER",
-        "accessToken": "eyJhbGciOiJIUzM4NCJ9.eyJyb2xlIjoiVVNFUiIsInVzZXJJZCI6NCwic3ViIjoiYnV2YW5hcDE3MTJAZ21haWwuY29tIiwiaWF0IjoxNzgyNjMwOTUyLCJleHAiOjE3ODI3MTczNTJ9.VEKkNBLlPdF1gjdQop16P4iFbgoWWldbyI-Fc0kX7I_j8_3KrAsKcm4fJX4qariM",
-        "token": "eyJhbGciOiJIUzM4NCJ9.eyJyb2xlIjoiVVNFUiIsInVzZXJJZCI6NCwic3ViIjoiYnV2YW5hcDE3MTJAZ21haWwuY29tIiwiaWF0IjoxNzgyNjMwOTUyLCJleHAiOjE3ODI3MTczNTJ9.VEKkNBLlPdF1gjdQop16P4iFbgoWWldbyI-Fc0kX7I_j8_3KrAsKcm4fJX4qariM",
-        "refreshToken": "128b35f3-1927-4b43-be37-bcc77ce04128",
+        "accessToken": "eyJhbGciOiJIUzM4NCJ9.eyJyb2xlIjoiVVNFUiIsInVzZXJJZCI6NCwic3ViIjoiYnV2YW5hcDE3MTJAZ21haWwuY29tIiwiaWF0IjoxNzgzOTM4MTEyLCJleHAiOjE3ODQwMjQ1MTJ9.gw9KjGZmq-8iRH7b1FVbGQ5xTQJHlgdx0aXvm42QrqGQxTRadIDVB4uDMQKohKtB",
+        "token": "eyJhbGciOiJIUzM4NCJ9.eyJyb2xlIjoiVVNFUiIsInVzZXJJZCI6NCwic3ViIjoiYnV2YW5hcDE3MTJAZ21haWwuY29tIiwiaWF0IjoxNzgzOTM4MTEyLCJleHAiOjE3ODQwMjQ1MTJ9.gw9KjGZmq-8iRH7b1FVbGQ5xTQJHlgdx0aXvm42QrqGQxTRadIDVB4uDMQKohKtB",
+        "refreshToken": "0d68a243-9c47-4483-8cb1-272f4e552d99",
         "tokenType": "Bearer",
         "message": "Token refreshed successfully"
       }
@@ -223,75 +193,15 @@
           "phoneNumber": null,
           "role": "ADMIN",
           "createdAt": "2026-06-28T12:18:17.531283"
-        }
-      ]
-    },
-    "pass": true
-  },
-  {
-    "testName": "Get All Users as AUDITOR",
-    "url": "/users",
-    "method": "GET",
-    "role": "AUDITOR",
-    "expectedStatus": 200,
-    "actualStatus": 200,
-    "responseBody": {
-      "success": true,
-      "message": "Operation completed successfully",
-      "data": [
-        {
-          "id": 1,
-          "fullName": "KIOT CSE Student",
-          "username": "student_cse21",
-          "email": "2k23cse021@kiot.ac.in",
-          "phoneNumber": "",
-          "role": "AUDITOR",
-          "createdAt": "2026-06-20T15:25:44.618665"
         },
         {
-          "id": 2,
-          "fullName": "Test User",
-          "username": "TestUser999",
-          "email": "test999@example.com",
+          "id": 7,
+          "fullName": "Buvanesh P",
+          "username": "buvanesh",
+          "email": "buvanesh1712@gmail.com",
           "phoneNumber": null,
           "role": "USER",
-          "createdAt": "2026-06-21T17:40:33.841798"
-        },
-        {
-          "id": 3,
-          "fullName": "Buvaneshwari P",
-          "username": "buvaneshwarip6002",
-          "email": "buvaneshwarip6002@gmail.com",
-          "phoneNumber": "",
-          "role": "ADMIN",
-          "createdAt": "2026-06-21T18:25:47.987128"
-        },
-        {
-          "id": 4,
-          "fullName": "Buvana P",
-          "username": "buvanap1712",
-          "email": "buvanap1712@gmail.com",
-          "phoneNumber": "9876543210",
-          "role": "USER",
-          "createdAt": "2026-06-21T18:25:48.031347"
-        },
-        {
-          "id": 5,
-          "fullName": "Buvanesh",
-          "username": "buvanesh6421",
-          "email": "buvanesh6421@gmail.com",
-          "phoneNumber": null,
-          "role": "ANALYST",
-          "createdAt": "2026-06-21T18:25:48.041689"
-        },
-        {
-          "id": 6,
-          "fullName": "Buvana",
-          "username": "Buvana",
-          "email": "buvaneshpt1712@gmail.com",
-          "phoneNumber": null,
-          "role": "ADMIN",
-          "createdAt": "2026-06-28T12:18:17.531283"
+          "createdAt": "2026-06-29T21:02:56.543864"
         }
       ]
     },
@@ -340,7 +250,7 @@
       "success": false,
       "message": "Access Denied",
       "data": {
-        "timestamp": "2026-06-28T12:45:52.2575231",
+        "timestamp": "2026-07-13T15:51:53.0402314",
         "message": "Access Denied: You can only view your own profile",
         "details": "uri=/api/users/5"
       }
@@ -412,7 +322,7 @@
       "success": false,
       "message": "Access Denied",
       "data": {
-        "timestamp": "2026-06-28T12:45:52.3003145",
+        "timestamp": "2026-07-13T15:51:53.1089549",
         "message": "Access Denied: Access Denied",
         "details": "uri=/api/users/4/role"
       }
@@ -452,8 +362,8 @@
       "success": true,
       "message": "Operation completed successfully",
       "data": {
-        "id": 20,
-        "name": "TestCategoryUser_1782630951499",
+        "id": 24,
+        "name": "TestCategoryUser_1783938111866",
         "type": "EXPENSE",
         "description": "User category"
       }
@@ -485,18 +395,18 @@
     "pass": true
   },
   {
-    "testName": "Get Category by ID as AUDITOR",
-    "url": "/categories/20",
+    "testName": "Get Category by ID as ADMIN",
+    "url": "/categories/24",
     "method": "GET",
-    "role": "AUDITOR",
+    "role": "ADMIN",
     "expectedStatus": 200,
     "actualStatus": 200,
     "responseBody": {
       "success": true,
       "message": "Operation completed successfully",
       "data": {
-        "id": 20,
-        "name": "TestCategoryUser_1782630951499",
+        "id": 24,
+        "name": "TestCategoryUser_1783938111866",
         "type": "EXPENSE",
         "description": "User category"
       }
@@ -505,7 +415,7 @@
   },
   {
     "testName": "Update Category as USER",
-    "url": "/categories/20",
+    "url": "/categories/24",
     "method": "PUT",
     "role": "USER",
     "expectedStatus": 200,
@@ -514,8 +424,8 @@
       "success": true,
       "message": "Operation completed successfully",
       "data": {
-        "id": 20,
-        "name": "TestCategoryUser_Updated_1782630951499",
+        "id": 24,
+        "name": "TestCategoryUser_Updated_1783938111866",
         "type": "EXPENSE",
         "description": "Updated description"
       }
@@ -524,7 +434,7 @@
   },
   {
     "testName": "Delete Category as USER (Denied)",
-    "url": "/categories/20",
+    "url": "/categories/24",
     "method": "DELETE",
     "role": "USER",
     "expectedStatus": 403,
@@ -534,7 +444,7 @@
   },
   {
     "testName": "Delete Category as ADMIN",
-    "url": "/categories/20",
+    "url": "/categories/24",
     "method": "DELETE",
     "role": "ADMIN",
     "expectedStatus": 204,
@@ -553,13 +463,13 @@
       "success": true,
       "message": "Operation completed successfully",
       "data": {
-        "id": 12,
+        "id": 15,
         "amount": 150,
         "date": "2026-06-28",
         "description": "Office supplies shipment",
-        "categoryId": 21,
-        "categoryName": "Logistics_1782630951499",
-        "createdAt": "2026-06-28T12:45:52.4610374"
+        "categoryId": 25,
+        "categoryName": "Logistics_1783938111866",
+        "createdAt": "2026-07-13T15:51:53.296302"
       }
     },
     "pass": true
@@ -587,13 +497,13 @@
       "data": {
         "content": [
           {
-            "id": 12,
+            "id": 15,
             "amount": 150,
             "date": "2026-06-28",
             "description": "Office supplies shipment",
-            "categoryId": 21,
-            "categoryName": "Logistics_1782630951499",
-            "createdAt": "2026-06-28T12:45:52.461037"
+            "categoryId": 25,
+            "categoryName": "Logistics_1783938111866",
+            "createdAt": "2026-07-13T15:51:53.296302"
           },
           {
             "id": 4,
@@ -641,12 +551,12 @@
             "unsorted": false
           },
           "offset": 0,
-          "unpaged": false,
-          "paged": true
+          "paged": true,
+          "unpaged": false
         },
-        "last": true,
-        "totalElements": 5,
-        "totalPages": 1,
+        "last": false,
+        "totalElements": 6,
+        "totalPages": 2,
         "size": 5,
         "number": 0,
         "first": true,
@@ -663,7 +573,7 @@
   },
   {
     "testName": "Get Expense by ID as ANALYST",
-    "url": "/expenses/12",
+    "url": "/expenses/15",
     "method": "GET",
     "role": "ANALYST",
     "expectedStatus": 200,
@@ -672,20 +582,20 @@
       "success": true,
       "message": "Operation completed successfully",
       "data": {
-        "id": 12,
+        "id": 15,
         "amount": 150,
         "date": "2026-06-28",
         "description": "Office supplies shipment",
-        "categoryId": 21,
-        "categoryName": "Logistics_1782630951499",
-        "createdAt": "2026-06-28T12:45:52.461037"
+        "categoryId": 25,
+        "categoryName": "Logistics_1783938111866",
+        "createdAt": "2026-07-13T15:51:53.296302"
       }
     },
     "pass": true
   },
   {
     "testName": "Search Expenses as USER",
-    "url": "/expenses/search?keyword=shipment&categoryId=21&minAmount=100",
+    "url": "/expenses/search?keyword=shipment&categoryId=25&minAmount=100",
     "method": "GET",
     "role": "USER",
     "expectedStatus": 200,
@@ -696,13 +606,13 @@
       "data": {
         "content": [
           {
-            "id": 12,
+            "id": 15,
             "amount": 150,
             "date": "2026-06-28",
             "description": "Office supplies shipment",
-            "categoryId": 21,
-            "categoryName": "Logistics_1782630951499",
-            "createdAt": "2026-06-28T12:45:52.461037"
+            "categoryId": 25,
+            "categoryName": "Logistics_1783938111866",
+            "createdAt": "2026-07-13T15:51:53.296302"
           }
         ],
         "pageable": {
@@ -714,8 +624,8 @@
             "unsorted": false
           },
           "offset": 0,
-          "unpaged": false,
-          "paged": true
+          "paged": true,
+          "unpaged": false
         },
         "last": true,
         "totalElements": 1,
@@ -736,7 +646,7 @@
   },
   {
     "testName": "Get Expenses by Category",
-    "url": "/expenses/category/21",
+    "url": "/expenses/category/25",
     "method": "GET",
     "role": "USER",
     "expectedStatus": 200,
@@ -746,13 +656,13 @@
       "message": "Operation completed successfully",
       "data": [
         {
-          "id": 12,
+          "id": 15,
           "amount": 150,
           "date": "2026-06-28",
           "description": "Office supplies shipment",
-          "categoryId": 21,
-          "categoryName": "Logistics_1782630951499",
-          "createdAt": "2026-06-28T12:45:52.461037"
+          "categoryId": 25,
+          "categoryName": "Logistics_1783938111866",
+          "createdAt": "2026-07-13T15:51:53.296302"
         }
       ]
     },
@@ -760,7 +670,7 @@
   },
   {
     "testName": "Update Expense as USER",
-    "url": "/expenses/12",
+    "url": "/expenses/15",
     "method": "PUT",
     "role": "USER",
     "expectedStatus": 200,
@@ -769,13 +679,13 @@
       "success": true,
       "message": "Operation completed successfully",
       "data": {
-        "id": 12,
+        "id": 15,
         "amount": 175,
         "date": "2026-06-28",
         "description": "Office supplies shipment updated",
-        "categoryId": 21,
-        "categoryName": "Logistics_1782630951499",
-        "createdAt": "2026-06-28T12:45:52.461037"
+        "categoryId": 25,
+        "categoryName": "Logistics_1783938111866",
+        "createdAt": "2026-07-13T15:51:53.296302"
       }
     },
     "pass": true
@@ -812,7 +722,7 @@
   },
   {
     "testName": "Delete Expense as USER",
-    "url": "/expenses/12",
+    "url": "/expenses/15",
     "method": "DELETE",
     "role": "USER",
     "expectedStatus": 204,
@@ -831,14 +741,14 @@
       "success": true,
       "message": "Operation completed successfully",
       "data": {
-        "id": 7,
+        "id": 9,
         "source": "Upwork",
         "amount": 800,
         "date": "2026-06-28",
         "description": "Web development contract",
-        "categoryId": 22,
-        "categoryName": "Side Hustle_1782630951499",
-        "createdAt": "2026-06-28T12:45:53.7287341"
+        "categoryId": 26,
+        "categoryName": "Side Hustle_1783938111866",
+        "createdAt": "2026-07-13T15:51:54.6300024"
       }
     },
     "pass": true
@@ -856,14 +766,14 @@
       "data": {
         "content": [
           {
-            "id": 7,
+            "id": 9,
             "source": "Upwork",
             "amount": 800,
             "date": "2026-06-28",
             "description": "Web development contract",
-            "categoryId": 22,
-            "categoryName": "Side Hustle_1782630951499",
-            "createdAt": "2026-06-28T12:45:53.728734"
+            "categoryId": 26,
+            "categoryName": "Side Hustle_1783938111866",
+            "createdAt": "2026-07-13T15:51:54.630002"
           }
         ],
         "pageable": {
@@ -875,8 +785,8 @@
             "unsorted": false
           },
           "offset": 0,
-          "unpaged": false,
-          "paged": true
+          "paged": true,
+          "unpaged": false
         },
         "last": true,
         "totalElements": 1,
@@ -897,7 +807,7 @@
   },
   {
     "testName": "Get Income by ID as USER",
-    "url": "/incomes/7",
+    "url": "/incomes/9",
     "method": "GET",
     "role": "USER",
     "expectedStatus": 200,
@@ -906,21 +816,21 @@
       "success": true,
       "message": "Operation completed successfully",
       "data": {
-        "id": 7,
+        "id": 9,
         "source": "Upwork",
         "amount": 800,
         "date": "2026-06-28",
         "description": "Web development contract",
-        "categoryId": 22,
-        "categoryName": "Side Hustle_1782630951499",
-        "createdAt": "2026-06-28T12:45:53.728734"
+        "categoryId": 26,
+        "categoryName": "Side Hustle_1783938111866",
+        "createdAt": "2026-07-13T15:51:54.630002"
       }
     },
     "pass": true
   },
   {
     "testName": "Search Incomes as USER",
-    "url": "/incomes/search?keyword=Upwork&categoryId=22",
+    "url": "/incomes/search?keyword=Upwork&categoryId=26",
     "method": "GET",
     "role": "USER",
     "expectedStatus": 200,
@@ -931,14 +841,14 @@
       "data": {
         "content": [
           {
-            "id": 7,
+            "id": 9,
             "source": "Upwork",
             "amount": 800,
             "date": "2026-06-28",
             "description": "Web development contract",
-            "categoryId": 22,
-            "categoryName": "Side Hustle_1782630951499",
-            "createdAt": "2026-06-28T12:45:53.728734"
+            "categoryId": 26,
+            "categoryName": "Side Hustle_1783938111866",
+            "createdAt": "2026-07-13T15:51:54.630002"
           }
         ],
         "pageable": {
@@ -950,8 +860,8 @@
             "unsorted": false
           },
           "offset": 0,
-          "unpaged": false,
-          "paged": true
+          "paged": true,
+          "unpaged": false
         },
         "last": true,
         "totalElements": 1,
@@ -972,7 +882,7 @@
   },
   {
     "testName": "Update Income as USER",
-    "url": "/incomes/7",
+    "url": "/incomes/9",
     "method": "PUT",
     "role": "USER",
     "expectedStatus": 200,
@@ -981,14 +891,14 @@
       "success": true,
       "message": "Operation completed successfully",
       "data": {
-        "id": 7,
+        "id": 9,
         "source": "Upwork Updated",
         "amount": 900,
         "date": "2026-06-28",
         "description": "Web development contract updated",
-        "categoryId": 22,
-        "categoryName": "Side Hustle_1782630951499",
-        "createdAt": "2026-06-28T12:45:53.728734"
+        "categoryId": 26,
+        "categoryName": "Side Hustle_1783938111866",
+        "createdAt": "2026-07-13T15:51:54.630002"
       }
     },
     "pass": true
@@ -1015,7 +925,7 @@
   },
   {
     "testName": "Delete Income as USER",
-    "url": "/incomes/7",
+    "url": "/incomes/9",
     "method": "DELETE",
     "role": "USER",
     "expectedStatus": 204,
@@ -1034,9 +944,9 @@
       "success": true,
       "message": "Operation completed successfully",
       "data": {
-        "id": 5,
-        "categoryId": 21,
-        "categoryName": "Logistics_1782630951499",
+        "id": 7,
+        "categoryId": 25,
+        "categoryName": "Logistics_1783938111866",
         "budgetAmount": 600,
         "month": 6,
         "year": 2026
@@ -1056,9 +966,9 @@
       "message": "Operation completed successfully",
       "data": [
         {
-          "id": 5,
-          "categoryId": 21,
-          "categoryName": "Logistics_1782630951499",
+          "id": 7,
+          "categoryId": 25,
+          "categoryName": "Logistics_1783938111866",
           "budgetAmount": 600,
           "month": 6,
           "year": 2026
@@ -1069,7 +979,7 @@
   },
   {
     "testName": "Get Budget by ID as USER",
-    "url": "/budgets/5",
+    "url": "/budgets/7",
     "method": "GET",
     "role": "USER",
     "expectedStatus": 200,
@@ -1078,9 +988,9 @@
       "success": true,
       "message": "Operation completed successfully",
       "data": {
-        "id": 5,
-        "categoryId": 21,
-        "categoryName": "Logistics_1782630951499",
+        "id": 7,
+        "categoryId": 25,
+        "categoryName": "Logistics_1783938111866",
         "budgetAmount": 600,
         "month": 6,
         "year": 2026
@@ -1090,7 +1000,7 @@
   },
   {
     "testName": "Update Budget as USER",
-    "url": "/budgets/5",
+    "url": "/budgets/7",
     "method": "PUT",
     "role": "USER",
     "expectedStatus": 200,
@@ -1099,9 +1009,9 @@
       "success": true,
       "message": "Operation completed successfully",
       "data": {
-        "id": 5,
-        "categoryId": 21,
-        "categoryName": "Logistics_1782630951499",
+        "id": 7,
+        "categoryId": 25,
+        "categoryName": "Logistics_1783938111866",
         "budgetAmount": 800,
         "month": 6,
         "year": 2026
@@ -1111,7 +1021,7 @@
   },
   {
     "testName": "Delete Budget as USER",
-    "url": "/budgets/5",
+    "url": "/budgets/7",
     "method": "DELETE",
     "role": "USER",
     "expectedStatus": 204,
@@ -1130,7 +1040,7 @@
       "success": true,
       "message": "Operation completed successfully",
       "data": {
-        "id": 6,
+        "id": 8,
         "goalName": "Vacation Savings",
         "targetAmount": 5000,
         "currentAmount": 500,
@@ -1153,7 +1063,7 @@
       "data": {
         "content": [
           {
-            "id": 6,
+            "id": 8,
             "goalName": "Vacation Savings",
             "targetAmount": 5000,
             "currentAmount": 500,
@@ -1170,8 +1080,8 @@
             "unsorted": true
           },
           "offset": 0,
-          "unpaged": false,
-          "paged": true
+          "paged": true,
+          "unpaged": false
         },
         "last": true,
         "totalElements": 1,
@@ -1192,7 +1102,7 @@
   },
   {
     "testName": "Get Savings Goal by ID as USER",
-    "url": "/goals/6",
+    "url": "/goals/8",
     "method": "GET",
     "role": "USER",
     "expectedStatus": 200,
@@ -1201,7 +1111,7 @@
       "success": true,
       "message": "Operation completed successfully",
       "data": {
-        "id": 6,
+        "id": 8,
         "goalName": "Vacation Savings",
         "targetAmount": 5000,
         "currentAmount": 500,
@@ -1213,7 +1123,7 @@
   },
   {
     "testName": "Add Savings to Goal",
-    "url": "/goals/6/add-savings?amount=200.00",
+    "url": "/goals/8/add-savings?amount=200.00",
     "method": "PATCH",
     "role": "USER",
     "expectedStatus": 200,
@@ -1222,7 +1132,7 @@
       "success": true,
       "message": "Operation completed successfully",
       "data": {
-        "id": 6,
+        "id": 8,
         "goalName": "Vacation Savings",
         "targetAmount": 5000,
         "currentAmount": 700,
@@ -1234,7 +1144,7 @@
   },
   {
     "testName": "Update Savings Goal as USER",
-    "url": "/goals/6",
+    "url": "/goals/8",
     "method": "PUT",
     "role": "USER",
     "expectedStatus": 200,
@@ -1243,7 +1153,7 @@
       "success": true,
       "message": "Operation completed successfully",
       "data": {
-        "id": 6,
+        "id": 8,
         "goalName": "Hawaii Vacation Savings",
         "targetAmount": 6000,
         "currentAmount": 700,
@@ -1255,7 +1165,7 @@
   },
   {
     "testName": "Delete Savings Goal as USER",
-    "url": "/goals/6",
+    "url": "/goals/8",
     "method": "DELETE",
     "role": "USER",
     "expectedStatus": 204,
@@ -1274,25 +1184,25 @@
       "success": true,
       "message": "Operation completed successfully",
       "data": {
-        "createdAt": "2026-06-28T12:45:54.0966635",
-        "updatedAt": "2026-06-28T12:45:54.0966635",
+        "createdAt": "2026-07-13T15:51:55.0063764",
+        "updatedAt": "2026-07-13T15:51:55.0063764",
         "createdBy": "buvanap1712@gmail.com",
         "modifiedBy": "buvanap1712@gmail.com",
-        "id": 5,
+        "id": 6,
         "amount": 15,
         "description": "Spotify Premium",
         "category": {
-          "createdAt": "2026-06-28T12:45:52.433842",
-          "updatedAt": "2026-06-28T12:45:52.433842",
+          "createdAt": "2026-07-13T15:51:53.26748",
+          "updatedAt": "2026-07-13T15:51:53.26748",
           "createdBy": "buvanap1712@gmail.com",
           "modifiedBy": "buvanap1712@gmail.com",
-          "id": 21,
-          "name": "Logistics_1782630951499",
+          "id": 25,
+          "name": "Logistics_1783938111866",
           "type": "EXPENSE",
           "description": "Business logistics",
           "user": {
             "createdAt": "2026-06-21T18:25:48.031347",
-            "updatedAt": "2026-06-28T12:45:52.283161",
+            "updatedAt": "2026-07-13T15:51:53.085041",
             "createdBy": "SYSTEM",
             "modifiedBy": "buvanap1712@gmail.com",
             "id": 4,
@@ -1310,7 +1220,7 @@
         "lastExecutionDate": null,
         "user": {
           "createdAt": "2026-06-21T18:25:48.031347",
-          "updatedAt": "2026-06-28T12:45:52.283161",
+          "updatedAt": "2026-07-13T15:51:53.085041",
           "createdBy": "SYSTEM",
           "modifiedBy": "buvanap1712@gmail.com",
           "id": 4,
@@ -1338,25 +1248,25 @@
       "message": "Operation completed successfully",
       "data": [
         {
-          "createdAt": "2026-06-28T12:45:54.096664",
-          "updatedAt": "2026-06-28T12:45:54.096664",
+          "createdAt": "2026-07-13T15:51:55.006376",
+          "updatedAt": "2026-07-13T15:51:55.006376",
           "createdBy": "buvanap1712@gmail.com",
           "modifiedBy": "buvanap1712@gmail.com",
-          "id": 5,
+          "id": 6,
           "amount": 15,
           "description": "Spotify Premium",
           "category": {
-            "createdAt": "2026-06-28T12:45:52.433842",
-            "updatedAt": "2026-06-28T12:45:52.433842",
+            "createdAt": "2026-07-13T15:51:53.26748",
+            "updatedAt": "2026-07-13T15:51:53.26748",
             "createdBy": "buvanap1712@gmail.com",
             "modifiedBy": "buvanap1712@gmail.com",
-            "id": 21,
-            "name": "Logistics_1782630951499",
+            "id": 25,
+            "name": "Logistics_1783938111866",
             "type": "EXPENSE",
             "description": "Business logistics",
             "user": {
               "createdAt": "2026-06-21T18:25:48.031347",
-              "updatedAt": "2026-06-28T12:45:52.283161",
+              "updatedAt": "2026-07-13T15:51:53.085041",
               "createdBy": "SYSTEM",
               "modifiedBy": "buvanap1712@gmail.com",
               "id": 4,
@@ -1374,7 +1284,7 @@
           "lastExecutionDate": null,
           "user": {
             "createdAt": "2026-06-21T18:25:48.031347",
-            "updatedAt": "2026-06-28T12:45:52.283161",
+            "updatedAt": "2026-07-13T15:51:53.085041",
             "createdBy": "SYSTEM",
             "modifiedBy": "buvanap1712@gmail.com",
             "id": 4,
@@ -1393,7 +1303,7 @@
   },
   {
     "testName": "Update Recurring Schedule as USER",
-    "url": "/recurring/5",
+    "url": "/recurring/6",
     "method": "PUT",
     "role": "USER",
     "expectedStatus": 200,
@@ -1402,25 +1312,25 @@
       "success": true,
       "message": "Operation completed successfully",
       "data": {
-        "createdAt": "2026-06-28T12:45:54.096664",
-        "updatedAt": "2026-06-28T12:45:54.1453673",
+        "createdAt": "2026-07-13T15:51:55.006376",
+        "updatedAt": "2026-07-13T15:51:55.0670939",
         "createdBy": "buvanap1712@gmail.com",
         "modifiedBy": "buvanap1712@gmail.com",
-        "id": 5,
+        "id": 6,
         "amount": 18.99,
         "description": "Spotify Premium Family",
         "category": {
-          "createdAt": "2026-06-28T12:45:52.433842",
-          "updatedAt": "2026-06-28T12:45:52.433842",
+          "createdAt": "2026-07-13T15:51:53.26748",
+          "updatedAt": "2026-07-13T15:51:53.26748",
           "createdBy": "buvanap1712@gmail.com",
           "modifiedBy": "buvanap1712@gmail.com",
-          "id": 21,
-          "name": "Logistics_1782630951499",
+          "id": 25,
+          "name": "Logistics_1783938111866",
           "type": "EXPENSE",
           "description": "Business logistics",
           "user": {
             "createdAt": "2026-06-21T18:25:48.031347",
-            "updatedAt": "2026-06-28T12:45:52.283161",
+            "updatedAt": "2026-07-13T15:51:53.085041",
             "createdBy": "SYSTEM",
             "modifiedBy": "buvanap1712@gmail.com",
             "id": 4,
@@ -1438,7 +1348,7 @@
         "lastExecutionDate": null,
         "user": {
           "createdAt": "2026-06-21T18:25:48.031347",
-          "updatedAt": "2026-06-28T12:45:52.283161",
+          "updatedAt": "2026-07-13T15:51:53.085041",
           "createdBy": "SYSTEM",
           "modifiedBy": "buvanap1712@gmail.com",
           "id": 4,
@@ -1466,7 +1376,7 @@
   },
   {
     "testName": "Delete Recurring Schedule as USER",
-    "url": "/recurring/5",
+    "url": "/recurring/6",
     "method": "DELETE",
     "role": "USER",
     "expectedStatus": 204,
@@ -1495,8 +1405,8 @@
             "unsorted": true
           },
           "offset": 0,
-          "unpaged": false,
-          "paged": true
+          "paged": true,
+          "unpaged": false
         },
         "last": true,
         "totalElements": 0,
@@ -1541,12 +1451,12 @@
       "message": "Operation completed successfully",
       "data": {
         "totalIncome": 0,
-        "totalExpense": 94.95,
-        "currentBalance": -94.95,
+        "totalExpense": 113.94,
+        "currentBalance": -113.94,
         "monthlyIncome": 0,
-        "monthlyExpense": 94.95,
+        "monthlyExpense": 0,
         "monthlySavingsRate": 0,
-        "topSpendingCategory": "Logistics",
+        "topSpendingCategory": "N/A",
         "budgets": [],
         "recentTransactions": [
           {
@@ -1586,7 +1496,15 @@
             "type": "EXPENSE",
             "amount": 18.99,
             "date": "2026-06-01",
-            "categoryName": "Logistics_1782630951499",
+            "categoryName": "Deleted Category",
+            "description": "Spotify Premium Family"
+          },
+          {
+            "id": 16,
+            "type": "EXPENSE",
+            "amount": 18.99,
+            "date": "2026-06-01",
+            "categoryName": "Logistics_1783938111866",
             "description": "Spotify Premium Family"
           }
         ],
@@ -1609,8 +1527,8 @@
         "month": 6,
         "year": 2026,
         "totalIncome": 0,
-        "totalExpense": 94.95,
-        "balance": -94.95,
+        "totalExpense": 113.94,
+        "balance": -113.94,
         "categoryBreakdown": [
           {
             "amount": 18.99,
@@ -1618,7 +1536,7 @@
           },
           {
             "amount": 18.99,
-            "category": "Logistics_1782630951499"
+            "category": "Logistics_1783938111866"
           }
         ]
       }
@@ -1638,8 +1556,8 @@
       "data": {
         "year": 2026,
         "totalIncome": 0,
-        "totalExpense": 94.95,
-        "balance": -94.95,
+        "totalExpense": 113.94,
+        "balance": -113.94,
         "monthlyData": [
           {
             "month": 1,
@@ -1674,8 +1592,8 @@
           {
             "month": 6,
             "income": 0,
-            "expense": 94.95,
-            "balance": -94.95
+            "expense": 113.94,
+            "balance": -113.94
           },
           {
             "month": 7,
@@ -1737,7 +1655,7 @@
             "totalSpent": 18.99
           },
           {
-            "category": "Logistics_1782630951499",
+            "category": "Logistics_1783938111866",
             "totalSpent": 18.99
           }
         ]
@@ -1786,7 +1704,7 @@
           {
             "month": 6,
             "income": 0,
-            "expense": 94.95
+            "expense": 113.94
           },
           {
             "month": 7,
@@ -1834,13 +1752,13 @@
     "pass": true
   },
   {
-    "testName": "Export Backup as AUDITOR",
+    "testName": "Export Backup as ANALYST (Denied)",
     "url": "/admin/backup/export",
     "method": "GET",
-    "role": "AUDITOR",
-    "expectedStatus": 200,
-    "actualStatus": 200,
-    "responseBody": "Backup dump JSON",
+    "role": "ANALYST",
+    "expectedStatus": 403,
+    "actualStatus": 403,
+    "responseBody": "",
     "pass": true
   },
   {

@@ -64,7 +64,7 @@
       );
       const role = res.role || 'USER';
       let redirectUrl = 'dashboard.html';
-      if (role === 'ADMIN' || role === 'AUDITOR') redirectUrl = 'admin.html';
+      if (role === 'ADMIN') redirectUrl = 'admin.html';
       else if (role === 'ANALYST') redirectUrl = 'reports.html';
       
       showAlert('success', '✅ Login successful! Redirecting…');

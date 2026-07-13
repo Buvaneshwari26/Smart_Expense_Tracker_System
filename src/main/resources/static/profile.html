@@ -253,7 +253,7 @@
   UI.initSidebar();
   UI.initHeader();
 
-  // Enforce read-only mode for ANALYST/AUDITOR (hide Save/Delete buttons)
+  // Enforce read-only mode for ANALYST (hide Save/Delete buttons)
   Auth.enforceReadOnly('.write-only');
 
   const style = document.createElement('style');
