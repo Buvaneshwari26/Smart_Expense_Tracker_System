@@ -23,6 +23,9 @@ public interface IncomeRepository extends JpaRepository<Income, Long> {
     @Query("SELECT SUM(i.amount) FROM Income i WHERE i.user.id = :userId AND MONTH(i.date) = :month AND YEAR(i.date) = :year")
     BigDecimal sumByUserIdAndMonthAndYear(@Param("userId") Long userId, @Param("month") int month, @Param("year") int year);
 
+    @Query("SELECT SUM(i.amount) FROM Income i")
+    BigDecimal sumSystemWideIncome();
+
     @Query("SELECT SUM(i.amount) FROM Income i WHERE i.user.id = :userId")
     BigDecimal sumTotalByUserId(@Param("userId") Long userId);
 

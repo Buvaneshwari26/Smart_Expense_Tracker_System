@@ -19,10 +19,12 @@ public class CategoryService {
 
     private final CategoryRepository categoryRepository;
     private final UserService userService;
+    private final ActivityLogService activityLogService;
 
-    public CategoryService(CategoryRepository categoryRepository, UserService userService) {
+    public CategoryService(CategoryRepository categoryRepository, UserService userService, ActivityLogService activityLogService) {
         this.categoryRepository = categoryRepository;
         this.userService = userService;
+        this.activityLogService = activityLogService;
     }
 
     @Transactional
@@ -42,6 +44,7 @@ public class CategoryService {
                 .build();
 
         Category savedCategory = categoryRepository.save(category);
+        activityLogService.logActivity(user, "CATEGORY_CREATE", "Created category: " + savedCategory.getName() + " (" + savedCategory.getType() + ")");
         return mapToDTO(savedCategory);
     }
 
@@ -69,14 +72,15 @@ public class CategoryService {
         category.setDescription(categoryDTO.getDescription());
 
         Category updatedCategory = categoryRepository.save(category);
+        activityLogService.logActivity(updatedCategory.getUser(), "CATEGORY_UPDATE", "Updated category ID: " + categoryId + " to name: " + updatedCategory.getName());
         return mapToDTO(updatedCategory);
     }
 
     @Transactional
     public void deleteCategory(Long userId, Long categoryId) {
         Category category = getCategoryEntity(categoryId, userId);
-        // Delete category
         categoryRepository.delete(category);
+        activityLogService.logActivity(category.getUser(), "CATEGORY_DELETE", "Deleted category: " + category.getName());
     }
 
     @Transactional(readOnly = true)

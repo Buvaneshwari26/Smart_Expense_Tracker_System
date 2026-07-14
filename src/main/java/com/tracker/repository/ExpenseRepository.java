@@ -26,6 +26,21 @@ public interface ExpenseRepository extends JpaRepository<Expense, Long> {
     @Query("SELECT SUM(e.amount) FROM Expense e WHERE e.user.id = :userId AND MONTH(e.date) = :month AND YEAR(e.date) = :year")
     BigDecimal sumByUserIdAndMonthAndYear(@Param("userId") Long userId, @Param("month") int month, @Param("year") int year);
 
+    @Query("SELECT SUM(e.amount) FROM Expense e")
+    BigDecimal sumSystemWideExpense();
+
+    @Query("SELECT SUM(e.amount) FROM Expense e WHERE e.user.id = :userId")
+    BigDecimal sumTotalByUserId(@Param("userId") Long userId);
+
+    @Query("SELECT e.user.id, e.user.email, e.user.fullName, SUM(e.amount) FROM Expense e GROUP BY e.user.id, e.user.email, e.user.fullName ORDER BY SUM(e.amount) DESC")
+    List<Object[]> findTopSpendingUsers(Pageable pageable);
+
+    @Query("SELECT e.category.name, SUM(e.amount) FROM Expense e GROUP BY e.category.name ORDER BY SUM(e.amount) DESC")
+    List<Object[]> findSystemWideCategoryTotals();
+
+    @Query("SELECT e.category.name, SUM(e.amount) FROM Expense e WHERE e.user.id = :userId GROUP BY e.category.name ORDER BY SUM(e.amount) DESC")
+    List<Object[]> findUserCategoryTotals(@Param("userId") Long userId);
+
     @Query("SELECT SUM(e.amount) FROM Expense e WHERE e.user.id = :userId AND e.category.id = :categoryId AND MONTH(e.date) = :month AND YEAR(e.date) = :year")
     BigDecimal sumByUserIdAndCategoryIdAndMonthAndYear(@Param("userId") Long userId, @Param("categoryId") Long categoryId, @Param("month") int month, @Param("year") int year);
 

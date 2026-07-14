@@ -20,4 +20,12 @@ public interface UserRepository extends JpaRepository<User, Long> {
      */
     boolean existsByEmailAndIdNot(String email, Long id);
     boolean existsByUsernameAndIdNot(String username, Long id);
+
+    long countByAccountActiveTrue();
+    
+    @org.springframework.data.jpa.repository.Query("SELECT COUNT(u) FROM User u WHERE u.accountActive = false")
+    long countByAccountActiveFalse();
+
+    @org.springframework.data.jpa.repository.Query("SELECT COUNT(u) FROM User u WHERE u.createdAt >= :startDate")
+    long countByCreatedAtAfter(@org.springframework.data.repository.query.Param("startDate") java.time.LocalDateTime startDate);
 }

@@ -1,5 +1,6 @@
 package com.tracker.service;
 
+import com.tracker.dto.AdminCreateUserRequest;
 import com.tracker.dto.UserProfileDTO;
 import com.tracker.exception.BadRequestException;
 import com.tracker.exception.ResourceNotFoundException;
@@ -30,10 +31,65 @@ public class UserService {
 
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
+    private final ActivityLogService activityLogService;
+
+    private void validatePasswordStrength(String password) {
+        if (password == null || password.length() < 8) {
+            throw new BadRequestException("Password must be at least 8 characters long");
+        }
+        boolean hasUppercase = password.chars().anyMatch(Character::isUpperCase);
+        boolean hasLowercase = password.chars().anyMatch(Character::isLowerCase);
+        boolean hasDigit = password.chars().anyMatch(Character::isDigit);
+        boolean hasSpecial = password.chars().anyMatch(ch -> "!@#$%^&*()_+=-[]{}|;:',.<>?/`~".indexOf(ch) >= 0);
+
+        if (!hasUppercase || !hasLowercase || !hasDigit || !hasSpecial) {
+            throw new BadRequestException("Password must contain at least one uppercase letter, one lowercase letter, one digit, and one special character");
+        }
+    }
 
     // ─────────────────────────────────────────────────────────────────────────
-    // Read
+    // Admin: Create user with role
     // ─────────────────────────────────────────────────────────────────────────
+
+    /**
+     * Admin-only user creation. Unlike /auth/register, this allows specifying
+     * any role (ADMIN, USER, ANALYST) and full profile fields.
+     */
+    @Transactional
+    public UserProfileDTO adminCreateUser(AdminCreateUserRequest req) {
+        validatePasswordStrength(req.getPassword());
+
+        if (userRepository.existsByEmail(req.getEmail())) {
+            throw new BadRequestException("Email already registered: " + req.getEmail());
+        }
+        if (userRepository.existsByUsername(req.getUsername())) {
+            throw new BadRequestException("Username already taken: " + req.getUsername());
+        }
+
+        String normalizedRole = req.getRole() != null ? req.getRole().toUpperCase().trim() : "USER";
+        if (!List.of("ADMIN", "USER", "ANALYST").contains(normalizedRole)) {
+            normalizedRole = "USER";
+        }
+
+        User user = User.builder()
+                .fullName(req.getFullName())
+                .username(req.getUsername())
+                .email(req.getEmail())
+                .password(passwordEncoder.encode(req.getPassword()))
+                .phoneNumber(req.getPhoneNumber())
+                .role(normalizedRole)
+                .accountLocked(false)
+                .accountActive(true)
+                .failedLoginCount(0)
+                .build();
+
+        User saved = userRepository.save(user);
+        log.info("Admin created user: {} with role={}", saved.getEmail(), saved.getRole());
+        activityLogService.logActivity(saved, "ADMIN_USER_CREATE", "Admin created user: " + saved.getEmail() + " role=" + saved.getRole());
+        return mapToProfile(saved);
+    }
+
+
 
     @Transactional(readOnly = true)
     public User getUserEntity(Long id) {
@@ -89,9 +145,33 @@ public class UserService {
         if (dto.getPhoneNumber() != null) {
             user.setPhoneNumber(dto.getPhoneNumber().trim());
         }
+        if (dto.getProfilePicture() != null) {
+            user.setProfilePicture(dto.getProfilePicture());
+        }
+        if (dto.getCurrencyPreference() != null) {
+            user.setCurrencyPreference(dto.getCurrencyPreference());
+        }
+        if (dto.getThemePreference() != null) {
+            user.setThemePreference(dto.getThemePreference());
+        }
+        if (dto.getNotificationPreference() != null) {
+            user.setNotificationPreference(dto.getNotificationPreference());
+        }
+        
+        // Admin-only updates mapped on user via DTO if needed
+        if (dto.getAccountActive() != null) {
+            user.setAccountActive(dto.getAccountActive());
+        }
+        if (dto.getAccountLocked() != null) {
+            user.setAccountLocked(dto.getAccountLocked());
+            if (!dto.getAccountLocked()) {
+                user.setFailedLoginCount(0); // Reset count if unlocked
+            }
+        }
 
         User saved = userRepository.save(user);
         log.info("Profile updated for userId={}", userId);
+        activityLogService.logActivity(saved, "PROFILE_UPDATE", "Updated profile settings");
         return mapToProfile(saved);
     }
 
@@ -100,9 +180,8 @@ public class UserService {
      */
     @Transactional
     public void changePassword(Long userId, String currentPassword, String newPassword) {
-        if (newPassword == null || newPassword.length() < 8) {
-            throw new BadRequestException("New password must be at least 8 characters long");
-        }
+        validatePasswordStrength(newPassword);
+
         User user = getUserEntity(userId);
         if (!passwordEncoder.matches(currentPassword, user.getPassword())) {
             throw new BadRequestException("Current password is incorrect");
@@ -113,6 +192,7 @@ public class UserService {
         user.setPassword(passwordEncoder.encode(newPassword));
         userRepository.save(user);
         log.info("Password changed for userId={}", userId);
+        activityLogService.logActivity(user, "PASSWORD_CHANGE", "Password updated successfully");
     }
 
     /**
@@ -123,6 +203,7 @@ public class UserService {
         User user = getUserEntity(userId);
         userRepository.delete(user);
         log.info("User deleted: userId={}", userId);
+        activityLogService.logActivity(user, "USER_DELETE", "Soft-deleted user account: " + user.getEmail());
     }
 
     /**
@@ -139,6 +220,7 @@ public class UserService {
         user.setRole(normalizedRole);
         User saved = userRepository.save(user);
         log.info("Role '{}' assigned to userId={}", normalizedRole, userId);
+        activityLogService.logActivity(saved, "ROLE_CHANGE", "Assigned role: " + normalizedRole);
         return mapToProfile(saved);
     }
 
@@ -155,6 +237,14 @@ public class UserService {
                 .phoneNumber(user.getPhoneNumber())
                 .role(user.getRole())
                 .createdAt(user.getCreatedAt())
+                .profilePicture(user.getProfilePicture())
+                .currencyPreference(user.getCurrencyPreference() != null ? user.getCurrencyPreference() : "INR")
+                .themePreference(user.getThemePreference() != null ? user.getThemePreference() : "LIGHT")
+                .notificationPreference(user.getNotificationPreference() == null || user.getNotificationPreference())
+                .lastLogin(user.getLastLogin())
+                .failedLoginCount(user.getFailedLoginCount() != null ? user.getFailedLoginCount() : 0)
+                .accountLocked(user.getAccountLocked() != null && user.getAccountLocked())
+                .accountActive(user.getAccountActive() == null || user.getAccountActive())
                 .build();
     }
 }

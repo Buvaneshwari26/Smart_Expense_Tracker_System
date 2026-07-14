@@ -18,6 +18,8 @@ public class UserPrincipal implements UserDetails {
     private final String email;
     private final String password;
     private final String role;
+    private final boolean accountLocked;
+    private final boolean accountActive;
     private final Collection<? extends GrantedAuthority> authorities;
 
     public static UserPrincipal create(User user) {
@@ -29,6 +31,8 @@ public class UserPrincipal implements UserDetails {
                 user.getEmail(),
                 user.getPassword(),
                 user.getRole(),
+                user.getAccountLocked() != null && user.getAccountLocked(),
+                user.getAccountActive() == null || user.getAccountActive(),
                 authorities
         );
     }
@@ -42,11 +46,15 @@ public class UserPrincipal implements UserDetails {
     public boolean isAccountNonExpired() { return true; }
 
     @Override
-    public boolean isAccountNonLocked() { return true; }
+    public boolean isAccountNonLocked() { 
+        return !accountLocked; 
+    }
 
     @Override
     public boolean isCredentialsNonExpired() { return true; }
 
     @Override
-    public boolean isEnabled() { return true; }
+    public boolean isEnabled() { 
+        return accountActive; 
+    }
 }

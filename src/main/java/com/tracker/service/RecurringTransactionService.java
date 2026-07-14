@@ -3,6 +3,7 @@ package com.tracker.service;
 import com.tracker.dto.ExpenseDTO;
 import com.tracker.exception.ResourceNotFoundException;
 import com.tracker.model.*;
+import com.tracker.repository.NotificationRepository;
 import com.tracker.repository.RecurringTransactionRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -22,6 +23,8 @@ public class RecurringTransactionService {
     private final UserService userService;
     private final CategoryService categoryService;
     private final ExpenseService expenseService;
+    private final ActivityLogService activityLogService;
+    private final NotificationRepository notificationRepository;
 
     @Transactional
     public RecurringTransaction createSchedule(Long userId, Double amount, String description, Long categoryId, String frequency, LocalDate startDate) {
@@ -39,7 +42,9 @@ public class RecurringTransactionService {
                 .isActive(true)
                 .build();
 
-        return recurringTransactionRepository.save(schedule);
+        RecurringTransaction saved = recurringTransactionRepository.save(schedule);
+        activityLogService.logActivity(user, "RECURRING_CREATE", "Created recurring schedule for " + saved.getDescription() + " (₹" + saved.getAmount() + ", " + saved.getFrequency() + ")");
+        return saved;
     }
 
     @Transactional(readOnly = true)
@@ -63,7 +68,9 @@ public class RecurringTransactionService {
         schedule.setFrequency(frequency);
         schedule.setActive(isActive);
 
-        return recurringTransactionRepository.save(schedule);
+        RecurringTransaction saved = recurringTransactionRepository.save(schedule);
+        activityLogService.logActivity(saved.getUser(), "RECURRING_UPDATE", "Updated recurring schedule ID: " + scheduleId + " (active: " + isActive + ")");
+        return saved;
     }
 
     @Transactional
@@ -76,6 +83,26 @@ public class RecurringTransactionService {
         }
 
         recurringTransactionRepository.delete(schedule);
+        activityLogService.logActivity(schedule.getUser(), "RECURRING_DELETE", "Deleted recurring schedule ID: " + scheduleId);
+    }
+
+    @Scheduled(cron = "0 0 8 * * ?") // Daily reminder execution at 8:00 AM
+    @Transactional
+    public void remindUpcomingRecurringTransactions() {
+        LocalDate tomorrow = LocalDate.now().plusDays(1);
+        List<RecurringTransaction> upcoming = recurringTransactionRepository.findByIsActiveTrueAndNextExecutionDateLessThanEqual(tomorrow);
+        log.info("Checking upcoming recurring transactions for tomorrow: {}", tomorrow);
+        for (RecurringTransaction t : upcoming) {
+            if (t.getNextExecutionDate().equals(tomorrow)) {
+                Notification notification = Notification.builder()
+                        .title("Upcoming Payment Reminder")
+                        .message("Reminder: Your recurring payment '" + t.getDescription() + "' of ₹" + t.getAmount() + " is scheduled for tomorrow (" + tomorrow + ").")
+                        .user(t.getUser())
+                        .isRead(false)
+                        .build();
+                notificationRepository.save(notification);
+            }
+        }
     }
 
     @Scheduled(cron = "0 0 1 * * ?") // Daily execution task at 1:00 AM

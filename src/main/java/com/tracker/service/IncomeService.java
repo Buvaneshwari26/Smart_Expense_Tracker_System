@@ -24,6 +24,7 @@ public class IncomeService {
     private final IncomeRepository incomeRepository;
     private final UserService userService;
     private final CategoryService categoryService;
+    private final ActivityLogService activityLogService;
 
     @Transactional
     public IncomeDTO addIncome(Long userId, IncomeDTO incomeDTO) {
@@ -41,6 +42,10 @@ public class IncomeService {
 
         Income saved = incomeRepository.save(income);
         log.info("Income added: {} for user {}", saved.getId(), userId);
+
+        // Record activity log
+        activityLogService.logActivity(user, "INCOME_CREATE", "Added income source: " + saved.getSource() + " of ₹" + saved.getAmount());
+
         return mapToDTO(saved);
     }
 
@@ -84,7 +89,12 @@ public class IncomeService {
         income.setDescription(incomeDTO.getDescription());
         income.setCategory(category);
 
-        return mapToDTO(incomeRepository.save(income));
+        Income saved = incomeRepository.save(income);
+
+        // Record activity log
+        activityLogService.logActivity(income.getUser(), "INCOME_UPDATE", "Updated income of ID: " + incomeId + " to ₹" + saved.getAmount());
+
+        return mapToDTO(saved);
     }
 
     @Transactional
@@ -96,6 +106,9 @@ public class IncomeService {
                 : incomeRepository.findByIdAndUserId(incomeId, userId).orElseThrow(() -> new ResourceNotFoundException("Income not found with id: " + incomeId));
         incomeRepository.delete(income);
         log.info("Income soft-deleted: {} for user {}", incomeId, userId);
+
+        // Record activity log
+        activityLogService.logActivity(income.getUser(), "INCOME_DELETE", "Deleted income source: " + income.getSource() + " of ID: " + incomeId);
     }
 
     public IncomeDTO mapToDTO(Income income) {

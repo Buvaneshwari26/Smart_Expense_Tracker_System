@@ -31,6 +31,8 @@ class AuthServiceTest {
     @Mock private PasswordEncoder passwordEncoder;
     @Mock private JwtTokenProvider jwtTokenProvider;
     @Mock private AuthenticationManager authenticationManager;
+    @Mock private ActivityLogService activityLogService;
+    @Mock private LoginHistoryService loginHistoryService;
 
     @InjectMocks
     private AuthService authService;
@@ -44,7 +46,7 @@ class AuthServiceTest {
         registerRequest.setFullName("Test User");
         registerRequest.setUsername("testuser");
         registerRequest.setEmail("test@example.com");
-        registerRequest.setPassword("password123");
+        registerRequest.setPassword("Password123!");
         registerRequest.setPhoneNumber("9876543210");
 
         savedUser = User.builder()

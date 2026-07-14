@@ -29,6 +29,8 @@ public class ExpenseService {
     private final BudgetRepository budgetRepository;
     private final NotificationRepository notificationRepository;
     private final EmailService emailService;
+    private final ActivityLogService activityLogService;
+    private final IncomeRepository incomeRepository;
 
     @Transactional
     public ExpenseDTO addExpense(Long userId, ExpenseDTO expenseDTO) {
@@ -46,8 +48,14 @@ public class ExpenseService {
         Expense saved = expenseRepository.save(expense);
         log.info("Expense added: {} for user {}", saved.getId(), userId);
 
+        // Record activity log
+        activityLogService.logActivity(user, "EXPENSE_CREATE", "Added expense of ₹" + saved.getAmount() + " in Category: " + category.getName());
+
         // Check budget and send alert if exceeded
         checkBudgetAlert(user, category, saved.getDate());
+
+        // Check large expense threshold (>20% of monthly income)
+        checkLargeExpenseAlert(user, saved);
 
         return mapToDTO(saved);
     }
@@ -83,7 +91,15 @@ public class ExpenseService {
         expense.setDescription(expenseDTO.getDescription());
         expense.setCategory(category);
 
-        return mapToDTO(expenseRepository.save(expense));
+        Expense saved = expenseRepository.save(expense);
+        
+        // Record activity log
+        activityLogService.logActivity(expense.getUser(), "EXPENSE_UPDATE", "Updated expense of ID: " + expenseId + " to ₹" + saved.getAmount());
+
+        // Check budget limits again after update
+        checkBudgetAlert(expense.getUser(), category, saved.getDate());
+
+        return mapToDTO(saved);
     }
 
     @Transactional
@@ -95,6 +111,9 @@ public class ExpenseService {
                 : expenseRepository.findByIdAndUserId(expenseId, userId).orElseThrow(() -> new ResourceNotFoundException("Expense not found with id: " + expenseId));
         expenseRepository.delete(expense); // Triggers soft delete via @SQLDelete
         log.info("Expense soft-deleted: {} for user {}", expenseId, userId);
+        
+        // Record activity log
+        activityLogService.logActivity(expense.getUser(), "EXPENSE_DELETE", "Deleted expense of ID: " + expenseId + " (amount: ₹" + expense.getAmount() + ")");
     }
 
     @Transactional(readOnly = true)
@@ -124,20 +143,58 @@ public class ExpenseService {
                     .findFirst()
                     .ifPresent(budget -> {
                         java.math.BigDecimal spent = expenseRepository.sumByUserIdAndCategoryIdAndMonthAndYear(user.getId(), category.getId(), month, year);
-                        if (spent != null && spent.compareTo(budget.getBudgetAmount()) > 0) {
-                            Notification notification = Notification.builder()
-                                    .title("Budget Exceeded!")
-                                    .message("Your " + category.getName() + " budget of ₹" + budget.getBudgetAmount() +
-                                             " has been exceeded. Total spent: ₹" + spent)
-                                    .user(user)
-                                    .build();
-                            notificationRepository.save(notification);
-                            emailService.sendBudgetExceededAlert(user.getEmail(), user.getUsername(),
-                                    category.getName(), budget.getBudgetAmount(), spent);
+                        if (spent != null) {
+                            java.math.BigDecimal limit = budget.getBudgetAmount();
+                            java.math.BigDecimal eightyPercent = limit.multiply(new java.math.BigDecimal("0.80"));
+                            
+                            if (spent.compareTo(limit) > 0) {
+                                Notification notification = Notification.builder()
+                                        .title("Budget Exceeded!")
+                                        .message("Your " + category.getName() + " budget of ₹" + limit +
+                                                 " has been exceeded. Total spent: ₹" + spent)
+                                        .user(user)
+                                        .isRead(false)
+                                        .build();
+                                notificationRepository.save(notification);
+                                emailService.sendBudgetExceededAlert(user.getEmail(), user.getUsername(),
+                                        category.getName(), limit, spent);
+                            } else if (spent.compareTo(eightyPercent) >= 0) {
+                                java.math.BigDecimal percent = spent.multiply(new java.math.BigDecimal("100"))
+                                        .divide(limit, 2, java.math.RoundingMode.HALF_UP);
+                                Notification notification = Notification.builder()
+                                        .title("Budget Alert (80% Reached)")
+                                        .message("Warning: You have reached " + percent + "% of your ₹" + limit + 
+                                                 " budget for " + category.getName() + ". Total spent: ₹" + spent)
+                                        .user(user)
+                                        .isRead(false)
+                                        .build();
+                                notificationRepository.save(notification);
+                            }
                         }
                     });
         } catch (Exception e) {
             log.error("Error checking budget alert: {}", e.getMessage());
+        }
+    }
+
+    private void checkLargeExpenseAlert(User user, Expense expense) {
+        try {
+            LocalDate date = expense.getDate();
+            java.math.BigDecimal monthlyIncome = incomeRepository.sumByUserIdAndMonthAndYear(user.getId(), date.getMonthValue(), date.getYear());
+            if (monthlyIncome != null && monthlyIncome.compareTo(java.math.BigDecimal.ZERO) > 0) {
+                java.math.BigDecimal threshold = monthlyIncome.multiply(new java.math.BigDecimal("0.20"));
+                if (expense.getAmount().compareTo(threshold) > 0) {
+                    Notification notification = Notification.builder()
+                            .title("Large Expense Alert")
+                            .message("Warning: Expense of ₹" + expense.getAmount() + " exceeds 20% of your current monthly income of ₹" + monthlyIncome)
+                            .user(user)
+                            .isRead(false)
+                            .build();
+                    notificationRepository.save(notification);
+                }
+            }
+        } catch (Exception e) {
+            log.error("Error checking large expense alert: {}", e.getMessage());
         }
     }
 

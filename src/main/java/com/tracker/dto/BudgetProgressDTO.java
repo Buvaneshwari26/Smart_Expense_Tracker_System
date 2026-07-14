@@ -12,4 +12,7 @@ public class BudgetProgressDTO {
     private BigDecimal remainingAmount;
     private BigDecimal utilizationPercent;
     private boolean isExceeded;
+    private String budgetHealth;
+    private BigDecimal spendingVelocity;
+    private String predictedOverrunDate;
 }

@@ -12,4 +12,12 @@ public class UserProfileDTO {
     private String phoneNumber;
     private String role;
     private LocalDateTime createdAt;
+    private String profilePicture;
+    private String currencyPreference;
+    private String themePreference;
+    private Boolean notificationPreference;
+    private LocalDateTime lastLogin;
+    private Integer failedLoginCount;
+    private Boolean accountLocked;
+    private Boolean accountActive;
 }

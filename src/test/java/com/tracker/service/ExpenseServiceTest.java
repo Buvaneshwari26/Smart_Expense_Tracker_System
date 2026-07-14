@@ -30,6 +30,7 @@ class ExpenseServiceTest {
     @Mock private BudgetRepository budgetRepository;
     @Mock private NotificationRepository notificationRepository;
     @Mock private EmailService emailService;
+    @Mock private ActivityLogService activityLogService;
 
     @InjectMocks
     private ExpenseService expenseService;

@@ -20,6 +20,7 @@ public class BudgetService {
     private final BudgetRepository budgetRepository;
     private final UserService userService;
     private final CategoryService categoryService;
+    private final ActivityLogService activityLogService;
 
     @Transactional
     public BudgetDTO createBudget(Long userId, BudgetDTO budgetDTO) {
@@ -36,6 +37,10 @@ public class BudgetService {
 
         Budget saved = budgetRepository.save(budget);
         log.info("Budget created: {} for user {}", saved.getId(), userId);
+
+        // Record activity log
+        activityLogService.logActivity(user, "BUDGET_CREATE", "Created monthly budget for " + category.getName() + " of ₹" + saved.getBudgetAmount());
+
         return mapToDTO(saved);
     }
 
@@ -63,7 +68,12 @@ public class BudgetService {
         budget.setYear(budgetDTO.getYear());
         budget.setCategory(category);
 
-        return mapToDTO(budgetRepository.save(budget));
+        Budget saved = budgetRepository.save(budget);
+
+        // Record activity log
+        activityLogService.logActivity(budget.getUser(), "BUDGET_UPDATE", "Updated budget of ID: " + budgetId + " (amount: ₹" + saved.getBudgetAmount() + ")");
+
+        return mapToDTO(saved);
     }
 
     @Transactional
@@ -72,6 +82,9 @@ public class BudgetService {
                 .orElseThrow(() -> new ResourceNotFoundException("Budget not found with id: " + budgetId));
         budgetRepository.delete(budget);
         log.info("Budget soft-deleted: {} for user {}", budgetId, userId);
+
+        // Record activity log
+        activityLogService.logActivity(budget.getUser(), "BUDGET_DELETE", "Deleted budget of ID: " + budgetId);
     }
 
     private BudgetDTO mapToDTO(Budget budget) {

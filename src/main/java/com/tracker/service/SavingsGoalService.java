@@ -25,6 +25,7 @@ public class SavingsGoalService {
     private final UserService userService;
     private final NotificationRepository notificationRepository;
     private final EmailService emailService;
+    private final ActivityLogService activityLogService;
 
     @Transactional
     public SavingsGoalDTO createGoal(Long userId, SavingsGoalDTO goalDTO) {
@@ -36,7 +37,9 @@ public class SavingsGoalService {
                 .targetDate(goalDTO.getTargetDate())
                 .user(user)
                 .build();
-        return mapToDTO(savingsGoalRepository.save(goal));
+        SavingsGoal saved = savingsGoalRepository.save(goal);
+        activityLogService.logActivity(user, "SAVINGS_CREATE", "Created savings goal: " + saved.getGoalName() + " of ₹" + saved.getTargetAmount());
+        return mapToDTO(saved);
     }
 
     @Transactional(readOnly = true)
@@ -59,7 +62,9 @@ public class SavingsGoalService {
         goal.setTargetAmount(goalDTO.getTargetAmount());
         goal.setCurrentAmount(goalDTO.getCurrentAmount());
         goal.setTargetDate(goalDTO.getTargetDate());
-        return mapToDTO(savingsGoalRepository.save(goal));
+        SavingsGoal saved = savingsGoalRepository.save(goal);
+        activityLogService.logActivity(saved.getUser(), "SAVINGS_UPDATE", "Updated savings goal: " + saved.getGoalName());
+        return mapToDTO(saved);
     }
 
     @Transactional
@@ -74,12 +79,16 @@ public class SavingsGoalService {
         goal.setCurrentAmount(newAmount);
         SavingsGoal saved = savingsGoalRepository.save(goal);
 
+        activityLogService.logActivity(user, "SAVINGS_ADD", "Added ₹" + amount + " to savings goal: " + saved.getGoalName());
+
         // Notify if goal achieved
         if (saved.getCurrentAmount().compareTo(saved.getTargetAmount()) >= 0) {
             Notification notification = Notification.builder()
                     .title("🎉 Savings Goal Achieved!")
                     .message("Congratulations! You have achieved your savings goal: " + saved.getGoalName())
-                    .user(user).build();
+                    .user(user)
+                    .isRead(false)
+                    .build();
             notificationRepository.save(notification);
             emailService.sendSavingsGoalAchievedAlert(user.getEmail(), user.getUsername(),
                     saved.getGoalName(), saved.getTargetAmount());
@@ -92,6 +101,7 @@ public class SavingsGoalService {
         SavingsGoal goal = savingsGoalRepository.findByIdAndUserId(goalId, userId)
                 .orElseThrow(() -> new ResourceNotFoundException("Savings goal not found with id: " + goalId));
         savingsGoalRepository.delete(goal);
+        activityLogService.logActivity(goal.getUser(), "SAVINGS_DELETE", "Deleted savings goal: " + goal.getGoalName());
     }
 
     private SavingsGoalDTO mapToDTO(SavingsGoal goal) {
@@ -99,9 +109,35 @@ public class SavingsGoalService {
                 ? goal.getCurrentAmount().multiply(BigDecimal.valueOf(100))
                         .divide(goal.getTargetAmount(), 2, RoundingMode.HALF_UP)
                 : BigDecimal.ZERO;
+
+        // Estimate Completion Date
+        String estCompletion = "No savings recorded yet";
+        if (goal.getCurrentAmount().compareTo(goal.getTargetAmount()) >= 0) {
+            estCompletion = "Goal Achieved";
+        } else if (goal.getCurrentAmount().compareTo(BigDecimal.ZERO) > 0) {
+            LocalDate createdDate = goal.getCreatedAt() != null ? goal.getCreatedAt().toLocalDate() : LocalDate.now().minusDays(1);
+            long days = java.time.temporal.ChronoUnit.DAYS.between(createdDate, LocalDate.now());
+            if (days <= 0) {
+                days = 1;
+            }
+            BigDecimal savingsRatePerDay = goal.getCurrentAmount().divide(BigDecimal.valueOf(days), 4, RoundingMode.HALF_UP);
+            if (savingsRatePerDay.compareTo(BigDecimal.ZERO) > 0) {
+                BigDecimal remaining = goal.getTargetAmount().subtract(goal.getCurrentAmount());
+                BigDecimal daysNeeded = remaining.divide(savingsRatePerDay, 0, RoundingMode.CEILING);
+                estCompletion = LocalDate.now().plusDays(daysNeeded.longValue()).toString();
+            } else {
+                estCompletion = "No savings velocity";
+            }
+        }
+
         return SavingsGoalDTO.builder()
-                .id(goal.getId()).goalName(goal.getGoalName())
-                .targetAmount(goal.getTargetAmount()).currentAmount(goal.getCurrentAmount())
-                .targetDate(goal.getTargetDate()).percentage(pct).build();
+                .id(goal.getId())
+                .goalName(goal.getGoalName())
+                .targetAmount(goal.getTargetAmount())
+                .currentAmount(goal.getCurrentAmount())
+                .targetDate(goal.getTargetDate())
+                .percentage(pct)
+                .estimatedCompletionDate(estCompletion)
+                .build();
     }
 }

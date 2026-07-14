@@ -120,6 +120,10 @@ public class SecurityConfig {
                 .requestMatchers(HttpMethod.PUT,    "/api/recurring/**").hasAnyRole("ADMIN", "USER")
                 .requestMatchers(HttpMethod.DELETE, "/api/recurring/**").hasAnyRole("ADMIN", "USER")
 
+                // ── Activity Logs & Login History: all authenticated roles ───────────
+                .requestMatchers("/api/activity-logs/**").authenticated()
+                .requestMatchers("/api/login-history/**").authenticated()
+
                 // ── Notifications: all authenticated roles ───────────────────────────
                 .requestMatchers("/api/notifications/**").authenticated()
 

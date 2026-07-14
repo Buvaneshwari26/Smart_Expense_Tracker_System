@@ -3,10 +3,75 @@
 <head>
   <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Reports & Analytics — Smart Expense Tracker</title>
+  <title>Enterprise Reports & Analytics — Smart Expense Tracker</title>
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"/>
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css"/>
   <link rel="stylesheet" href="css/globals.css"/>
+  <style>
+    /* Dark-mode styled tabs */
+    .nav-tabs-custom {
+      border-bottom: 2px solid rgba(255, 255, 255, 0.05);
+      gap: 5px;
+      overflow-x: auto;
+      flex-wrap: nowrap;
+      padding-bottom: 5px;
+    }
+    .nav-tabs-custom .nav-link {
+      color: #8892a4;
+      background: transparent;
+      border: none;
+      font-size: 0.88rem;
+      font-weight: 500;
+      padding: 10px 16px;
+      border-radius: 8px;
+      white-space: nowrap;
+      transition: all 0.25s ease;
+    }
+    .nav-tabs-custom .nav-link:hover {
+      color: #fff;
+      background: rgba(255, 255, 255, 0.03);
+    }
+    .nav-tabs-custom .nav-link.active {
+      color: #fff;
+      background: rgba(99, 102, 241, 0.15);
+      border: 1px solid rgba(99, 102, 241, 0.3);
+      box-shadow: 0 0 15px rgba(99, 102, 241, 0.1);
+    }
+    .insight-card {
+      border-left: 4px solid #6366f1 !important;
+      background: rgba(99, 102, 241, 0.03);
+    }
+    .kpi-title {
+      font-size: 0.75rem;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+    .chart-container-large {
+      position: relative;
+      height: 340px;
+      width: 100%;
+    }
+    .skeleton-loader {
+      background: linear-gradient(90deg, rgba(255,255,255,0.03) 25%, rgba(255,255,255,0.08) 50%, rgba(255,255,255,0.03) 75%);
+      background-size: 200% 100%;
+      animation: loading-shimmer 1.5s infinite;
+      border-radius: 8px;
+    }
+    @keyframes loading-shimmer {
+      0% { background-position: 200% 0; }
+      100% { background-position: -200% 0; }
+    }
+    .search-input {
+      background: rgba(255, 255, 255, 0.03) !important;
+      border: 1px solid rgba(255, 255, 255, 0.08) !important;
+      color: #fff !important;
+    }
+    .search-input:focus {
+      background: rgba(255, 255, 255, 0.05) !important;
+      border-color: rgba(99, 102, 241, 0.5) !important;
+      box-shadow: 0 0 10px rgba(99, 102, 241, 0.1) !important;
+    }
+  </style>
 </head>
 <body>
 <button class="sidebar-toggle d-md-none"><i class="bi bi-list"></i></button>
@@ -16,64 +81,130 @@
       <div class="logo-icon"><i class="bi bi-wallet2"></i></div>
       <span class="brand-text">ExpenseTracker</span>
     </div>
-    <nav class="sidebar-nav">
-      <a href="dashboard.html" class="nav-link"><i class="bi bi-grid-1x2"></i><span>Dashboard</span></a>
-      <a href="income.html" class="nav-link"><i class="bi bi-cash-stack"></i><span>Income</span></a>
-      <a href="expense.html" class="nav-link"><i class="bi bi-credit-card"></i><span>Expenses</span></a>
-      <a href="category.html" class="nav-link"><i class="bi bi-tags"></i><span>Categories</span></a>
-      <a href="budget.html" class="nav-link"><i class="bi bi-pie-chart"></i><span>Budgets</span></a>
-      <a href="savings.html" class="nav-link"><i class="bi bi-piggy-bank"></i><span>Savings Goals</span></a>
-      <a href="reports.html" class="nav-link"><i class="bi bi-graph-up"></i><span>Reports</span></a>
-      <a href="profile.html" class="nav-link"><i class="bi bi-person-circle"></i><span>Profile</span></a>
+    <nav class="sidebar-nav" id="sidebar-nav">
+      <!-- Dynamically populated by UI.initSidebar() -->
     </nav>
     <div class="sidebar-footer">
       <span id="sidebar-username">User</span>
       <button onclick="Auth.logout()" class="btn btn-sm btn-outline-danger"><i class="bi bi-box-arrow-right"></i> Logout</button>
     </div>
   </aside>
+
   <main class="main-content">
-    <div class="d-flex justify-content-between align-items-center mb-4">
+    <div class="d-flex flex-wrap justify-content-between align-items-center mb-4 gap-3">
       <div>
-        <h2 class="mb-1">Reports & Analytics</h2>
-        <p class="text-secondary">Visualize your financial data</p>
+        <h2 class="mb-1 text-glow">Financial Reports & Analytics</h2>
+        <p class="text-secondary">Generate and export insights on system metrics and personal wealth status</p>
       </div>
-      <div>
-        <button class="btn btn-outline-danger" onclick="Api.download(`/expenses/export/pdf?userId=${Api.getUserId()}`, 'expense-report.pdf')"><i class="bi bi-file-earmark-pdf me-2"></i>Export PDF</button>
+      <div class="d-flex gap-2">
+        <button class="btn btn-sm btn-outline-light" onclick="exportData('PDF')"><i class="bi bi-file-earmark-pdf-fill text-danger me-1"></i>PDF</button>
+        <button class="btn btn-sm btn-outline-light" onclick="exportData('EXCEL')"><i class="bi bi-file-earmark-spreadsheet-fill text-success me-1"></i>Excel</button>
+        <button class="btn btn-sm btn-outline-light" onclick="exportData('CSV')"><i class="bi bi-file-earmark-bar-graph-fill text-info me-1"></i>CSV</button>
       </div>
     </div>
 
+    <!-- Tab navigation -->
+    <div class="mb-4">
+      <ul class="nav nav-tabs nav-tabs-custom" id="reportTabs">
+        <li><button class="nav-link active" onclick="switchTab('FINANCIAL_SUMMARY')">Summary</button></li>
+        <li><button class="nav-link" onclick="switchTab('DAILY')">Daily</button></li>
+        <li><button class="nav-link" onclick="switchTab('WEEKLY')">Weekly</button></li>
+        <li><button class="nav-link" onclick="switchTab('MONTHLY')">Monthly</button></li>
+        <li><button class="nav-link" onclick="switchTab('QUARTERLY')">Quarterly</button></li>
+        <li><button class="nav-link" onclick="switchTab('YEARLY')">Yearly</button></li>
+        <li><button class="nav-link" onclick="switchTab('CATEGORY_WISE')">Category Breakdown</button></li>
+        <li><button class="nav-link" onclick="switchTab('BUDGET_WISE')">Budgets Health</button></li>
+        <li><button class="nav-link" onclick="switchTab('SAVINGS_WISE')">Savings Goals</button></li>
+        <li id="adminTabLi" style="display: none;"><button class="nav-link" onclick="switchTab('USER_WISE')">User Details</button></li>
+      </ul>
+    </div>
+
+    <!-- Active Filters Form Card -->
     <div class="glass-card mb-4">
-      <form id="reportForm" class="row g-3 align-items-end glass-form">
-        <div class="col-md-3">
-          <label class="form-label">Report Type</label>
-          <select class="form-select" id="reportType">
-            <option value="monthly">Monthly Summary</option>
-            <option value="yearly">Yearly Overview</option>
-            <option value="category">Category Breakdown</option>
-            <option value="incomeVsExpense">Income vs Expense</option>
+      <form id="filterForm" class="row g-3 align-items-end glass-form">
+        <div class="col-md-3" id="dateFilterCol">
+          <label class="form-label text-secondary">Start Date</label>
+          <input type="date" class="form-control" id="startDate"/>
+        </div>
+        <div class="col-md-3" id="endDateFilterCol">
+          <label class="form-label text-secondary">End Date</label>
+          <input type="date" class="form-control" id="endDate"/>
+        </div>
+        <div class="col-md-2" id="monthFilterCol">
+          <label class="form-label text-secondary">Month</label>
+          <select class="form-select" id="monthSelect">
+            <option value="1">January</option><option value="2">February</option><option value="3">March</option>
+            <option value="4">April</option><option value="5">May</option><option value="6">June</option>
+            <option value="7">July</option><option value="8">August</option><option value="9">September</option>
+            <option value="10">October</option><option value="11">November</option><option value="12">December</option>
           </select>
         </div>
-        <div class="col-md-2" id="monthCol">
-          <label class="form-label">Month</label>
-          <input type="number" min="1" max="12" class="form-control" id="month">
+        <div class="col-md-2" id="yearFilterCol">
+          <label class="form-label text-secondary">Year</label>
+          <input type="number" class="form-control" id="yearInput" min="2000" max="2100"/>
+        </div>
+        <div class="col-md-2" id="quarterFilterCol" style="display:none;">
+          <label class="form-label text-secondary">Quarter</label>
+          <select class="form-select" id="quarterSelect">
+            <option value="1">Q1 (Jan - Mar)</option>
+            <option value="2">Q2 (Apr - Jun)</option>
+            <option value="3">Q3 (Jul - Sep)</option>
+            <option value="4">Q4 (Oct - Dec)</option>
+          </select>
         </div>
         <div class="col-md-2">
-          <label class="form-label">Year</label>
-          <input type="number" min="2000" class="form-control" id="year">
-        </div>
-        <div class="col-md-2">
-          <button type="button" class="btn btn-glow w-100" onclick="generateReport()">Generate</button>
+          <button type="button" class="btn btn-glow w-100" onclick="fetchReportData()"><i class="bi bi-filter me-1"></i>Apply Filters</button>
         </div>
       </form>
     </div>
 
-    <div class="row g-4 mb-4" id="reportSummaryCards">
-      <!-- Populated by JS -->
+    <!-- Summary KPI cards -->
+    <div class="row g-3 mb-4" id="kpiContainer">
+      <!-- Loading Skeleton Placeholder -->
+      <div class="col-md-3"><div class="glass-card skeleton-loader" style="height:90px;"></div></div>
+      <div class="col-md-3"><div class="glass-card skeleton-loader" style="height:90px;"></div></div>
+      <div class="col-md-3"><div class="glass-card skeleton-loader" style="height:90px;"></div></div>
+      <div class="col-md-3"><div class="glass-card skeleton-loader" style="height:90px;"></div></div>
     </div>
 
+    <!-- Chart & Financial insights Row -->
+    <div class="row g-4 mb-4">
+      <div class="col-lg-7">
+        <div class="glass-card h-100">
+          <h5 class="mb-3"><i class="bi bi-bar-chart-line me-2"></i>Visualization</h5>
+          <div class="chart-container-large d-flex align-items-center justify-content-center" id="chartWrapper">
+            <canvas id="analyticsChart"></canvas>
+          </div>
+        </div>
+      </div>
+      <div class="col-lg-5">
+        <div class="glass-card insight-card h-100">
+          <h5 class="mb-3 text-glow"><i class="bi bi-lightbulb-fill text-warning me-2"></i>Smart AI Insights</h5>
+          <div id="insightsContainer">
+            <p class="text-secondary small">Apply filter parameters to trigger algorithmic recommendations.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Detailed Rows Table Card -->
     <div class="glass-card">
-      <div class="chart-container" style="height:400px">
-        <canvas id="reportChart"></canvas>
+      <div class="d-flex flex-wrap justify-content-between align-items-center mb-3 gap-2">
+        <h5 class="mb-0"><i class="bi bi-database-fill-gear me-2"></i>Detailed Transactions Rows</h5>
+        <div class="d-flex gap-2">
+          <input type="text" class="form-control form-control-sm search-input" id="tableSearch" placeholder="Search rows..." onkeyup="filterTable()"/>
+        </div>
+      </div>
+      <div class="table-responsive">
+        <table class="table table-custom text-nowrap align-middle" id="reportDataTable">
+          <thead>
+            <tr id="tableHeaders"></tr>
+          </thead>
+          <tbody id="tableBody"></tbody>
+        </table>
+      </div>
+      <div class="d-flex justify-content-between align-items-center mt-3" id="paginationContainer">
+        <!-- Pagination dynamic buttons -->
       </div>
     </div>
   </main>
@@ -85,107 +216,355 @@
 <script src="js/ui.js"></script>
 <script>
   Auth.requireAuth();
-  UI.initSidebar();
+  
+  let currentReportType = 'FINANCIAL_SUMMARY';
   let currentChart = null;
+  let rawReportData = [];
+  let tableHeaders = [];
+  
+  // Set current user role state
+  const user = Auth.getUser();
+  if (user && user.role === 'ADMIN') {
+    document.getElementById('adminTabLi').style.display = 'block';
+  }
 
-  // Init date inputs
-  const now = new Date();
-  document.getElementById('month').value = now.getMonth() + 1;
-  document.getElementById('year').value = now.getFullYear();
+  // Set default dates inputs
+  const today = new Date();
+  document.getElementById('yearInput').value = today.getFullYear();
+  document.getElementById('monthSelect').value = today.getMonth() + 1;
+  document.getElementById('startDate').value = new Date(today.getFullYear(), today.getMonth(), 1).toISOString().split('T')[0];
+  document.getElementById('endDate').value = today.toISOString().split('T')[0];
 
-  document.getElementById('reportType').addEventListener('change', function() {
-    const type = this.value;
-    document.getElementById('monthCol').style.display = (type === 'yearly' || type === 'incomeVsExpense') ? 'none' : 'block';
-  });
+  // Configure initial state of filters
+  switchFiltersVisibility();
+  
+  // Dynamic UI Sidebar
+  UI.initSidebar('reports.html');
+  
+  // Fetch initial report
+  fetchReportData();
 
-  async function generateReport() {
-    UI.showLoading();
-    try {
-      const type = document.getElementById('reportType').value;
-      const month = document.getElementById('month').value;
-      const year = document.getElementById('year').value;
-      let url = '';
+  function switchTab(reportType) {
+    currentReportType = reportType;
+    document.querySelectorAll('#reportTabs button').forEach(btn => btn.classList.remove('active'));
+    event.target.classList.add('active');
+    
+    switchFiltersVisibility();
+    fetchReportData();
+  }
 
-      switch(type) {
-        case 'monthly': url = `/reports/monthly?userId=${Api.getUserId()}&month=${month}&year=${year}`; break;
-        case 'yearly': url = `/reports/yearly?userId=${Api.getUserId()}&year=${year}`; break;
-        case 'category': url = `/reports/category?userId=${Api.getUserId()}&month=${month}&year=${year}`; break;
-        case 'incomeVsExpense': url = `/reports/income-vs-expense?userId=${Api.getUserId()}&year=${year}`; break;
-      }
+  function switchFiltersVisibility() {
+    const startCol = document.getElementById('dateFilterCol');
+    const endCol = document.getElementById('endDateFilterCol');
+    const monthCol = document.getElementById('monthFilterCol');
+    const yearCol = document.getElementById('yearFilterCol');
+    const quarterCol = document.getElementById('quarterFilterCol');
 
-      const data = await Api.get(url);
-      renderReport(type, data);
-    } catch (err) {
-      UI.showToast(err.message, 'error');
-    } finally {
-      UI.hideLoading();
+    // Default: hide all
+    startCol.style.display = 'none';
+    endCol.style.display = 'none';
+    monthCol.style.display = 'none';
+    yearCol.style.display = 'none';
+    quarterCol.style.display = 'none';
+
+    if (currentReportType === 'DAILY') {
+      startCol.style.display = 'block';
+      startCol.querySelector('label').textContent = 'Target Date';
+    } else if (currentReportType === 'WEEKLY') {
+      startCol.style.display = 'block';
+      startCol.querySelector('label').textContent = 'Start Date';
+      endCol.style.display = 'block';
+    } else if (currentReportType === 'MONTHLY' || currentReportType === 'CATEGORY_WISE' || currentReportType === 'BUDGET_WISE' || currentReportType === 'FINANCIAL_SUMMARY') {
+      monthCol.style.display = 'block';
+      yearCol.style.display = 'block';
+    } else if (currentReportType === 'QUARTERLY') {
+      quarterCol.style.display = 'block';
+      yearCol.style.display = 'block';
+    } else if (currentReportType === 'YEARLY') {
+      yearCol.style.display = 'block';
+    } else {
+      // SAVINGS_WISE / USER_WISE require no filters
     }
   }
 
-  function renderReport(type, data) {
-    if(currentChart) currentChart.destroy();
-    const ctx = document.getElementById('reportChart').getContext('2d');
+  async function fetchReportData() {
+    showSkeletons();
+    try {
+      const params = new URLSearchParams();
+      params.append('type', currentReportType);
+      params.append('userId', Api.getUserId());
+
+      if (currentReportType === 'DAILY') {
+        params.append('startDate', document.getElementById('startDate').value);
+      } else if (currentReportType === 'WEEKLY') {
+        params.append('startDate', document.getElementById('startDate').value);
+        params.append('endDate', document.getElementById('endDate').value);
+      } else if (currentReportType === 'MONTHLY' || currentReportType === 'CATEGORY_WISE' || currentReportType === 'BUDGET_WISE' || currentReportType === 'FINANCIAL_SUMMARY') {
+        params.append('month', document.getElementById('monthSelect').value);
+        params.append('year', document.getElementById('yearInput').value);
+      } else if (currentReportType === 'QUARTERLY') {
+        params.append('quarter', document.getElementById('quarterSelect').value);
+        params.append('year', document.getElementById('yearInput').value);
+      } else if (currentReportType === 'YEARLY') {
+        params.append('year', document.getElementById('yearInput').value);
+      }
+
+      const res = await Api.get(`/reports?${params.toString()}`);
+      renderDashboard(res);
+
+    } catch (err) {
+      UI.showToast(err.message || 'Error generating reports data', 'error');
+    }
+  }
+
+  function showSkeletons() {
+    const container = document.getElementById('kpiContainer');
+    container.innerHTML = `
+      <div class="col-md-3"><div class="glass-card skeleton-loader" style="height:90px;"></div></div>
+      <div class="col-md-3"><div class="glass-card skeleton-loader" style="height:90px;"></div></div>
+      <div class="col-md-3"><div class="glass-card skeleton-loader" style="height:90px;"></div></div>
+      <div class="col-md-3"><div class="glass-card skeleton-loader" style="height:90px;"></div></div>
+    `;
+    document.getElementById('tableBody').innerHTML = `
+      <tr><td colspan="10" class="text-center py-4"><div class="spinner-border text-primary"></div></td></tr>
+    `;
+  }
+
+  function renderDashboard(res) {
+    // ── 1. Render KPIs summary cards ──────────────────────────────────────────
+    const kpiContainer = document.getElementById('kpiContainer');
+    kpiContainer.innerHTML = '';
+    
+    if (res.kpis && Object.keys(res.kpis).length > 0) {
+      Object.entries(res.kpis).forEach(([k, v]) => {
+        let displayVal = v;
+        const lowerKey = k.toLowerCase();
+        
+        // Format Currency fields
+        if (typeof v === 'number' && !lowerKey.includes('count') && !lowerKey.includes('users') && !lowerKey.includes('used') && !lowerKey.includes('progress') && !lowerKey.includes('rate') && !lowerKey.includes('mom')) {
+          displayVal = UI.formatCurrency(v);
+        } else if (lowerKey.includes('used') || lowerKey.includes('progress') || lowerKey.includes('rate') || lowerKey.includes('mom')) {
+          displayVal = Number(v).toFixed(1) + '%';
+        }
+
+        kpiContainer.innerHTML += `
+          <div class="col-md-3">
+            <div class="glass-card text-center">
+              <div class="text-secondary kpi-title mb-1">${camelToTitle(k)}</div>
+              <h3 class="mb-0 text-glow" style="font-size:1.4rem;">${displayVal}</h3>
+            </div>
+          </div>
+        `;
+      });
+    } else {
+      kpiContainer.innerHTML = '<div class="col-12"><div class="glass-card text-center text-secondary">No summary metrics available.</div></div>';
+    }
+
+    // ── 2. Render chart ──────────────────────────────────────────────────────
+    renderReportChart(res.chartData);
+
+    // ── 3. Render smart insights ─────────────────────────────────────────────
+    const insightsContainer = document.getElementById('insightsContainer');
+    insightsContainer.innerHTML = '';
+    if (res.insights && res.insights.length > 0) {
+      res.insights.forEach(ins => {
+        insightsContainer.innerHTML += `
+          <div class="d-flex align-items-start gap-2 mb-2">
+            <i class="bi bi-chevron-right text-indigo mt-1"></i>
+            <span class="small text-light">${ins}</span>
+          </div>
+        `;
+      });
+    } else {
+      insightsContainer.innerHTML = '<p class="text-secondary small">All checks complete. Safe cash velocity achieved.</p>';
+    }
+
+    // ── 4. Render Table ──────────────────────────────────────────────────────
+    renderTableData(res.headers, res.rows);
+  }
+
+  function renderReportChart(chartData) {
+    if (currentChart) currentChart.destroy();
+    
+    const ctx = document.getElementById('analyticsChart').getContext('2d');
+    
+    if (!chartData || !chartData.labels || chartData.labels.length === 0) {
+      document.getElementById('chartWrapper').innerHTML = '<div class="text-secondary">No data available for graph rendering.</div>';
+      return;
+    }
+    
+    // Restore canvas elements in case we replaced it with empty text
+    document.getElementById('chartWrapper').innerHTML = '<canvas id="analyticsChart"></canvas>';
+    const newCtx = document.getElementById('analyticsChart').getContext('2d');
+
     Chart.defaults.color = '#8892a4';
     Chart.defaults.borderColor = 'rgba(255,255,255,0.05)';
 
-    const cardsContainer = document.getElementById('reportSummaryCards');
-    cardsContainer.innerHTML = '';
-
-    if(type === 'monthly' || type === 'yearly') {
-      cardsContainer.innerHTML = `
-        <div class="col-md-4"><div class="glass-card"><div class="text-secondary mb-1">Total Income</div><h3 class="text-success">+${UI.formatCurrency(data.totalIncome)}</h3></div></div>
-        <div class="col-md-4"><div class="glass-card"><div class="text-secondary mb-1">Total Expense</div><h3 class="text-danger">-${UI.formatCurrency(data.totalExpense)}</h3></div></div>
-        <div class="col-md-4"><div class="glass-card"><div class="text-secondary mb-1">Balance</div><h3 class="text-info">${UI.formatCurrency(data.balance)}</h3></div></div>
-      `;
+    let type = 'bar';
+    if (currentReportType === 'WEEKLY' || currentReportType === 'YEARLY') {
+      type = 'line';
+    } else if (currentReportType === 'MONTHLY' || currentReportType === 'CATEGORY_WISE') {
+      type = 'doughnut';
     }
 
-    if(type === 'monthly') {
-      const labels = data.categoryBreakdown.map(c => c.category);
-      const values = data.categoryBreakdown.map(c => c.amount);
-      currentChart = new Chart(ctx, {
-        type: 'bar',
-        data: {
-          labels,
-          datasets: [{ label: 'Expenses by Category', data: values, backgroundColor: 'rgba(233, 69, 96, 0.7)' }]
-        },
-        options: { responsive: true, maintainAspectRatio: false }
-      });
-    } else if (type === 'yearly' || type === 'incomeVsExpense') {
-      const sourceData = type === 'yearly' ? data.monthlyData : data.data;
-      const labels = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
-      const incomes = sourceData.map(m => m.income);
-      const expenses = sourceData.map(m => m.expense);
-      currentChart = new Chart(ctx, {
-        type: 'line',
-        data: {
-          labels,
-          datasets: [
-            { label: 'Income', data: incomes, borderColor: '#4ecca3', backgroundColor: 'rgba(78, 204, 163, 0.1)', fill: true, tension: 0.4 },
-            { label: 'Expense', data: expenses, borderColor: '#e94560', backgroundColor: 'rgba(233, 69, 96, 0.1)', fill: true, tension: 0.4 }
-          ]
-        },
-        options: { responsive: true, maintainAspectRatio: false }
-      });
-    } else if (type === 'category') {
-      const labels = data.categories.map(c => c.category);
-      const values = data.categories.map(c => c.totalSpent);
-      currentChart = new Chart(ctx, {
-        type: 'doughnut',
-        data: {
-          labels,
-          datasets: [{
-            data: values,
-            borderWidth: 0,
-            backgroundColor: ['#e94560', '#f5a623', '#4ecca3', '#3b82f6', '#9b5de5', '#00bbf9', '#00f5d4']
-          }]
-        },
-        options: { responsive: true, maintainAspectRatio: false, cutout: '60%', plugins: { legend: { position: 'right' } } }
+    // Adapt datasets colors and attributes dynamically
+    let datasets = [];
+    if (chartData.datasets) {
+      datasets = chartData.datasets.map((ds, index) => {
+        let border = '#6366f1';
+        let bg = 'rgba(99, 102, 241, 0.15)';
+        if (index === 1) { border = '#ef4444'; bg = 'rgba(239, 68, 68, 0.15)'; }
+
+        return {
+          label: ds.label || 'Summary',
+          data: ds.data,
+          borderColor: border,
+          backgroundColor: type === 'doughnut' ? ['#6366f1', '#f59e0b', '#10b981', '#ef4444', '#8b5cf6', '#ec4899', '#14b8a6'] : bg,
+          borderWidth: 2,
+          fill: true,
+          tension: 0.3
+        };
       });
     }
+
+    currentChart = new Chart(newCtx, {
+      type,
+      data: {
+        labels: chartData.labels,
+        datasets
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        cutout: type === 'doughnut' ? '60%' : undefined,
+        plugins: {
+          legend: {
+            display: true,
+            position: type === 'doughnut' ? 'right' : 'top'
+          }
+        }
+      }
+    });
   }
 
-  // Initial load
-  generateReport();
+  function renderTableData(headers, rows) {
+    const headRow = document.getElementById('tableHeaders');
+    const bodyRow = document.getElementById('tableBody');
+    headRow.innerHTML = '';
+    bodyRow.innerHTML = '';
+
+    tableHeaders = headers || [];
+    rawReportData = rows || [];
+
+    if (tableHeaders.length === 0 || rawReportData.length === 0) {
+      bodyRow.innerHTML = `<tr><td colspan="10" class="text-center text-secondary py-4">No matching records found.</td></tr>`;
+      return;
+    }
+
+    // Populate Headers
+    tableHeaders.forEach(h => {
+      headRow.innerHTML += `<th scope="col" style="cursor:pointer;" onclick="sortTable('${h}')">${h} <i class="bi bi-arrow-down-up small text-secondary"></i></th>`;
+    });
+
+    // Populate Rows
+    displayTableRows(rawReportData);
+  }
+
+  function displayTableRows(data) {
+    const bodyRow = document.getElementById('tableBody');
+    bodyRow.innerHTML = '';
+    
+    data.forEach(row => {
+      let tr = document.createElement('tr');
+      tableHeaders.forEach(h => {
+        let td = document.createElement('td');
+        let v = row[h];
+        let valStr = v !== null ? String(v) : '-';
+
+        // Format currencies
+        if (h.toLowerCase().indexOf('amount') !== -1 || h.toLowerCase().indexOf('limit') !== -1 || h.toLowerCase().indexOf('spent') !== -1 || h.toLowerCase().indexOf('remaining') !== -1 || h.toLowerCase().indexOf('balance') !== -1 || h.toLowerCase().indexOf('income') !== -1 || h.toLowerCase().indexOf('expense') !== -1) {
+          try {
+            if (!isNaN(v)) {
+              valStr = UI.formatCurrency(v);
+            }
+          } catch(e) {}
+        }
+        
+        // Format status badges
+        if (h.toLowerCase() === 'status') {
+          let badge = 'bg-secondary';
+          if (valStr.toLowerCase() === 'on track' || valStr.toLowerCase() === 'active' || valStr.toLowerCase() === 'achieved') badge = 'bg-success-subtle text-success';
+          if (valStr.toLowerCase() === 'overspent' || valStr.toLowerCase() === 'inactive') badge = 'bg-danger-subtle text-danger';
+          valStr = `<span class="badge ${badge} px-2.5 py-1.5">${valStr}</span>`;
+        }
+
+        td.innerHTML = valStr;
+        tr.appendChild(td);
+      });
+      bodyRow.appendChild(tr);
+    });
+  }
+
+  function filterTable() {
+    const query = document.getElementById('tableSearch').value.toLowerCase().trim();
+    if (!query) {
+      displayTableRows(rawReportData);
+      return;
+    }
+    
+    const filtered = rawReportData.filter(row => {
+      return Object.values(row).some(v => v !== null && String(v).toLowerCase().includes(query));
+    });
+    displayTableRows(filtered);
+  }
+
+  let sortAsc = true;
+  function sortTable(headerKey) {
+    sortAsc = !sortAsc;
+    rawReportData.sort((a, b) => {
+      let v1 = a[headerKey];
+      let v2 = b[headerKey];
+      
+      if (typeof v1 === 'number' && typeof v2 === 'number') {
+        return sortAsc ? v1 - v2 : v2 - v1;
+      }
+      return sortAsc 
+        ? String(v1).localeCompare(String(v2))
+        : String(v2).localeCompare(String(v1));
+    });
+    displayTableRows(rawReportData);
+  }
+
+  function exportData(format) {
+    const params = new URLSearchParams();
+    params.append('type', currentReportType);
+    params.append('format', format);
+    params.append('userId', Api.getUserId());
+
+    if (currentReportType === 'DAILY') {
+      params.append('startDate', document.getElementById('startDate').value);
+    } else if (currentReportType === 'WEEKLY') {
+      params.append('startDate', document.getElementById('startDate').value);
+      params.append('endDate', document.getElementById('endDate').value);
+    } else if (currentReportType === 'MONTHLY' || currentReportType === 'CATEGORY_WISE' || currentReportType === 'BUDGET_WISE' || currentReportType === 'FINANCIAL_SUMMARY') {
+      params.append('month', document.getElementById('monthSelect').value);
+      params.append('year', document.getElementById('yearInput').value);
+    } else if (currentReportType === 'QUARTERLY') {
+      params.append('quarter', document.getElementById('quarterSelect').value);
+      params.append('year', document.getElementById('yearInput').value);
+    } else if (currentReportType === 'YEARLY') {
+      params.append('year', document.getElementById('yearInput').value);
+    }
+
+    const filename = `report_${currentReportType.toLowerCase()}_${new Date().toISOString().slice(0,10)}.${format === 'EXCEL' ? 'xlsx' : format.toLowerCase()}`;
+    Api.download(`/reports/export?${params.toString()}`, filename);
+  }
+
+  function camelToTitle(camel) {
+    if (!camel) return '';
+    let result = camel.replace(/([A-Z])/g, " $1");
+    return result.charAt(0).toUpperCase() + result.slice(1);
+  }
 </script>
 </body>
 </html>

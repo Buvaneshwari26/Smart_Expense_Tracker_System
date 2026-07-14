@@ -46,6 +46,8 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                         email,
                         null,  // password not needed in SecurityContext
                         role,
+                        false, // accountLocked (JWT validated token implies active session)
+                        true,  // accountActive
                         List.of(new SimpleGrantedAuthority("ROLE_" + role))
                 );
 

@@ -39,4 +39,34 @@ public class User extends Auditable {
 
     @Column(nullable = false, length = 20)
     private String role = "USER";
+
+    @Column(name = "profile_picture", columnDefinition = "LONGTEXT")
+    private String profilePicture;
+
+    @Column(name = "currency_preference", length = 10)
+    @Builder.Default
+    private String currencyPreference = "INR";
+
+    @Column(name = "theme_preference", length = 10)
+    @Builder.Default
+    private String themePreference = "LIGHT";
+
+    @Column(name = "notification_preference")
+    @Builder.Default
+    private Boolean notificationPreference = true;
+
+    @Column(name = "last_login")
+    private java.time.LocalDateTime lastLogin;
+
+    @Column(name = "failed_login_count")
+    @Builder.Default
+    private Integer failedLoginCount = 0;
+
+    @Column(name = "account_locked")
+    @Builder.Default
+    private Boolean accountLocked = false;
+
+    @Column(name = "account_active")
+    @Builder.Default
+    private Boolean accountActive = true;
 }

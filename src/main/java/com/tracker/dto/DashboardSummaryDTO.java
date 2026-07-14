@@ -17,4 +17,7 @@ public class DashboardSummaryDTO {
     private List<BudgetProgressDTO> budgets;
     private List<RecentTransactionDTO> recentTransactions;
     private List<SavingsGoalProgressDTO> savingsGoals;
+    private String monthlyComparison;
+    private String financialHealth;
+    private List<String> upcomingRecurring;
 }

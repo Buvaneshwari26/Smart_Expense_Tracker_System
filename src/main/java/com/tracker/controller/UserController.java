@@ -1,5 +1,6 @@
 package com.tracker.controller;
 
+import com.tracker.dto.AdminCreateUserRequest;
 import com.tracker.dto.ChangePasswordRequest;
 import com.tracker.dto.UserProfileDTO;
 import com.tracker.security.SecurityUtils;
@@ -7,7 +8,9 @@ import com.tracker.service.UserService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -48,6 +51,18 @@ public class UserController {
     @Operation(summary = "Get all users (Admin only)")
     public ResponseEntity<List<UserProfileDTO>> getAllUsers() {
         return ResponseEntity.ok(userService.getAllUsers());
+    }
+
+    /**
+     * POST /api/users — Admin creates a new user with any specified role.
+     * Unlike /api/auth/register, this endpoint is ADMIN-only and allows
+     * setting any role (ADMIN, USER, ANALYST) at creation time.
+     */
+    @PostMapping
+    @PreAuthorize("hasRole('ADMIN')")
+    @Operation(summary = "Admin creates a new user with any role")
+    public ResponseEntity<UserProfileDTO> adminCreateUser(@Valid @RequestBody AdminCreateUserRequest req) {
+        return new ResponseEntity<>(userService.adminCreateUser(req), HttpStatus.CREATED);
     }
 
     /**

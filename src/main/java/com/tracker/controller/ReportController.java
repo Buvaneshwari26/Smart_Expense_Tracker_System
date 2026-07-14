@@ -1,12 +1,17 @@
 package com.tracker.controller;
 
+import com.tracker.dto.ReportRequest;
+import com.tracker.dto.ReportResponse;
+import com.tracker.model.User;
 import com.tracker.security.SecurityUtils;
 import com.tracker.service.ReportService;
+import com.tracker.service.UserService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDate;
@@ -20,6 +25,15 @@ import java.util.Map;
 public class ReportController {
 
     private final ReportService reportService;
+    private final UserService userService;
+
+    @GetMapping
+    @Operation(summary = "Get generic, structured financial reports (Daily, Weekly, Monthly, Quarterly, Yearly, Budget-wise, Savings-wise, Category-wise, User-wise, Financial Summary)")
+    public ResponseEntity<ReportResponse> getReport(ReportRequest request) {
+        Long currentUserId = SecurityUtils.getCurrentUserId();
+        User currentUser = userService.getUserEntity(currentUserId);
+        return ResponseEntity.ok(reportService.generateReport(request, currentUser));
+    }
 
     @GetMapping("/monthly")
     @Operation(summary = "Get monthly income/expense report")
