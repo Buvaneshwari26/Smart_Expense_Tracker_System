@@ -66,7 +66,7 @@ public class SecurityConfig {
                 // ── Public endpoints ─────────────────────────────────────────────────
                 .requestMatchers("/api/auth/**").permitAll()
                 .requestMatchers("/swagger-ui/**", "/v3/api-docs/**", "/swagger-ui.html").permitAll()
-                .requestMatchers("/*.html", "/css/**", "/js/**", "/images/**", "/favicon.ico", "/error", "/").permitAll()
+                .requestMatchers("/*.html", "/*.css", "/*.js", "/css/**", "/js/**", "/images/**", "/favicon.ico", "/error", "/").permitAll()
                 .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
 
                 // ── User Management: ADMIN full access ───────────────────────────────
