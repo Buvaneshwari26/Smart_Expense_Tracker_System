@@ -66,7 +66,7 @@ public class SecurityConfig {
                 // ── Public endpoints ─────────────────────────────────────────────────
                 .requestMatchers("/api/auth/**").permitAll()
                 .requestMatchers("/swagger-ui/**", "/v3/api-docs/**", "/swagger-ui.html").permitAll()
-                .requestMatchers("/*.html", "/css/**", "/js/**", "/images/**", "/favicon.ico", "/").permitAll()
+                .requestMatchers("/*.html", "/css/**", "/js/**", "/images/**", "/favicon.ico", "/error", "/").permitAll()
                 .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
 
                 // ── User Management: ADMIN full access ───────────────────────────────
@@ -108,11 +108,11 @@ public class SecurityConfig {
                 .requestMatchers(HttpMethod.DELETE, "/api/budgets/**").hasAnyRole("ADMIN", "USER")
 
                 // ── Savings Goals: ANALYST + AUDITOR = read-only ────────────────────
-                .requestMatchers(HttpMethod.GET,    "/api/savings-goals/**").authenticated()
-                .requestMatchers(HttpMethod.POST,   "/api/savings-goals/**").hasAnyRole("ADMIN", "USER")
-                .requestMatchers(HttpMethod.PUT,    "/api/savings-goals/**").hasAnyRole("ADMIN", "USER")
-                .requestMatchers(HttpMethod.PATCH,  "/api/savings-goals/**").hasAnyRole("ADMIN", "USER")
-                .requestMatchers(HttpMethod.DELETE, "/api/savings-goals/**").hasAnyRole("ADMIN", "USER")
+                .requestMatchers(HttpMethod.GET,    "/api/goals/**").authenticated()
+                .requestMatchers(HttpMethod.POST,   "/api/goals/**").hasAnyRole("ADMIN", "USER")
+                .requestMatchers(HttpMethod.PUT,    "/api/goals/**").hasAnyRole("ADMIN", "USER")
+                .requestMatchers(HttpMethod.PATCH,  "/api/goals/**").hasAnyRole("ADMIN", "USER")
+                .requestMatchers(HttpMethod.DELETE, "/api/goals/**").hasAnyRole("ADMIN", "USER")
 
                 // ── Recurring Transactions: USER + ADMIN only ────────────────────────
                 .requestMatchers(HttpMethod.GET,    "/api/recurring/**").hasAnyRole("ADMIN", "USER")

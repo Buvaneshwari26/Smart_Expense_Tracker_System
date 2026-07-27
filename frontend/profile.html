@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8"/>
@@ -36,6 +36,18 @@
       <div class="col-md-6">
         <div class="glass-card mb-4">
           <h5 class="mb-4">Profile Information</h5>
+          
+          <div class="d-flex align-items-center gap-3 mb-4">
+            <div class="position-relative">
+              <img id="profilePicPreview" src="" class="rounded-circle border border-secondary" style="width:90px;height:90px;object-fit:cover;" onerror="this.src=UI.DEFAULT_AVATAR">
+            </div>
+            <div>
+              <button class="btn btn-sm btn-glow mb-2" onclick="document.getElementById('profilePicInput').click()"><i class="bi bi-upload me-2"></i>Upload Photo</button>
+              <button class="btn btn-sm btn-outline-danger d-block w-100" onclick="removeProfilePic()"><i class="bi bi-trash me-2"></i>Remove</button>
+              <input type="file" id="profilePicInput" accept="image/*" class="d-none" onchange="previewProfilePic(event)">
+            </div>
+          </div>
+
           <form id="profileForm" class="glass-form">
             <div class="mb-3">
               <label class="form-label">Full Name</label>
@@ -97,6 +109,31 @@
   Auth.requireAuth();
   UI.initSidebar();
 
+  let profilePicBase64 = "";
+
+  function previewProfilePic(event) {
+    const file = event.target.files[0];
+    if (!file) return;
+    
+    if (file.size > 2 * 1024 * 1024) {
+      UI.showToast("Image must be smaller than 2MB", "error");
+      return;
+    }
+    
+    const reader = new FileReader();
+    reader.onload = function(e) {
+      profilePicBase64 = e.target.result;
+      document.getElementById('profilePicPreview').src = profilePicBase64;
+    };
+    reader.readAsDataURL(file);
+  }
+
+  function removeProfilePic() {
+    profilePicBase64 = "";
+    document.getElementById('profilePicPreview').src = UI.DEFAULT_AVATAR;
+    document.getElementById('profilePicInput').value = "";
+  }
+
   async function loadProfile() {
     UI.showLoading();
     try {
@@ -105,6 +142,8 @@
       document.getElementById('username').value = data.username || '';
       document.getElementById('email').value = data.email || '';
       document.getElementById('phone').value = data.phoneNumber || '';
+      document.getElementById('profilePicPreview').src = data.profilePicture || UI.DEFAULT_AVATAR;
+      profilePicBase64 = data.profilePicture || "";
     } catch (err) {
       UI.showToast('Failed to load profile: ' + err.message, 'error');
     } finally {
@@ -121,14 +160,25 @@
       const payload = {
         fullName: document.getElementById('fullName').value,
         username: document.getElementById('username').value,
-        phoneNumber: document.getElementById('phone').value
+        phoneNumber: document.getElementById('phone').value,
+        profilePicture: profilePicBase64
       };
       await Api.put(`/users/${Api.getUserId()}`, payload);
       UI.showToast('Profile updated successfully');
       
-      // Update local storage username
+      // Update local storage username & profile picture
       localStorage.setItem('username', payload.username);
-      document.getElementById('sidebar-username').textContent = payload.username;
+      if (profilePicBase64) {
+        localStorage.setItem('profilePicture', profilePicBase64);
+      } else {
+        localStorage.removeItem('profilePicture');
+      }
+      
+      // Refresh sidebar elements
+      const imgs = document.querySelectorAll('.user-avatar-img');
+      imgs.forEach(img => img.src = profilePicBase64 || UI.DEFAULT_AVATAR);
+      const nameEl = document.getElementById('sidebar-username');
+      if (nameEl) nameEl.textContent = payload.username;
     } catch (err) {
       UI.showToast(err.message, 'error');
     } finally {
@@ -151,8 +201,11 @@
 
     UI.showLoading();
     try {
-      // We'll use PATCH method with request params as defined in the controller
-      await Api.patch(`/users/${Api.getUserId()}/change-password?currentPassword=${encodeURIComponent(curr)}&newPassword=${encodeURIComponent(newPw)}`);
+      const payload = {
+        currentPassword: curr,
+        newPassword: newPw
+      };
+      await Api.post(`/users/${Api.getUserId()}/change-password`, payload);
       UI.showToast('Password changed successfully');
       form.reset();
     } catch (err) {

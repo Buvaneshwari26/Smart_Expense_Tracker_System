@@ -155,7 +155,7 @@ public class AuthService {
                 userRepository.save(user);
                 loginHistoryService.recordLogin(user, "FAILED");
                 activityLogService.logActivity(user, "LOGIN_FAILED", "Failed login attempt (" + currentFailed + "/5)");
-                throw new BadRequestException("Invalid email or password. Attempt " + currentFailed + " of 5.");
+                throw new BadRequestException("Invalid email or password.");
             }
         } catch (Exception e) {
             loginHistoryService.recordLogin(user, "FAILED");

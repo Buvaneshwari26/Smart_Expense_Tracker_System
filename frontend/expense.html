@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8"/>
@@ -178,7 +178,7 @@
               <td class="text-danger fw-bold">-${UI.formatCurrency(item.amount)}</td>
               <td>${item.description || '-'}</td>
               <td>
-                <button class="btn btn-sm btn-outline-info me-1" onclick='editItem(${JSON.stringify(item)})'><i class="bi bi-pencil"></i></button>
+                <button class="btn btn-sm btn-outline-info me-1" onclick='editItem(${JSON.stringify(item).replace(/'/g, "&apos;")})'><i class="bi bi-pencil"></i></button>
                 <button class="btn btn-sm btn-outline-danger" onclick="deleteItem(${item.id})"><i class="bi bi-trash"></i></button>
               </td>
             </tr>

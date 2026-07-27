@@ -39,11 +39,13 @@ public class ReportController {
     @Operation(summary = "Get monthly income/expense report")
     public ResponseEntity<Map<String, Object>> getMonthlyReport(
             @RequestParam(required = false) Integer month,
-            @RequestParam(required = false) Integer year) {
+            @RequestParam(required = false) Integer year,
+            @RequestParam(required = false) String startDate,
+            @RequestParam(required = false) String endDate) {
         Long userId = SecurityUtils.getCurrentUserId();
         LocalDate now = LocalDate.now();
-        int m = month != null ? month : now.getMonthValue();
-        int y = year != null ? year : now.getYear();
+        int m = month != null ? month : (startDate != null && startDate.length() >= 7 ? Integer.parseInt(startDate.substring(5, 7)) : now.getMonthValue());
+        int y = year != null ? year : (startDate != null && startDate.length() >= 4 ? Integer.parseInt(startDate.substring(0, 4)) : now.getYear());
         return ResponseEntity.ok(reportService.getMonthlyReport(userId, m, y));
     }
 
@@ -60,11 +62,13 @@ public class ReportController {
     @Operation(summary = "Get category-wise expense breakdown")
     public ResponseEntity<Map<String, Object>> getCategoryReport(
             @RequestParam(required = false) Integer month,
-            @RequestParam(required = false) Integer year) {
+            @RequestParam(required = false) Integer year,
+            @RequestParam(required = false) String startDate,
+            @RequestParam(required = false) String endDate) {
         Long userId = SecurityUtils.getCurrentUserId();
         LocalDate now = LocalDate.now();
-        int m = month != null ? month : now.getMonthValue();
-        int y = year != null ? year : now.getYear();
+        int m = month != null ? month : (startDate != null && startDate.length() >= 7 ? Integer.parseInt(startDate.substring(5, 7)) : now.getMonthValue());
+        int y = year != null ? year : (startDate != null && startDate.length() >= 4 ? Integer.parseInt(startDate.substring(0, 4)) : now.getYear());
         return ResponseEntity.ok(reportService.getCategoryReport(userId, m, y));
     }
 
@@ -75,5 +79,25 @@ public class ReportController {
         Long userId = SecurityUtils.getCurrentUserId();
         int y = year != null ? year : LocalDate.now().getYear();
         return ResponseEntity.ok(reportService.getIncomeVsExpenseReport(userId, y));
+    }
+
+    @GetMapping("/export")
+    @Operation(summary = "Export report to CSV, Excel, or PDF format")
+    public ResponseEntity<byte[]> exportReport(
+            ReportRequest request,
+            @RequestParam(defaultValue = "CSV") String format) {
+        Long currentUserId = SecurityUtils.getCurrentUserId();
+        User currentUser = userService.getUserEntity(currentUserId);
+        
+        byte[] data = reportService.exportReport(request, currentUser, format);
+        
+        String mediaType = "text/csv";
+        if ("EXCEL".equalsIgnoreCase(format)) mediaType = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet";
+        if ("PDF".equalsIgnoreCase(format)) mediaType = "application/pdf";
+
+        return ResponseEntity.ok()
+                .header(org.springframework.http.HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"report." + (format.equalsIgnoreCase("EXCEL") ? "xlsx" : format.toLowerCase()) + "\"")
+                .contentType(org.springframework.http.MediaType.parseMediaType(mediaType))
+                .body(data);
     }
 }

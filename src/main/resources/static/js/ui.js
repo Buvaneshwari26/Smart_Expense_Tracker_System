@@ -1,4 +1,5 @@
 const UI = {
+  DEFAULT_AVATAR: 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="%238892a4"><circle cx="12" cy="12" r="12" fill="%231e293b"/><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z" fill="%2364748b"/></svg>',
   showToast(message, type = 'success') {
     let container = document.querySelector('.toast-container');
     if (!container) {
@@ -35,6 +36,8 @@ const UI = {
   
   formatDate(dateStr) {
     if (!dateStr) return '-';
+    const parsed = Date.parse(dateStr);
+    if (isNaN(parsed)) return dateStr;
     return new Date(dateStr).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' });
   },
   
@@ -42,7 +45,7 @@ const UI = {
     container.innerHTML = '';
     if (!pageData || pageData.totalPages <= 1) return;
     const nav = document.createElement('nav');
-    nav.innerHTML = '<ul class="pagination pagination-custom m-0"></ul>';
+    nav.innerHTML = '<ul class="pagination pagination-custom"></ul>';
     const ul = nav.querySelector('ul');
     
     // Previous
@@ -65,441 +68,105 @@ const UI = {
     container.appendChild(nav);
   },
 
-  initSidebar() {
+  /**
+   * initSidebar(currentPage)
+   *
+   * Injects role-aware navigation links into #sidebar-nav (if present),
+   * then sets the active class and username.
+   *
+   * All pages that use a dynamic sidebar must have:
+   *   <nav class="sidebar-nav" id="sidebar-nav"></nav>
+   *
+   * Pages that still have static nav links (no #sidebar-nav) continue to
+   * work as before — this function simply activates the correct link.
+   *
+   * @param {string} [activePage] - Override the active page filename.
+   *   Defaults to the current page filename from window.location.pathname.
+   */
+  initSidebar(activePage) {
+    const user = Auth.getUser();
+    const currentPage = activePage || window.location.pathname.split('/').pop() || 'dashboard.html';
+
+    // ── Inject nav links into dynamic sidebar containers ──────────────────
+    const navContainer = document.getElementById('sidebar-nav');
+    if (navContainer) {
+      // Base links available to all roles
+      const baseLinks = [
+        { href: 'dashboard.html',  icon: 'bi-grid-1x2',    label: 'Dashboard' },
+        { href: 'income.html',     icon: 'bi-cash-stack',   label: 'Income' },
+        { href: 'expense.html',    icon: 'bi-credit-card',  label: 'Expenses' },
+        { href: 'category.html',   icon: 'bi-tags',         label: 'Categories' },
+        { href: 'budget.html',     icon: 'bi-pie-chart',    label: 'Budgets' },
+        { href: 'savings.html',    icon: 'bi-piggy-bank',   label: 'Savings Goals' },
+        { href: 'reports.html',    icon: 'bi-graph-up',     label: 'Reports' },
+        { href: 'profile.html',    icon: 'bi-person-circle',label: 'Profile' },
+      ];
+
+      // Admin-only links
+      const adminLinks = [
+        { href: 'admin-users.html', icon: 'bi-people-fill', label: 'User Management', adminOnly: true },
+      ];
+
+      const allLinks = user.role === 'ADMIN'
+        ? [...baseLinks, ...adminLinks]
+        : baseLinks;
+
+      navContainer.innerHTML = allLinks.map(link => {
+        const isActive = link.href === currentPage ? ' active' : '';
+        const adminBadge = link.adminOnly
+          ? ' <span style="font-size:0.65rem;background:rgba(99,102,241,0.25);color:#818cf8;padding:1px 5px;border-radius:4px;margin-left:4px;">Admin</span>'
+          : '';
+        return `<a href="${link.href}" class="nav-link${isActive}">
+          <i class="bi ${link.icon}"></i>
+          <span>${link.label}${adminBadge}</span>
+        </a>`;
+      }).join('');
+    }
+
+    // ── Mobile sidebar toggle ─────────────────────────────────────────────
     const toggle = document.querySelector('.sidebar-toggle');
     const sidebar = document.querySelector('.sidebar');
     if (toggle && sidebar) {
       toggle.addEventListener('click', () => sidebar.classList.toggle('open'));
     }
-    // Collapsible sidebar state load
-    const isCollapsed = localStorage.getItem('sidebar_collapsed') === 'true';
-    if (isCollapsed && sidebar) {
-      sidebar.classList.add('collapsed');
-    }
 
-    const user = Auth.getUser();
-    const role = Auth.getRole();
-
-    // Dynamically inject the Admin Panel navigation link for ADMIN role if not already present
-    const navContainer = document.querySelector('.sidebar-nav');
-    if (navContainer && role === 'ADMIN') {
-      const hasAdminLink = Array.from(navContainer.querySelectorAll('.nav-link'))
-                               .some(link => link.getAttribute('href') === 'admin.html');
-      if (!hasAdminLink) {
-        const adminLink = document.createElement('a');
-        adminLink.href = 'admin.html';
-        adminLink.className = 'nav-link';
-        adminLink.innerHTML = '<i class="bi bi-shield-lock-fill"></i><span>Admin Panel</span>';
-        navContainer.appendChild(adminLink);
-      }
-    }
-
-    // ── Role-based sidebar nav visibility ──────────────────────────────────
-    const rolePages = {
-      ADMIN:   ['dashboard.html','income.html','expense.html','category.html','budget.html','savings.html','reports.html','profile.html','admin.html'],
-      USER:    ['dashboard.html','income.html','expense.html','category.html','budget.html','savings.html','reports.html','profile.html'],
-      ANALYST: ['dashboard.html','reports.html','profile.html']
-    };
-    const allowedPages = rolePages[role] || rolePages['USER'];
-
-    // Hide nav links the current role cannot access
-    document.querySelectorAll('.sidebar-nav .nav-link').forEach(link => {
-      const href = link.getAttribute('href');
-      if (!allowedPages.includes(href)) {
-        link.style.display = 'none';
-      } else {
-        link.style.display = 'flex'; // Ensure allowed ones are visible
-      }
-    });
-
-    // Set active nav link
-    const currentPage = window.location.pathname.split('/').pop() || 'dashboard.html';
+    // ── Activate current nav link (static nav fallback) ───────────────────
     document.querySelectorAll('.nav-link').forEach(link => {
       if (link.getAttribute('href') === currentPage) link.classList.add('active');
     });
 
-    // Set username and role badge in sidebar footer
-    const el = document.getElementById('sidebar-username');
-    if (el) {
-      el.textContent = user.fullName || user.username || 'User';
-    }
-
-    // Add role badge next to username in sidebar if not already present
-    const sidebarFooter = document.querySelector('.sidebar-footer');
-    if (sidebarFooter && !document.getElementById('sidebar-role-badge')) {
-      const badge = document.createElement('span');
-      badge.id = 'sidebar-role-badge';
-      badge.className = 'badge ms-2';
-      badge.style.cssText = 'background:rgba(78,204,163,0.2);color:var(--accent);font-size:0.65rem;vertical-align:middle;';
-      badge.textContent = role;
-      const usernameEl = document.getElementById('sidebar-username');
-      if (usernameEl) usernameEl.after(badge);
-    }
-
-    // Enforce read-only mode dynamically for ANALYST and AUDITOR roles
-    this.enforceReadOnly();
-  },
-
-  enforceReadOnly() {
-    if (!Auth.isReadOnly()) return;
-
-    const isLogoutBtn = (btn) => {
-      const onclick = btn.getAttribute('onclick') || '';
-      const text = (btn.textContent || btn.value || '').trim().toLowerCase();
-      return onclick.includes('logout') || text === 'logout' || btn.classList.contains('logout-btn');
-    };
-
-    let observerActive = false;
-    let observer = null;
-
-    const enforce = () => {
-      // Temporarily disconnect to prevent re-triggering on DOM changes we make
-      if (observer) observer.disconnect();
-
-      // 1. Hide buttons/links with write keywords
-      const writeKeywords = [/add/i, /save/i, /create/i, /delete/i, /edit/i, /update/i, /remove/i, /new/i, /upload/i];
-      document.querySelectorAll('button, a.btn, input[type="submit"], input[type="button"], #empty-state-action').forEach(btn => {
-        // Never remove logout / safe UI controls
-        if (isLogoutBtn(btn)) return;
-        const text = btn.textContent || btn.value || '';
-        if (text.toLowerCase().includes('theme') ||
-            text.toLowerCase().includes('export') ||
-            text.toLowerCase().includes('download') ||
-            text.toLowerCase().includes('search') ||
-            text.toLowerCase().includes('clear') ||
-            text.toLowerCase().includes('filter') ||
-            text.toLowerCase().includes('mark all')) {
-          return;
-        }
-
-        const hasWriteKeyword = writeKeywords.some(regex => regex.test(text));
-        const hasWriteIcon = btn.querySelector('.bi-plus-lg, .bi-pencil, .bi-trash, .bi-check-lg, .bi-plus-circle, .bi-pencil-square');
-        const hasWriteClass = btn.classList.contains('write-only') ||
-                              btn.classList.contains('btn-outline-info') ||
-                              btn.classList.contains('btn-danger');
-        // btn-outline-danger: only remove if NOT a logout button
-        const isDangerWrite = btn.classList.contains('btn-outline-danger') && !isLogoutBtn(btn);
-
-        if (hasWriteKeyword || hasWriteIcon || hasWriteClass || isDangerWrite) {
-          btn.remove();
-        }
-      });
-
-      // 2. Hide edit/delete Actions columns inside tables
-      document.querySelectorAll('table').forEach(table => {
-        let actionColIndex = -1;
-        table.querySelectorAll('thead th').forEach((th, idx) => {
-          const text = th.textContent.trim().toLowerCase();
-          if (text === 'actions' || text === 'action') {
-            actionColIndex = idx;
-            th.style.display = 'none';
-          }
-        });
-
-        if (actionColIndex !== -1) {
-          table.querySelectorAll('tbody tr').forEach(tr => {
-            const cells = tr.querySelectorAll('td');
-            if (cells[actionColIndex]) {
-              cells[actionColIndex].style.display = 'none';
-            }
-          });
-        }
-      });
-
-      // 3. Remove any elements explicitly marked as write-only
-      document.querySelectorAll('.write-only').forEach(el => el.remove());
-
-      // 4. Make form inputs read-only (skip search/filter inputs)
-      document.querySelectorAll('input, textarea, select').forEach(el => {
-        const id = (el.id || '').toLowerCase();
-        const name = (el.name || '').toLowerCase();
-        // Skip if part of a search or filter area
-        if (id.includes('search') || id.includes('filter') ||
-            name.includes('search') || name.includes('filter') ||
-            el.type === 'search' ||
-            el.closest('.search-area') || el.closest('.filter-area') ||
-            el.closest('[id*="search"]') || el.closest('[id*="filter"]')) return;
-        el.disabled = true;
-        if (el.tagName !== 'SELECT') el.readOnly = true;
-      });
-
-      // Reconnect observer after our changes
-      if (observerActive && observer) {
-        observer.observe(document.body, { childList: true, subtree: true });
-      }
-    };
-
-    // Run immediately on page load
-    enforce();
-
-    // Set up MutationObserver to enforce constraints when data elements are rendered dynamically
-    observer = new MutationObserver(() => enforce());
-    observerActive = true;
-    observer.observe(document.body, { childList: true, subtree: true });
-  },
-
-
-  initHeader() {
-    const mainContent = document.querySelector('.main-content');
-    if (!mainContent) return;
-
-    // Check if header already exists
-    if (document.querySelector('.dashboard-header')) return;
-
-    const user = Auth.getUser();
-    const displayName = user.fullName || user.username || 'User';
-    
-    // Determine greeting
-    const hours = new Date().getHours();
-    let greeting = 'Good Evening';
-    if (hours < 12) greeting = 'Good Morning';
-    else if (hours < 17) greeting = 'Good Afternoon';
-
-    // Get avatar image or default
-    const savedAvatar = localStorage.getItem('profile_avatar') || '';
-    const avatarImg = savedAvatar ? `<img src="${savedAvatar}" class="header-avatar" alt="Avatar"/>` : `<i class="bi bi-person-circle fs-4"></i>`;
-
-    const headerHtml = `
-      <header class="dashboard-header animate-in">
-        <div class="header-welcome">
-          <h2 id="header-greeting">${greeting}, ${displayName} 👋</h2>
-          <p id="header-datetime"><i class="bi bi-calendar3 me-2"></i>Loading date &amp; time...</p>
+    // ── Set username & avatar in sidebar footer ───────────────────────────
+    const footer = document.querySelector('.sidebar-footer');
+    if (footer && user.userId) {
+      const storedPic = localStorage.getItem('profilePicture') || this.DEFAULT_AVATAR;
+      footer.innerHTML = `
+        <div class="d-flex align-items-center gap-2" style="max-width: 140px;">
+          <img src="${storedPic}" class="user-avatar-img rounded-circle border border-secondary" style="width:32px;height:32px;object-fit:cover;" onerror="this.src='${this.DEFAULT_AVATAR}'">
+          <span id="sidebar-username" class="text-truncate text-white fw-medium">${user.username || 'User'}</span>
         </div>
-        <div class="header-actions">
-          <button class="sidebar-collapse-btn d-none d-md-flex" title="Toggle Sidebar">
-            <i class="bi bi-layout-sidebar-inset"></i>
-          </button>
-          <div class="position-relative">
-            <button class="notification-bell-btn" id="bell-btn" title="Notifications">
-              <i class="bi bi-bell"></i>
-              <span class="notification-badge d-none" id="bell-count">0</span>
-            </button>
-            <div class="notification-dropdown" id="notification-dropdown">
-              <div class="notification-header">
-                <h6>Notifications</h6>
-                <button id="mark-all-read-btn">Mark all as read</button>
-              </div>
-              <div class="notification-list" id="notification-list">
-                <div class="notification-empty">No new alerts.</div>
-              </div>
-            </div>
-          </div>
-          <button class="theme-toggle-btn" id="theme-btn" title="Toggle Theme">
-            <i class="bi bi-moon-stars"></i>
-          </button>
-          <a href="profile.html" class="d-flex align-items-center" style="text-decoration:none; color: var(--text-primary);">
-            ${avatarImg}
-          </a>
-        </div>
-      </header>
-    `;
-
-    mainContent.insertAdjacentHTML('afterbegin', headerHtml);
-
-    // Live Date/Time Clock
-    const updateDateTime = () => {
-      const el = document.getElementById('header-datetime');
-      if (el) {
-        const now = new Date();
-        const options = { weekday: 'long', day: 'numeric', month: 'short', year: 'numeric' };
-        const dateStr = now.toLocaleDateString('en-IN', options);
-        const timeStr = now.toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
-        el.innerHTML = `<i class="bi bi-calendar3 me-2"></i>${dateStr} &bull; ${timeStr}`;
-      }
-    };
-    updateDateTime();
-    setInterval(updateDateTime, 1000);
-
-    // Sidebar collapse setup
-    const collapseBtn = document.querySelector('.sidebar-collapse-btn');
-    const sidebar = document.querySelector('.sidebar');
-    if (collapseBtn && sidebar) {
-      collapseBtn.addEventListener('click', () => {
-        sidebar.classList.toggle('collapsed');
-        localStorage.setItem('sidebar_collapsed', sidebar.classList.contains('collapsed'));
-      });
-    }
-
-    // Theme Toggle setup
-    const themeBtn = document.getElementById('theme-btn');
-    const currentTheme = localStorage.getItem('theme') || 'dark';
-    if (themeBtn) {
-      themeBtn.querySelector('i').className = currentTheme === 'light' ? 'bi bi-sun' : 'bi bi-moon-stars';
-      themeBtn.addEventListener('click', () => {
-        const theme = document.documentElement.getAttribute('data-theme') === 'light' ? 'dark' : 'light';
-        document.documentElement.setAttribute('data-theme', theme);
-        localStorage.setItem('theme', theme);
-        themeBtn.querySelector('i').className = theme === 'light' ? 'bi bi-sun' : 'bi bi-moon-stars';
-      });
-    }
-
-    // Notifications Center logic
-    const bellBtn = document.getElementById('bell-btn');
-    const dropdown = document.getElementById('notification-dropdown');
-    
-    if (bellBtn && dropdown) {
-      bellBtn.addEventListener('click', (e) => {
-        e.stopPropagation();
-        dropdown.classList.toggle('show');
-        if (dropdown.classList.contains('show')) {
-          this.loadNotifications();
-        }
-      });
-      document.addEventListener('click', () => dropdown.classList.remove('show'));
-      dropdown.addEventListener('click', (e) => e.stopPropagation());
-    }
-
-    const markAllBtn = document.getElementById('mark-all-read-btn');
-    if (markAllBtn) {
-      markAllBtn.addEventListener('click', async () => {
-        const userId = Api.getUserId();
-        if (!userId) return;
-        try {
-          const pageData = await Api.get(`/notifications?userId=${userId}&size=30`);
-          const items = pageData.content || pageData;
-          if (items && items.length > 0) {
-            for (const item of items) {
-              if (!item.isRead && !item.read) {
-                await Api.patch(`/notifications/${item.id}/mark-read`);
-              }
-            }
-          }
-          this.updateUnreadCount();
-          this.loadNotifications();
-          this.showToast('All notifications marked as read', 'success');
-        } catch (err) {
-          console.error(err);
-        }
-      });
-    }
-
-    this.updateUnreadCount();
-  },
-
-  async updateUnreadCount() {
-    const userId = Api.getUserId();
-    const badge = document.getElementById('bell-count');
-    if (!userId || !badge) return;
-    try {
-      const count = await Api.get(`/notifications/unread-count?userId=${userId}`);
-      if (count > 0) {
-        badge.textContent = count;
-        badge.classList.remove('d-none');
-      } else {
-        badge.classList.add('d-none');
-      }
-    } catch {
-      badge.classList.add('d-none');
-    }
-  },
-
-  async loadNotifications() {
-    const userId = Api.getUserId();
-    const container = document.getElementById('notification-list');
-    if (!userId || !container) return;
-    container.innerHTML = '<div class="notification-empty"><div class="spinner-border spinner-border-sm text-light"></div> Loading...</div>';
-    try {
-      const pageData = await Api.get(`/notifications?userId=${userId}&size=5`);
-      const list = pageData.content !== undefined ? pageData.content : pageData;
-      container.innerHTML = '';
-      if (!list || list.length === 0) {
-        container.innerHTML = '<div class="notification-empty">No new alerts.</div>';
-        return;
-      }
-      list.forEach(n => {
-        let icon = 'bi-bell-fill';
-        let colorClass = 'info';
-        if (n.title.toLowerCase().includes('budget')) { icon = 'bi-exclamation-triangle-fill'; colorClass = 'danger'; }
-        else if (n.title.toLowerCase().includes('goal')) { icon = 'bi-trophy-fill'; colorClass = 'success'; }
-        else if (n.title.toLowerCase().includes('income')) { icon = 'bi-plus-circle-fill'; colorClass = 'success'; }
-        else if (n.title.toLowerCase().includes('expense')) { icon = 'bi-dash-circle-fill'; colorClass = 'danger'; }
-
-        const isUnread = !(n.isRead || n.read);
-        const itemHtml = `
-          <div class="notification-item ${isUnread ? 'unread' : ''}" data-id="${n.id}">
-            <div class="notification-item-icon ${colorClass}"><i class="bi ${icon}"></i></div>
-            <div class="notification-item-content">
-              <div class="notification-item-title">${n.title}</div>
-              <div class="notification-item-msg">${n.message}</div>
-              <div class="notification-item-time">${this.formatDate(n.createdAt)}</div>
-            </div>
-          </div>
-        `;
-        container.insertAdjacentHTML('beforeend', itemHtml);
-      });
-
-      container.querySelectorAll('.notification-item').forEach(item => {
-        item.addEventListener('click', async () => {
-          const id = item.dataset.id;
-          if (item.classList.contains('unread')) {
-            try {
-              await Api.patch(`/notifications/${id}/mark-read`);
-              item.classList.remove('unread');
-              this.updateUnreadCount();
-            } catch (err) {
-              console.error(err);
-            }
-          }
-        });
-      });
-    } catch {
-      container.innerHTML = '<div class="notification-empty text-danger">Failed to load alerts.</div>';
-    }
-  },
-
-  showSkeletonCards(container, count = 3) {
-    container.innerHTML = '';
-    let cards = '';
-    const colSize = Math.floor(12 / count);
-    for (let i = 0; i < count; i++) {
-      cards += `
-        <div class="col-md-${colSize}">
-          <div class="glass-card stat-card">
-            <div class="skeleton skeleton-circle"></div>
-            <div style="flex:1;">
-              <div class="skeleton skeleton-text" style="width:50%;"></div>
-              <div class="skeleton skeleton-text" style="width:70%;height:24px;"></div>
-            </div>
-          </div>
-        </div>
+        <button onclick="Auth.logout()" class="btn btn-sm btn-outline-danger border-0 p-1" title="Logout"><i class="bi bi-box-arrow-right"></i></button>
       `;
-    }
-    container.innerHTML = cards;
-  },
 
-  showSkeletonTable(tbody, rows = 5, cols = 5) {
-    tbody.innerHTML = '';
-    let trs = '';
-    for (let r = 0; r < rows; r++) {
-      let tdHtml = '';
-      for (let c = 0; c < cols; c++) {
-        tdHtml += `<td><div class="skeleton skeleton-text" style="width:${Math.floor(Math.random()*40)+40}%;margin-bottom:0;"></div></td>`;
-      }
-      trs += `<tr>${tdHtml}</tr>`;
-    }
-    tbody.innerHTML = trs;
-  },
-
-  showSkeletonChart(container) {
-    container.innerHTML = `
-      <div class="d-flex flex-column justify-content-center align-items-center h-100 py-5">
-        <div class="skeleton skeleton-chart mb-3"></div>
-      </div>
-    `;
-  },
-
-  renderEmptyState(container, title, subtitle, iconClass = 'bi-wallet2', actionText = null, actionCallback = null) {
-    container.innerHTML = `
-      <div class="empty-state-container animate-in">
-        <div class="empty-state-icon"><i class="bi ${iconClass}"></i></div>
-        <div class="empty-state-title">${title}</div>
-        <div class="empty-state-subtitle">${subtitle}</div>
-        ${actionText ? `<button class="btn btn-glow btn-sm" id="empty-state-action"><i class="bi bi-plus-lg me-1"></i>${actionText}</button>` : ''}
-      </div>
-    `;
-    if (actionText && actionCallback) {
-      const btn = container.querySelector('#empty-state-action');
-      if (btn) btn.addEventListener('click', actionCallback);
+      // Fetch profile asynchronously to refresh picture and username in real-time
+      Api.get(`/users/${user.userId}`).then(data => {
+        if (data.profilePicture) {
+          localStorage.setItem('profilePicture', data.profilePicture);
+          const imgs = document.querySelectorAll('.user-avatar-img');
+          imgs.forEach(img => img.src = data.profilePicture);
+        } else {
+          localStorage.removeItem('profilePicture');
+          const imgs = document.querySelectorAll('.user-avatar-img');
+          imgs.forEach(img => img.src = this.DEFAULT_AVATAR);
+        }
+        if (data.username) {
+          localStorage.setItem('username', data.username);
+          const nameEl = document.getElementById('sidebar-username');
+          if (nameEl) nameEl.textContent = data.username;
+        }
+      }).catch(err => console.warn("Sidebar profile sync deferred: " + err.message));
+    } else {
+      const el = document.getElementById('sidebar-username');
+      if (el) el.textContent = user.username || 'User';
     }
   }
 };

@@ -12,4 +12,6 @@ public class BudgetDTO {
     private BigDecimal budgetAmount;
     private Integer month;
     private Integer year;
+    private LocalDate startDate;
+    private LocalDate endDate;
 }

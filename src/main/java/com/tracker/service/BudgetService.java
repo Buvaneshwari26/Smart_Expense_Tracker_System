@@ -27,10 +27,22 @@ public class BudgetService {
         User user = userService.getUserEntity(userId);
         Category category = categoryService.getCategoryEntity(budgetDTO.getCategoryId(), userId);
 
+        Integer m = budgetDTO.getMonth();
+        Integer y = budgetDTO.getYear();
+        if (m == null || y == null) {
+            if (budgetDTO.getStartDate() != null) {
+                m = budgetDTO.getStartDate().getMonthValue();
+                y = budgetDTO.getStartDate().getYear();
+            } else {
+                m = java.time.LocalDate.now().getMonthValue();
+                y = java.time.LocalDate.now().getYear();
+            }
+        }
+
         Budget budget = Budget.builder()
                 .budgetAmount(budgetDTO.getBudgetAmount())
-                .month(budgetDTO.getMonth())
-                .year(budgetDTO.getYear())
+                .month(m)
+                .year(y)
                 .category(category)
                 .user(user)
                 .build();
@@ -64,8 +76,21 @@ public class BudgetService {
 
         Category category = categoryService.getCategoryEntity(budgetDTO.getCategoryId(), userId);
         budget.setBudgetAmount(budgetDTO.getBudgetAmount());
-        budget.setMonth(budgetDTO.getMonth());
-        budget.setYear(budgetDTO.getYear());
+        
+        Integer m = budgetDTO.getMonth();
+        Integer y = budgetDTO.getYear();
+        if (m == null || y == null) {
+            if (budgetDTO.getStartDate() != null) {
+                m = budgetDTO.getStartDate().getMonthValue();
+                y = budgetDTO.getStartDate().getYear();
+            } else {
+                m = java.time.LocalDate.now().getMonthValue();
+                y = java.time.LocalDate.now().getYear();
+            }
+        }
+        
+        budget.setMonth(m);
+        budget.setYear(y);
         budget.setCategory(category);
 
         Budget saved = budgetRepository.save(budget);
@@ -88,6 +113,8 @@ public class BudgetService {
     }
 
     private BudgetDTO mapToDTO(Budget budget) {
+        java.time.LocalDate start = java.time.LocalDate.of(budget.getYear(), budget.getMonth(), 1);
+        java.time.LocalDate end = start.with(java.time.temporal.TemporalAdjusters.lastDayOfMonth());
         return BudgetDTO.builder()
                 .id(budget.getId())
                 .categoryId(budget.getCategory().getId())
@@ -95,6 +122,8 @@ public class BudgetService {
                 .budgetAmount(budget.getBudgetAmount())
                 .month(budget.getMonth())
                 .year(budget.getYear())
+                .startDate(start)
+                .endDate(end)
                 .build();
     }
 }

@@ -106,16 +106,16 @@
     <!-- Tab navigation -->
     <div class="mb-4">
       <ul class="nav nav-tabs nav-tabs-custom" id="reportTabs">
-        <li><button class="nav-link active" onclick="switchTab('FINANCIAL_SUMMARY')">Summary</button></li>
-        <li><button class="nav-link" onclick="switchTab('DAILY')">Daily</button></li>
-        <li><button class="nav-link" onclick="switchTab('WEEKLY')">Weekly</button></li>
-        <li><button class="nav-link" onclick="switchTab('MONTHLY')">Monthly</button></li>
-        <li><button class="nav-link" onclick="switchTab('QUARTERLY')">Quarterly</button></li>
-        <li><button class="nav-link" onclick="switchTab('YEARLY')">Yearly</button></li>
-        <li><button class="nav-link" onclick="switchTab('CATEGORY_WISE')">Category Breakdown</button></li>
-        <li><button class="nav-link" onclick="switchTab('BUDGET_WISE')">Budgets Health</button></li>
-        <li><button class="nav-link" onclick="switchTab('SAVINGS_WISE')">Savings Goals</button></li>
-        <li id="adminTabLi" style="display: none;"><button class="nav-link" onclick="switchTab('USER_WISE')">User Details</button></li>
+        <li><button class="nav-link active" onclick="switchTab(event, 'FINANCIAL_SUMMARY')">Summary</button></li>
+        <li><button class="nav-link" onclick="switchTab(event, 'DAILY')">Daily</button></li>
+        <li><button class="nav-link" onclick="switchTab(event, 'WEEKLY')">Weekly</button></li>
+        <li><button class="nav-link" onclick="switchTab(event, 'MONTHLY')">Monthly</button></li>
+        <li><button class="nav-link" onclick="switchTab(event, 'QUARTERLY')">Quarterly</button></li>
+        <li><button class="nav-link" onclick="switchTab(event, 'YEARLY')">Yearly</button></li>
+        <li><button class="nav-link" onclick="switchTab(event, 'CATEGORY_WISE')">Category Breakdown</button></li>
+        <li><button class="nav-link" onclick="switchTab(event, 'BUDGET_WISE')">Budgets Health</button></li>
+        <li><button class="nav-link" onclick="switchTab(event, 'SAVINGS_WISE')">Savings Goals</button></li>
+        <li id="adminTabLi" style="display: none;"><button class="nav-link" onclick="switchTab(event, 'USER_WISE')">User Details</button></li>
       </ul>
     </div>
 
@@ -244,10 +244,12 @@
   // Fetch initial report
   fetchReportData();
 
-  function switchTab(reportType) {
+  function switchTab(event, reportType) {
     currentReportType = reportType;
     document.querySelectorAll('#reportTabs button').forEach(btn => btn.classList.remove('active'));
-    event.target.classList.add('active');
+    if (event && event.currentTarget) {
+      event.currentTarget.classList.add('active');
+    }
     
     switchFiltersVisibility();
     fetchReportData();

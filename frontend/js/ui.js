@@ -1,4 +1,5 @@
 const UI = {
+  DEFAULT_AVATAR: 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="%238892a4"><circle cx="12" cy="12" r="12" fill="%231e293b"/><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z" fill="%2364748b"/></svg>',
   showToast(message, type = 'success') {
     let container = document.querySelector('.toast-container');
     if (!container) {
@@ -35,6 +36,8 @@ const UI = {
   
   formatDate(dateStr) {
     if (!dateStr) return '-';
+    const parsed = Date.parse(dateStr);
+    if (isNaN(parsed)) return dateStr;
     return new Date(dateStr).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' });
   },
   
@@ -132,8 +135,38 @@ const UI = {
       if (link.getAttribute('href') === currentPage) link.classList.add('active');
     });
 
-    // ── Set username in sidebar footer ────────────────────────────────────
-    const el = document.getElementById('sidebar-username');
-    if (el) el.textContent = user.username || 'User';
+    // ── Set username & avatar in sidebar footer ───────────────────────────
+    const footer = document.querySelector('.sidebar-footer');
+    if (footer && user.userId) {
+      const storedPic = localStorage.getItem('profilePicture') || this.DEFAULT_AVATAR;
+      footer.innerHTML = `
+        <div class="d-flex align-items-center gap-2" style="max-width: 140px;">
+          <img src="${storedPic}" class="user-avatar-img rounded-circle border border-secondary" style="width:32px;height:32px;object-fit:cover;" onerror="this.src='${this.DEFAULT_AVATAR}'">
+          <span id="sidebar-username" class="text-truncate text-white fw-medium">${user.username || 'User'}</span>
+        </div>
+        <button onclick="Auth.logout()" class="btn btn-sm btn-outline-danger border-0 p-1" title="Logout"><i class="bi bi-box-arrow-right"></i></button>
+      `;
+
+      // Fetch profile asynchronously to refresh picture and username in real-time
+      Api.get(`/users/${user.userId}`).then(data => {
+        if (data.profilePicture) {
+          localStorage.setItem('profilePicture', data.profilePicture);
+          const imgs = document.querySelectorAll('.user-avatar-img');
+          imgs.forEach(img => img.src = data.profilePicture);
+        } else {
+          localStorage.removeItem('profilePicture');
+          const imgs = document.querySelectorAll('.user-avatar-img');
+          imgs.forEach(img => img.src = this.DEFAULT_AVATAR);
+        }
+        if (data.username) {
+          localStorage.setItem('username', data.username);
+          const nameEl = document.getElementById('sidebar-username');
+          if (nameEl) nameEl.textContent = data.username;
+        }
+      }).catch(err => console.warn("Sidebar profile sync deferred: " + err.message));
+    } else {
+      const el = document.getElementById('sidebar-username');
+      if (el) el.textContent = user.username || 'User';
+    }
   }
 };

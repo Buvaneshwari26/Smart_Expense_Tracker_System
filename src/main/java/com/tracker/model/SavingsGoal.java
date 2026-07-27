@@ -37,6 +37,12 @@ public class SavingsGoal extends Auditable {
     @Column(name = "target_date", nullable = false)
     private LocalDate targetDate;
 
+    @Column(name = "start_date")
+    private LocalDate startDate;
+
+    @Column(name = "notes", length = 500)
+    private String notes;
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", nullable = false)
     private User user;

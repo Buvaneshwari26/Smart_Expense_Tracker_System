@@ -30,6 +30,9 @@
         <h2 class="mb-1">Dashboard</h2>
         <p class="text-secondary">Welcome back, here's your financial overview</p>
       </div>
+      <div class="d-flex align-items-center gap-2">
+        <img id="dash-user-avatar" src="" class="rounded-circle border border-secondary user-avatar-img" style="width:48px;height:48px;object-fit:cover;" onerror="this.src=UI.DEFAULT_AVATAR">
+      </div>
     </div>
 
     <!-- KPI Cards -->
@@ -138,6 +141,10 @@
   async function loadDashboard() {
     UI.showLoading();
     try {
+      const storedPic = localStorage.getItem('profilePicture');
+      const avatarImg = document.getElementById('dash-user-avatar');
+      if (avatarImg) avatarImg.src = storedPic || UI.DEFAULT_AVATAR;
+
       const data = await Api.get(`/dashboard?userId=${Api.getUserId()}`);
       
       // Update KPIs

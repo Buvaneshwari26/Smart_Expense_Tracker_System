@@ -12,6 +12,7 @@ import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.context.request.WebRequest;
+import org.springframework.web.servlet.resource.NoResourceFoundException;
 
 import java.time.LocalDateTime;
 import java.util.stream.Collectors;
@@ -88,6 +89,15 @@ public class GlobalExceptionHandler {
                 request.getDescription(false));
         return new ResponseEntity<>(
                 new ApiResponse<>(false, "JWT Error", errorDetails), HttpStatus.UNAUTHORIZED);
+    }
+
+    @ExceptionHandler(NoResourceFoundException.class)
+    public ResponseEntity<ApiResponse<ErrorDetails>> handleNoResourceFoundException(
+            NoResourceFoundException exception, WebRequest request) {
+        ErrorDetails errorDetails = new ErrorDetails(
+                LocalDateTime.now(), "Resource Not Found: " + exception.getMessage(), request.getDescription(false));
+        return new ResponseEntity<>(
+                new ApiResponse<>(false, "Resource Not Found", errorDetails), HttpStatus.NOT_FOUND);
     }
 
     @ExceptionHandler(Exception.class)

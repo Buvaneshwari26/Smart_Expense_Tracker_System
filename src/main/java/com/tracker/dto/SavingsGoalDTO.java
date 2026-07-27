@@ -11,6 +11,10 @@ public class SavingsGoalDTO {
     private BigDecimal targetAmount;
     private BigDecimal currentAmount;
     private LocalDate targetDate;
+    private LocalDate startDate;
+    private String notes;
     private BigDecimal percentage;
+    private BigDecimal remainingAmount;
+    private String status;
     private String estimatedCompletionDate;
 }

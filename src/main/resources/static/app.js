@@ -250,8 +250,8 @@ const app = {
             // Budget Status
             const budgetList = document.getElementById('dash-budgets-list');
             budgetList.innerHTML = '';
-            if(data.budgetStatuses && data.budgetStatuses.length > 0) {
-                data.budgetStatuses.forEach(b => {
+            if(data.budgets && data.budgets.length > 0) {
+                data.budgets.forEach(b => {
                     const percent = Math.min((b.spentAmount / b.limitAmount) * 100, 100);
                     let colorClass = '';
                     if(percent > 90) colorClass = 'danger';
@@ -500,15 +500,16 @@ const app = {
     // --- Goals ---
     async loadGoals() {
         try {
-            const data = await api.get('/savings-goals');
+            const data = await api.get('/goals');
             const grid = document.getElementById('goals-grid');
             grid.innerHTML = '';
-            data.forEach(g => {
+            const list = data.content || data;
+            list.forEach(g => {
                 const percent = Math.min((g.currentAmount / g.targetAmount) * 100, 100);
                 grid.innerHTML += `
                     <div class="goal-card glass-panel">
                         <div class="goal-card-header">
-                            <h3>${g.title}</h3>
+                            <h3>${g.goalName}</h3>
                             <button class="btn-icon" onclick="app.deleteGoal(${g.id})"><i class="fa-solid fa-trash"></i></button>
                         </div>
                         <p class="goal-amount">${this.formatCurr(g.currentAmount)}</p>
@@ -527,13 +528,13 @@ const app = {
     async saveGoal(e) {
         e.preventDefault();
         const data = {
-            title: document.getElementById('goal-title').value,
+            goalName: document.getElementById('goal-title').value,
             targetAmount: document.getElementById('goal-target-amount').value,
             currentAmount: document.getElementById('goal-current-amount').value,
             targetDate: document.getElementById('goal-target-date').value
         };
         try {
-            await api.post('/savings-goals', data);
+            await api.post('/goals', data);
             showToast('Goal saved', 'success');
             closeModal('goal-modal');
             app.loadGoals();
@@ -542,7 +543,7 @@ const app = {
     async deleteGoal(id) {
         if(!confirm('Delete this goal?')) return;
         try {
-            await api.delete(`/savings-goals/${id}`);
+            await api.delete(`/goals/${id}`);
             showToast('Goal deleted', 'success');
             app.loadGoals();
         } catch (err) { showToast('Error deleting', 'error'); }

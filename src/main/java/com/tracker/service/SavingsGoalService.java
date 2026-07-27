@@ -35,6 +35,8 @@ public class SavingsGoalService {
                 .targetAmount(goalDTO.getTargetAmount())
                 .currentAmount(goalDTO.getCurrentAmount() != null ? goalDTO.getCurrentAmount() : BigDecimal.ZERO)
                 .targetDate(goalDTO.getTargetDate())
+                .startDate(goalDTO.getStartDate() != null ? goalDTO.getStartDate() : LocalDate.now())
+                .notes(goalDTO.getNotes())
                 .user(user)
                 .build();
         SavingsGoal saved = savingsGoalRepository.save(goal);
@@ -62,6 +64,8 @@ public class SavingsGoalService {
         goal.setTargetAmount(goalDTO.getTargetAmount());
         goal.setCurrentAmount(goalDTO.getCurrentAmount());
         goal.setTargetDate(goalDTO.getTargetDate());
+        goal.setStartDate(goalDTO.getStartDate() != null ? goalDTO.getStartDate() : goal.getStartDate());
+        goal.setNotes(goalDTO.getNotes());
         SavingsGoal saved = savingsGoalRepository.save(goal);
         activityLogService.logActivity(saved.getUser(), "SAVINGS_UPDATE", "Updated savings goal: " + saved.getGoalName());
         return mapToDTO(saved);
@@ -130,13 +134,24 @@ public class SavingsGoalService {
             }
         }
 
+        BigDecimal remainingAmount = goal.getTargetAmount().subtract(goal.getCurrentAmount());
+        if (remainingAmount.compareTo(BigDecimal.ZERO) < 0) {
+            remainingAmount = BigDecimal.ZERO;
+        }
+        
+        String status = pct.compareTo(BigDecimal.valueOf(100)) >= 0 ? "Achieved" : "In Progress";
+
         return SavingsGoalDTO.builder()
                 .id(goal.getId())
                 .goalName(goal.getGoalName())
                 .targetAmount(goal.getTargetAmount())
                 .currentAmount(goal.getCurrentAmount())
                 .targetDate(goal.getTargetDate())
+                .startDate(goal.getStartDate() != null ? goal.getStartDate() : (goal.getCreatedAt() != null ? goal.getCreatedAt().toLocalDate() : LocalDate.now()))
+                .notes(goal.getNotes())
                 .percentage(pct)
+                .remainingAmount(remainingAmount)
+                .status(status)
                 .estimatedCompletionDate(estCompletion)
                 .build();
     }
