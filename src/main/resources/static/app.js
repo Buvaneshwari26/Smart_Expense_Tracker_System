@@ -14,9 +14,13 @@ document.addEventListener('DOMContentLoaded', () => {
     initSidebar();
     initModals();
 
-    if (appState.userId) {
+    const token = localStorage.getItem('accessToken');
+    if (appState.userId && token && token !== 'undefined') {
         showApp();
     } else {
+        appState.userId = null;
+        appState.username = null;
+        localStorage.clear();
         showAuth();
     }
 });
