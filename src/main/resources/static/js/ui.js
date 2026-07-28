@@ -85,9 +85,138 @@ const UI = {
   },
 
   /**
-   * No-op stub — sidebar footer handles user display.
+   * Inject and initialize Sticky Top Header, Breadcrumbs, Theme Switcher, and Profile Dropdown
    */
-  initHeader() {},
+  initHeader(activePage) {
+    const user = Auth.getUser();
+    if (!user || !user.userId) return;
+
+    // 1. Theme initialization
+    const currentTheme = localStorage.getItem('theme') || 'dark';
+    document.documentElement.setAttribute('data-theme', currentTheme);
+
+    const mainContent = document.querySelector('.main-content');
+    if (!mainContent || document.getElementById('sticky-top-header')) return;
+
+    // Map page titles for breadcrumbs
+    const titleMap = {
+      'dashboard.html': 'Dashboard',
+      'income.html': 'Income Management',
+      'expense.html': 'Expense Management',
+      'category.html': 'Category Management',
+      'budget.html': 'Budget Planner',
+      'savings.html': 'Savings Goals',
+      'reports.html': 'Reports & Analytics',
+      'notifications.html': 'Notifications',
+      'profile.html': 'User Profile',
+      'admin.html': 'Admin Panel',
+      'admin-users.html': 'User Management'
+    };
+
+    const currentPageName = titleMap[activePage] || 'Overview';
+    const storedPic = localStorage.getItem('profilePicture') || this.DEFAULT_AVATAR;
+    const displayName = localStorage.getItem('fullName') || user.username || 'User';
+    const roleBadge = user.role === 'ADMIN' ? 'Admin' : (user.role === 'ANALYST' ? 'Analyst' : 'User');
+
+    // Create top header bar
+    const topHeader = document.createElement('header');
+    topHeader.id = 'sticky-top-header';
+    topHeader.className = 'top-header';
+    topHeader.innerHTML = `
+      <div class="top-header-left">
+        <div class="breadcrumb-container">
+          <span class="breadcrumb-item"><a href="dashboard.html"><i class="bi bi-house"></i> Home</a></span>
+          <span class="breadcrumb-separator">/</span>
+          <span class="breadcrumb-item active">${currentPageName}</span>
+        </div>
+      </div>
+      <div class="top-header-right">
+        <div class="global-search-box">
+          <i class="bi bi-search"></i>
+          <input type="text" id="global-search-input" placeholder="Search page..." oninput="UI.handleGlobalSearch(this.value)">
+        </div>
+
+        <button class="header-action-btn" id="theme-toggle-btn" title="Toggle Light/Dark Theme" onclick="UI.toggleTheme()">
+          <i class="bi ${currentTheme === 'light' ? 'bi-moon-stars' : 'bi-sun'}"></i>
+        </button>
+
+        <a href="notifications.html" class="header-action-btn" title="Notifications">
+          <i class="bi bi-bell"></i>
+          <span class="notif-badge-pill" id="header-notif-count" style="display:none;">0</span>
+        </a>
+
+        <div class="user-profile-menu">
+          <div class="user-profile-btn" onclick="UI.toggleUserDropdown(event)">
+            <img src="${storedPic}" class="rounded-circle user-avatar-img" style="width:28px;height:28px;object-fit:cover;" onerror="this.src=UI.DEFAULT_AVATAR">
+            <span class="small fw-semibold text-truncate" style="max-width:100px;">${displayName}</span>
+            <i class="bi bi-chevron-down small opacity-75"></i>
+          </div>
+          <div class="user-profile-dropdown" id="user-profile-dropdown">
+            <div class="px-3 py-2 border-bottom border-secondary border-opacity-10 mb-1">
+              <div class="fw-bold small text-truncate">${displayName}</div>
+              <div class="text-secondary small" style="font-size:0.75rem;">Role: ${roleBadge}</div>
+            </div>
+            <a href="profile.html"><i class="bi bi-person me-2"></i>My Profile</a>
+            <a href="notifications.html"><i class="bi bi-bell me-2"></i>Notifications</a>
+            <div class="dropdown-divider border-secondary border-opacity-10 my-1"></div>
+            <button onclick="Auth.logout()"><i class="bi bi-box-arrow-right me-2 text-danger"></i>Logout</button>
+          </div>
+        </div>
+      </div>
+    `;
+
+    mainContent.insertBefore(topHeader, mainContent.firstChild);
+
+    // Fetch unread notification count asynchronously
+    Api.get(`/notifications?userId=${user.userId}`).then(data => {
+      if (data && data.content) {
+        const unread = data.content.filter(n => !n.read && !n.isRead).length;
+        const countEl = document.getElementById('header-notif-count');
+        if (countEl && unread > 0) {
+          countEl.textContent = unread > 99 ? '99+' : unread;
+          countEl.style.display = 'flex';
+        }
+      }
+    }).catch(() => {});
+
+    // Close user menu when clicking outside
+    document.addEventListener('click', (e) => {
+      const menu = document.getElementById('user-profile-dropdown');
+      if (menu && !e.target.closest('.user-profile-menu')) {
+        menu.classList.remove('show');
+      }
+    });
+  },
+
+  toggleTheme() {
+    const currentTheme = document.documentElement.getAttribute('data-theme') || 'dark';
+    const newTheme = currentTheme === 'light' ? 'dark' : 'light';
+    document.documentElement.setAttribute('data-theme', newTheme);
+    localStorage.setItem('theme', newTheme);
+
+    const btn = document.getElementById('theme-toggle-btn');
+    if (btn) {
+      btn.innerHTML = `<i class="bi ${newTheme === 'light' ? 'bi-moon-stars' : 'bi-sun'}"></i>`;
+    }
+  },
+
+  toggleUserDropdown(event) {
+    event.stopPropagation();
+    const dropdown = document.getElementById('user-profile-dropdown');
+    if (dropdown) dropdown.classList.toggle('show');
+  },
+
+  handleGlobalSearch(query) {
+    const q = (query || '').toLowerCase().trim();
+    const tableBody = document.querySelector('tbody');
+    if (!tableBody) return;
+    
+    const rows = tableBody.querySelectorAll('tr');
+    rows.forEach(row => {
+      const text = row.textContent.toLowerCase();
+      row.style.display = text.includes(q) ? '' : 'none';
+    });
+  },
 
   renderPagination(container, pageData, onPageChange) {
     container.innerHTML = '';
@@ -124,6 +253,9 @@ const UI = {
   initSidebar(activePage) {
     const user = Auth.getUser();
     const currentPage = activePage || window.location.pathname.split('/').pop() || 'dashboard.html';
+
+    // Inject sticky top header
+    this.initHeader(currentPage);
 
     // ── Inject nav links into dynamic sidebar containers ──────────────────
     const navContainer = document.getElementById('sidebar-nav');
@@ -249,4 +381,3 @@ const UI = {
     });
   }
 };
-
