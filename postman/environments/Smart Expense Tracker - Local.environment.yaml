@@ -1,0 +1,34 @@
+name: Smart Expense Tracker - Local
+values:
+  - key: baseUrl
+    value: 'http://localhost:8080'
+    enabled: true
+    type: default
+  - key: token
+    value: ''
+    enabled: true
+    type: secret
+  - key: userId
+    value: '1'
+    enabled: true
+    type: default
+  - key: categoryId
+    value: '1'
+    enabled: true
+    type: default
+  - key: expenseId
+    value: ''
+    enabled: true
+    type: default
+  - key: incomeId
+    value: ''
+    enabled: true
+    type: default
+  - key: budgetId
+    value: ''
+    enabled: true
+    type: default
+  - key: goalId
+    value: ''
+    enabled: true
+    type: default
