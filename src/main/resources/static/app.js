@@ -71,7 +71,8 @@ function initAuthForms() {
                 headers: {'Content-Type': 'application/json'},
                 body: JSON.stringify({ email, password })
             });
-            const data = await res.json();
+            const json = await res.json();
+            const data = json.data !== undefined ? json.data : json;
             if (res.ok) {
                 appState.userId = data.userId;
                 appState.username = data.username;
@@ -103,7 +104,8 @@ function initAuthForms() {
                 headers: {'Content-Type': 'application/json'},
                 body: JSON.stringify({ username, email, password })
             });
-            const data = await res.json();
+            const json = await res.json();
+            const data = json.data !== undefined ? json.data : json;
             if (res.ok || res.status === 201) {
                 appState.userId = data.userId;
                 appState.username = data.username;
@@ -208,16 +210,18 @@ const api = {
             headers: this.getHeaders()
         });
         if(!res.ok) throw new Error('API Error');
-        return res.json();
+        const json = await res.json();
+        return json.data !== undefined ? json.data : json;
     },
-    async post(endpoint, data) {
+    async post(endpoint, dataPayload) {
         const res = await fetch(`${API_BASE}${endpoint}?userId=${appState.userId}`, {
             method: 'POST',
             headers: this.getHeaders(),
-            body: JSON.stringify(data)
+            body: JSON.stringify(dataPayload)
         });
         if(!res.ok) throw new Error('API Error');
-        return res.json();
+        const json = await res.json();
+        return json.data !== undefined ? json.data : json;
     },
     async delete(endpoint) {
         const res = await fetch(`${API_BASE}${endpoint}?userId=${appState.userId}`, {
@@ -225,7 +229,11 @@ const api = {
             headers: this.getHeaders()
         });
         if(!res.ok) throw new Error('API Error');
-        return res.text();
+        const text = await res.text();
+        try {
+            const json = JSON.parse(text);
+            return json.data !== undefined ? json.data : json;
+        } catch(e) { return text; }
     }
 };
 
@@ -425,7 +433,8 @@ const app = {
                 const res = await fetch(`${API_BASE}/expenses/search?userId=${appState.userId}&${queryParams.join('&')}`, {
                     headers: api.getHeaders()
                 });
-                const data = await res.json();
+                const json = await res.json();
+                const data = json.data !== undefined ? json.data : json;
                 appState.expenses = data.content || data;
             } else {
                 const data = await api.get('/expenses');
@@ -588,14 +597,16 @@ const app = {
             if(start) catUrl += `&startDate=${start}`;
             if(end) catUrl += `&endDate=${end}`;
             
-            const catRes = await fetch(catUrl);
-            const catData = await catRes.json();
+            const catRes = await fetch(catUrl, { headers: api.getHeaders() });
+            const catJson = await catRes.json();
+            const catData = catJson.data !== undefined ? catJson.data : catJson;
             
             this.renderCategoryChart(catData);
 
             // Monthly Trend Chart
-            const trendRes = await fetch(`${API_BASE}/reports/monthly-trend?userId=${appState.userId}&year=${year}`);
-            const trendData = await trendRes.json();
+            const trendRes = await fetch(`${API_BASE}/reports/monthly-trend?userId=${appState.userId}&year=${year}`, { headers: api.getHeaders() });
+            const trendJson = await trendRes.json();
+            const trendData = trendJson.data !== undefined ? trendJson.data : trendJson;
 
             this.renderTrendChart(trendData);
 
