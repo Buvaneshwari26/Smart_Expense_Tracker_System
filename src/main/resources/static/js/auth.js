@@ -14,6 +14,7 @@ const Auth = {
     localStorage.setItem('refreshToken', data.refreshToken);
     localStorage.setItem('userId', data.userId);
     localStorage.setItem('username', data.username);
+    localStorage.setItem('fullName', data.fullName || data.username || '');
     localStorage.setItem('email', data.email);
     localStorage.setItem('role', data.role);
   },
@@ -27,10 +28,22 @@ const Auth = {
   requireAuth() {
     if (!this.isLoggedIn()) window.location.href = 'login.html';
   },
+  requireRole(role) {
+    if (!this.isLoggedIn()) { window.location.href = 'login.html'; return; }
+    const userRole = localStorage.getItem('role');
+    if (userRole !== role) { window.location.href = 'dashboard.html'; }
+  },
+  isAdmin() {
+    return localStorage.getItem('role') === 'ADMIN';
+  },
+  isAnalyst() {
+    return localStorage.getItem('role') === 'ANALYST';
+  },
   getUser() {
     return {
       userId: localStorage.getItem('userId'),
       username: localStorage.getItem('username'),
+      fullName: localStorage.getItem('fullName'),
       email: localStorage.getItem('email'),
       role: localStorage.getItem('role')
     };

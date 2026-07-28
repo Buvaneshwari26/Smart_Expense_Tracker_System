@@ -207,6 +207,20 @@ public class UserService {
     }
 
     /**
+     * Self-delete a user record after password verification.
+     */
+    @Transactional
+    public void deleteOwnAccount(Long userId, String password) {
+        User user = getUserEntity(userId);
+        if (!passwordEncoder.matches(password, user.getPassword())) {
+            throw new BadRequestException("Incorrect password confirmation");
+        }
+        userRepository.delete(user);
+        log.info("User self-deleted: userId={}", userId);
+        activityLogService.logActivity(user, "USER_SELF_DELETE", "Self-deleted user account: " + user.getEmail());
+    }
+
+    /**
      * Assign a role to a user. Only ADMIN-callable (enforced at controller layer).
      * Accepts: ADMIN, USER, ANALYST
      */

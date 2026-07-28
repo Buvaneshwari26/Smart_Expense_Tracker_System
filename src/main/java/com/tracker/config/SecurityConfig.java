@@ -71,6 +71,7 @@ public class SecurityConfig {
 
                 // ── User Management: ADMIN full access ───────────────────────────────
                 .requestMatchers(HttpMethod.GET,    "/api/users").hasRole("ADMIN")
+                .requestMatchers(HttpMethod.DELETE, "/api/users/profile").authenticated()
                 .requestMatchers(HttpMethod.DELETE, "/api/users/**").hasRole("ADMIN")
                 .requestMatchers(HttpMethod.PATCH,  "/api/users/**").hasRole("ADMIN")
                 .requestMatchers("/api/admin/**").hasRole("ADMIN")

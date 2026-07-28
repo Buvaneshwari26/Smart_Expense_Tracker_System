@@ -217,23 +217,25 @@
   }
 
   async function deleteAccount() {
-    // Only Admin can delete users per the controller, so we simulate this or just call it 
-    // Wait, the API requires ROLE_ADMIN. We should show a warning if they are not admin.
-    const role = localStorage.getItem('role');
-    if(role !== 'ADMIN') {
-      UI.showToast('Only administrators can delete accounts', 'error');
+    const password = prompt('To confirm account deletion, please enter your password:');
+    if (password === null) return; // user cancelled
+    if (!password.trim()) {
+      UI.showToast('Password is required to delete your account', 'error');
+      return;
+    }
+
+    if (!confirm('Are you ABSOLUTELY sure? This action will permanently delete your account and logout. This cannot be undone.')) {
       return;
     }
     
-    if(!confirm('Are you ABSOLUTELY sure? This action cannot be undone.')) return;
-    
     UI.showLoading();
     try {
-      await Api.del(`/users/${Api.getUserId()}`);
-      alert('Account deleted. You will be logged out.');
+      await Api.del(`/users/profile?password=${encodeURIComponent(password)}`);
+      alert('Your account has been deleted successfully. You will now be logged out.');
       Auth.logout();
     } catch (err) {
-      UI.showToast(err.message, 'error');
+      UI.showToast(err.message || 'Failed to delete account', 'error');
+    } finally {
       UI.hideLoading();
     }
   }

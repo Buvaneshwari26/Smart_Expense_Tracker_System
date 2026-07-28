@@ -53,6 +53,7 @@
           <div class="stat-details">
             <div class="stat-label">Total Expense</div>
             <div class="stat-value" id="dash-expense">₹0.00</div>
+            <div class="text-secondary small mt-1" id="dash-comparison-subtext" style="font-size:0.75rem;">—</div>
           </div>
         </div>
       </div>
@@ -71,6 +72,7 @@
           <div class="stat-details">
             <div class="stat-label">Monthly Savings Rate</div>
             <div class="stat-value" id="dash-savings-rate">0%</div>
+            <div class="text-secondary small mt-1" id="dash-health-subtext" style="font-size:0.75rem;">—</div>
           </div>
         </div>
       </div>
@@ -98,7 +100,7 @@
     </div>
 
     <!-- Recent Transactions & Budgets Row -->
-    <div class="row g-4">
+    <div class="row g-4 mb-4">
       <div class="col-md-7">
         <div class="glass-card h-100">
           <h5 class="mb-4">Recent Transactions</h5>
@@ -123,6 +125,26 @@
         <div class="glass-card h-100">
           <h5 class="mb-4">Budget Progress (This Month)</h5>
           <div id="budget-progress-container">
+            <!-- Data populated by JS -->
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Savings Goals & Upcoming Recurring Row -->
+    <div class="row g-4">
+      <div class="col-md-6">
+        <div class="glass-card h-100">
+          <h5 class="mb-4"><i class="bi bi-piggy-bank me-2 text-accent"></i>Savings Goals Progress</h5>
+          <div id="savings-goals-container">
+            <!-- Data populated by JS -->
+          </div>
+        </div>
+      </div>
+      <div class="col-md-6">
+        <div class="glass-card h-100">
+          <h5 class="mb-4"><i class="bi bi-calendar-event me-2 text-indigo"></i>Upcoming Recurring Transactions</h5>
+          <div id="recurring-transactions-container" class="d-flex flex-column gap-2">
             <!-- Data populated by JS -->
           </div>
         </div>
@@ -155,6 +177,31 @@
       document.getElementById('dash-balance').textContent = UI.formatCurrency(data.currentBalance);
       document.getElementById('dash-savings-rate').textContent = `${data.monthlySavingsRate || 0}%`;
       document.getElementById('dash-top-category').textContent = data.topSpendingCategory || 'N/A';
+
+      // Financial Health and Comparison subtexts
+      const compSubtext = document.getElementById('dash-comparison-subtext');
+      if (compSubtext && data.monthlyComparison) {
+        compSubtext.textContent = data.monthlyComparison;
+        if (data.monthlyComparison.startsWith('+')) {
+          compSubtext.className = 'small mt-1 text-danger';
+        } else if (data.monthlyComparison.startsWith('-')) {
+          compSubtext.className = 'small mt-1 text-success';
+        } else {
+          compSubtext.className = 'small mt-1 text-secondary';
+        }
+      }
+
+      const healthSubtext = document.getElementById('dash-health-subtext');
+      if (healthSubtext && data.financialHealth) {
+        healthSubtext.textContent = `Status: ${data.financialHealth}`;
+        if (data.financialHealth === 'EXCELLENT' || data.financialHealth === 'GOOD') {
+          healthSubtext.className = 'small mt-1 text-success';
+        } else if (data.financialHealth === 'WARNING') {
+          healthSubtext.className = 'small mt-1 text-warning';
+        } else {
+          healthSubtext.className = 'small mt-1 text-secondary';
+        }
+      }
 
       // Load Recent Transactions
       const tbody = document.getElementById('recent-transactions-tbody');
@@ -202,6 +249,48 @@
         });
       } else {
         budgetContainer.innerHTML = '<p class="text-secondary text-center py-4">No active budgets for this month.</p>';
+      }
+
+      // Load Savings Goals
+      const savingsContainer = document.getElementById('savings-goals-container');
+      savingsContainer.innerHTML = '';
+      if (data.savingsGoals && data.savingsGoals.length > 0) {
+        data.savingsGoals.forEach(g => {
+          const pct = Math.min(100, g.percentage || 0);
+          savingsContainer.innerHTML += `
+            <div class="mb-3 animate-in">
+              <div class="d-flex justify-content-between mb-1">
+                <span class="fw-500 text-white">${g.goalName}</span>
+                <span class="small text-secondary">${UI.formatCurrency(g.currentAmount)} / ${UI.formatCurrency(g.targetAmount)} (${pct.toFixed(0)}%)</span>
+              </div>
+              <div class="progress-bar-custom">
+                <div class="fill" style="width: ${pct}%; background-color: #6366f1;"></div>
+              </div>
+              <small class="text-secondary mt-1 d-block" style="font-size:0.75rem;">Target: ${UI.formatDate(g.targetDate)}</small>
+            </div>
+          `;
+        });
+      } else {
+        savingsContainer.innerHTML = '<p class="text-secondary text-center py-4">No active savings goals found.</p>';
+      }
+
+      // Load Upcoming Recurring
+      const recurringContainer = document.getElementById('recurring-transactions-container');
+      recurringContainer.innerHTML = '';
+      if (data.upcomingRecurring && data.upcomingRecurring.length > 0) {
+        data.upcomingRecurring.forEach(rec => {
+          recurringContainer.innerHTML += `
+            <div class="p-2 rounded-3 border border-secondary border-opacity-10 d-flex justify-content-between align-items-center bg-white bg-opacity-5 animate-in">
+              <div>
+                <div class="fw-semibold text-white small">${rec.split(' - ')[0]}</div>
+                <div class="text-secondary small" style="font-size: 0.72rem;">${rec.split(' on ')[1] ? 'Due date: ' + rec.split(' on ')[1] : ''}</div>
+              </div>
+              <div class="fw-bold text-accent text-glow font-monospace small">${rec.split(' - ')[1] ? rec.split(' - ')[1].split(' on ')[0] : ''}</div>
+            </div>
+          `;
+        });
+      } else {
+        recurringContainer.innerHTML = '<p class="text-secondary text-center py-4">No upcoming recurring schedules this week.</p>';
       }
 
       // Placeholder charts since we don't have full historical data in dashboard summary

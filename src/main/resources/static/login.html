@@ -63,10 +63,17 @@
         document.getElementById('email').value,
         document.getElementById('password').value
       );
-      showAlert('success', '✅ Login successful! Redirecting…');
+      showAlert('success', 'Login Successful');
       setTimeout(() => window.location.href = 'dashboard.html', 1000);
     } catch (err) {
-      showAlert('danger', '❌ ' + (err.message || 'Invalid credentials'));
+      const msg = err.message || '';
+      if (msg.includes('locked')) {
+        showAlert('danger', 'Account is locked due to multiple failed login attempts. Please contact admin.');
+      } else if (msg.includes('inactive')) {
+        showAlert('danger', 'Account is inactive. Please contact admin.');
+      } else {
+        showAlert('danger', 'Invalid username or password');
+      }
     } finally {
       btn.disabled = false; text.classList.remove('d-none'); spinner.classList.add('d-none');
     }

@@ -66,6 +66,18 @@ public class UserController {
     }
 
     /**
+     * DELETE /api/users/profile — self-delete own user account.
+     * Accessible by any authenticated user.
+     */
+    @DeleteMapping("/profile")
+    @Operation(summary = "Self-delete own user account")
+    public ResponseEntity<Void> deleteOwnAccount(@RequestParam String password) {
+        Long userId = SecurityUtils.getCurrentUserId();
+        userService.deleteOwnAccount(userId, password);
+        return ResponseEntity.noContent().build();
+    }
+
+    /**
      * DELETE /api/users/{id} — soft-delete a user.
      * Accessible by ADMIN only.
      */
