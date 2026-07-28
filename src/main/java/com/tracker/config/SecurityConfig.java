@@ -26,7 +26,6 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
  *  ADMIN   — Full system access (CRUD on everything, user management)
  *  USER    — Own data only (CRUD on own profile, expenses, income, budgets, goals)
  *  ANALYST — Read-only (dashboard, reports, expenses, incomes, budgets, categories)
- *  AUDITOR — Read-only (all users, all transactions, all reports, audit logs)
  */
 @Configuration
 @EnableWebSecurity

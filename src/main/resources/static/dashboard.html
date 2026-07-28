@@ -303,13 +303,19 @@
     }
   }
 
+  let monthlyChartInstance = null;
+  let categoryChartInstance = null;
+
   function renderCharts(data) {
     Chart.defaults.color = '#8892a4';
     Chart.defaults.borderColor = 'rgba(255,255,255,0.05)';
     
-    // Monthly trend mock
+    if (monthlyChartInstance) monthlyChartInstance.destroy();
+    if (categoryChartInstance) categoryChartInstance.destroy();
+
+    // Monthly trend chart
     const ctxMonthly = document.getElementById('monthlyChart').getContext('2d');
-    new Chart(ctxMonthly, {
+    monthlyChartInstance = new Chart(ctxMonthly, {
       type: 'line',
       data: {
         labels: ['Week 1', 'Week 2', 'Week 3', 'Week 4'],
@@ -339,12 +345,12 @@
       }
     });
 
-    // Category chart mock
+    // Category chart
     const ctxCategory = document.getElementById('categoryChart').getContext('2d');
-    new Chart(ctxCategory, {
+    categoryChartInstance = new Chart(ctxCategory, {
       type: 'doughnut',
       data: {
-        labels: [data.topSpendingCategory, 'Others'],
+        labels: [data.topSpendingCategory || 'Top Category', 'Others'],
         datasets: [{
           data: [data.monthlyExpense * 0.6, data.monthlyExpense * 0.4],
           backgroundColor: ['#f5a623', 'rgba(255,255,255,0.1)'],

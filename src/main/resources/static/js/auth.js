@@ -36,7 +36,14 @@ const Auth = {
   isAdmin() {
     return localStorage.getItem('role') === 'ADMIN';
   },
+  isUser() {
+    return localStorage.getItem('role') === 'USER';
+  },
   isAnalyst() {
+    return localStorage.getItem('role') === 'ANALYST';
+  },
+  isReadOnly() {
+    // ANALYST role is read-only (cannot add/edit/delete)
     return localStorage.getItem('role') === 'ANALYST';
   },
   getUser() {

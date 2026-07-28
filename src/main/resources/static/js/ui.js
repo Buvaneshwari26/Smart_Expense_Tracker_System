@@ -10,7 +10,7 @@ const UI = {
     }
     const toast = document.createElement('div');
     toast.className = `toast ${type}`;
-    toast.innerHTML = `<span>${type === 'success' ? '✅' : '❌'} ${message}</span><button onclick="this.parentElement.remove()">&times;</button>`;
+    toast.innerHTML = `<span>${type === 'success' ? '✅' : type === 'warning' ? '⚠️' : '❌'} ${message}</span><button onclick="this.parentElement.remove()">&times;</button>`;
     container.appendChild(toast);
     setTimeout(() => toast.remove(), 4000);
   },
@@ -51,9 +51,6 @@ const UI = {
 
   /**
    * Show a skeleton loading placeholder in a table body.
-   * @param {HTMLElement} tbody - The tbody element to fill
-   * @param {number} rows - Number of skeleton rows
-   * @param {number} cols - Number of columns
    */
   showSkeletonTable(tbody, rows = 5, cols = 6) {
     if (!tbody) return;
@@ -69,12 +66,28 @@ const UI = {
   },
 
   /**
-   * Stub for pages that call UI.initHeader().
-   * Currently a no-op — sidebar footer handles user display.
+   * Show skeleton card placeholders.
    */
-  initHeader() {
-    // No-op: sidebar footer already injected by initSidebar()
+  showSkeletonCards(container, count = 3) {
+    if (!container) return;
+    let html = '';
+    for (let i = 0; i < count; i++) {
+      html += `
+        <div class="col-md-4">
+          <div class="glass-card" style="min-height:180px;">
+            <div style="height:20px;width:60%;border-radius:4px;background:linear-gradient(90deg,rgba(255,255,255,0.03) 25%,rgba(255,255,255,0.08) 50%,rgba(255,255,255,0.03) 75%);background-size:200% 100%;animation:loading-shimmer 1.5s infinite;margin-bottom:12px;"></div>
+            <div style="height:14px;width:80%;border-radius:4px;background:linear-gradient(90deg,rgba(255,255,255,0.03) 25%,rgba(255,255,255,0.08) 50%,rgba(255,255,255,0.03) 75%);background-size:200% 100%;animation:loading-shimmer 1.5s infinite;margin-bottom:8px;"></div>
+            <div style="height:14px;width:50%;border-radius:4px;background:linear-gradient(90deg,rgba(255,255,255,0.03) 25%,rgba(255,255,255,0.08) 50%,rgba(255,255,255,0.03) 75%);background-size:200% 100%;animation:loading-shimmer 1.5s infinite;"></div>
+          </div>
+        </div>`;
+    }
+    container.innerHTML = html;
   },
+
+  /**
+   * No-op stub — sidebar footer handles user display.
+   */
+  initHeader() {},
 
   renderPagination(container, pageData, onPageChange) {
     container.innerHTML = '';
@@ -83,14 +96,12 @@ const UI = {
     nav.innerHTML = '<ul class="pagination pagination-custom"></ul>';
     const ul = nav.querySelector('ul');
 
-    // Previous
     ul.innerHTML += `<li class="page-item ${pageData.first ? 'disabled' : ''}"><a class="page-link" href="#" data-page="${pageData.number - 1}">&laquo;</a></li>`;
 
     for (let i = 0; i < pageData.totalPages; i++) {
       ul.innerHTML += `<li class="page-item ${i === pageData.number ? 'active' : ''}"><a class="page-link" href="#" data-page="${i}">${i + 1}</a></li>`;
     }
 
-    // Next
     ul.innerHTML += `<li class="page-item ${pageData.last ? 'disabled' : ''}"><a class="page-link" href="#" data-page="${pageData.number + 1}">&raquo;</a></li>`;
 
     ul.querySelectorAll('.page-link').forEach(link => {
@@ -108,8 +119,7 @@ const UI = {
    *
    * Injects role-aware navigation links into #sidebar-nav (if present),
    * then sets the active class and username/avatar.
-   *
-   * @param {string} [activePage] - Override the active page filename.
+   * ANALYST role gets a read-only badge.
    */
   initSidebar(activePage) {
     const user = Auth.getUser();
@@ -151,6 +161,14 @@ const UI = {
           <span>${link.label}${adminBadge}</span>
         </a>`;
       }).join('');
+
+      // Show ANALYST read-only banner if applicable
+      if (user.role === 'ANALYST') {
+        const banner = document.createElement('div');
+        banner.style.cssText = 'margin:8px 12px;padding:8px 12px;background:rgba(245,158,11,0.12);border:1px solid rgba(245,158,11,0.3);border-radius:8px;font-size:0.75rem;color:#fbbf24;display:flex;align-items:center;gap:6px;';
+        banner.innerHTML = '<i class="bi bi-eye"></i><span>Read-Only Access</span>';
+        navContainer.appendChild(banner);
+      }
     }
 
     // ── Mobile sidebar toggle ─────────────────────────────────────────────
@@ -200,5 +218,35 @@ const UI = {
       const el = document.getElementById('sidebar-username');
       if (el) el.textContent = user.username || 'User';
     }
+
+    // Automatically enforce read-only UI for ANALYST role
+    this.applyReadOnlyMode();
+  },
+
+  /**
+   * Enforce read-only mode for ANALYST users by hiding edit/delete/add controls
+   */
+  applyReadOnlyMode() {
+    if (!Auth.isReadOnly()) return;
+    
+    // Add banner at top of main-content if not present
+    const main = document.querySelector('.main-content');
+    if (main && !document.getElementById('readonly-alert')) {
+      const alert = document.createElement('div');
+      alert.id = 'readonly-alert';
+      alert.className = 'alert alert-warning d-flex align-items-center mb-4';
+      alert.style.cssText = 'background: rgba(245, 158, 11, 0.15); border: 1px solid rgba(245, 158, 11, 0.3); color: #fbbf24; border-radius: 10px;';
+      alert.innerHTML = '<i class="bi bi-eye-fill me-2 fs-5"></i><span>You are in <strong>ANALYST (Read-Only)</strong> mode. Viewing and exporting are allowed; modifying data is restricted.</span>';
+      main.insertBefore(alert, main.firstChild);
+    }
+
+    // Hide create/edit/delete/save buttons
+    document.querySelectorAll('.btn-glow, [onclick*="openModal"], [onclick*="save"], button[type="submit"]').forEach(el => {
+      const text = (el.textContent || '').trim().toLowerCase();
+      if (!text.includes('search') && !text.includes('reset') && !text.includes('export') && !text.includes('excel') && !text.includes('csv') && !text.includes('pdf') && !text.includes('logout') && !text.includes('filter')) {
+        el.style.display = 'none';
+      }
+    });
   }
 };
+
