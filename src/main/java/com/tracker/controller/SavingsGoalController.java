@@ -13,9 +13,10 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.math.BigDecimal;
+import java.util.List;
 
 @RestController
-@RequestMapping("/api/goals")
+@RequestMapping({"/api/goals", "/api/savings-goals"})
 @RequiredArgsConstructor
 @Tag(name = "Savings Goals", description = "Manage savings goals with progress tracking")
 @SecurityRequirement(name = "bearerAuth")
@@ -38,6 +39,16 @@ public class SavingsGoalController {
             @RequestParam(defaultValue = "10") int size) {
         Long userId = SecurityUtils.getCurrentUserId();
         return ResponseEntity.ok(savingsGoalService.getGoalsByUserId(userId, PageRequest.of(page, size)));
+    }
+
+    @GetMapping("/user/{userId}")
+    @Operation(summary = "Get all savings goals for a user by user ID")
+    public ResponseEntity<List<SavingsGoalDTO>> getGoalsByUserId(
+            @PathVariable Long userId,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "100") int size) {
+        Page<SavingsGoalDTO> pageResult = savingsGoalService.getGoalsByUserId(userId, PageRequest.of(page, size));
+        return ResponseEntity.ok(pageResult.getContent());
     }
 
     @GetMapping("/{id}")

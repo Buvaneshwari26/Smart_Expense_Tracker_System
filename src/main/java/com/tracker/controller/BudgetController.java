@@ -12,6 +12,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/api/budgets")
@@ -32,9 +33,20 @@ public class BudgetController {
 
     @GetMapping
     @Operation(summary = "Get all budgets for the authenticated user")
-    public ResponseEntity<List<BudgetDTO>> getBudgets() {
+    public ResponseEntity<List<BudgetDTO>> getBudgets(
+            @RequestParam(required = false) Integer year,
+            @RequestParam(required = false) Integer month) {
         Long userId = SecurityUtils.getCurrentUserId();
-        return ResponseEntity.ok(budgetService.getBudgetsByUserId(userId));
+        return ResponseEntity.ok(filterBudgets(budgetService.getBudgetsByUserId(userId), year, month));
+    }
+
+    @GetMapping("/user/{userId}")
+    @Operation(summary = "Get all budgets for a user by user ID")
+    public ResponseEntity<List<BudgetDTO>> getBudgetsByUserId(
+            @PathVariable Long userId,
+            @RequestParam(required = false) Integer year,
+            @RequestParam(required = false) Integer month) {
+        return ResponseEntity.ok(filterBudgets(budgetService.getBudgetsByUserId(userId), year, month));
     }
 
     @GetMapping("/{id}")
@@ -59,5 +71,13 @@ public class BudgetController {
         Long userId = SecurityUtils.getCurrentUserId();
         budgetService.deleteBudget(userId, id);
         return ResponseEntity.noContent().build();
+    }
+
+    private List<BudgetDTO> filterBudgets(List<BudgetDTO> list, Integer year, Integer month) {
+        if (list == null) return List.of();
+        return list.stream()
+                .filter(b -> year == null || (b.getYear() != null && b.getYear().equals(year)))
+                .filter(b -> month == null || (b.getMonth() != null && b.getMonth().equals(month)))
+                .collect(Collectors.toList());
     }
 }

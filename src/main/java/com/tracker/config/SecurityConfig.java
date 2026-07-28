@@ -108,12 +108,12 @@ public class SecurityConfig {
                 .requestMatchers(HttpMethod.PUT,    "/api/budgets/**").hasAnyRole("ADMIN", "USER")
                 .requestMatchers(HttpMethod.DELETE, "/api/budgets/**").hasAnyRole("ADMIN", "USER")
 
-                // ── Savings Goals: ANALYST + AUDITOR = read-only ────────────────────
-                .requestMatchers(HttpMethod.GET,    "/api/goals/**").authenticated()
-                .requestMatchers(HttpMethod.POST,   "/api/goals/**").hasAnyRole("ADMIN", "USER")
-                .requestMatchers(HttpMethod.PUT,    "/api/goals/**").hasAnyRole("ADMIN", "USER")
-                .requestMatchers(HttpMethod.PATCH,  "/api/goals/**").hasAnyRole("ADMIN", "USER")
-                .requestMatchers(HttpMethod.DELETE, "/api/goals/**").hasAnyRole("ADMIN", "USER")
+                // ── Savings Goals: ANALYST = read-only ────────────────────
+                .requestMatchers(HttpMethod.GET,    "/api/goals/**", "/api/savings-goals/**").authenticated()
+                .requestMatchers(HttpMethod.POST,   "/api/goals/**", "/api/savings-goals/**").hasAnyRole("ADMIN", "USER")
+                .requestMatchers(HttpMethod.PUT,    "/api/goals/**", "/api/savings-goals/**").hasAnyRole("ADMIN", "USER")
+                .requestMatchers(HttpMethod.PATCH,  "/api/goals/**", "/api/savings-goals/**").hasAnyRole("ADMIN", "USER")
+                .requestMatchers(HttpMethod.DELETE, "/api/goals/**", "/api/savings-goals/**").hasAnyRole("ADMIN", "USER")
 
                 // ── Recurring Transactions: USER + ADMIN only ────────────────────────
                 .requestMatchers(HttpMethod.GET,    "/api/recurring/**").hasAnyRole("ADMIN", "USER")

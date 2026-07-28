@@ -95,10 +95,11 @@
   async function loadData() {
     UI.showLoading();
     try {
-      const data = await Api.get(`/savings-goals/user/${Api.getUserId()}`);
+      // Try /api/goals or fallback to /api/savings-goals
+      let data = await Api.get('/goals').catch(() => Api.get('/savings-goals/user/' + Api.getUserId()));
       const container = document.getElementById('goals-container');
       container.innerHTML = '';
-      const list = Array.isArray(data) ? data : [];
+      const list = Array.isArray(data) ? data : (data && data.content ? data.content : []);
       if (list.length > 0) {
         list.forEach((item, i) => {
           const pct = Math.min(100, item.percentage || (item.targetAmount > 0 ? (item.currentAmount / item.targetAmount)*100 : 0));
@@ -172,8 +173,8 @@
     };
     UI.showLoading();
     try {
-      if (id) { await Api.put(`/savings-goals/${id}?userId=${Api.getUserId()}`, payload); UI.showToast('Savings goal updated ✅'); }
-      else { await Api.post(`/savings-goals?userId=${Api.getUserId()}`, payload); UI.showToast('Savings goal created ✅'); }
+      if (id) { await Api.put(`/goals/${id}`, payload).catch(() => Api.put(`/savings-goals/${id}`, payload)); UI.showToast('Savings goal updated ✅'); }
+      else { await Api.post('/goals', payload).catch(() => Api.post('/savings-goals', payload)); UI.showToast('Savings goal created ✅'); }
       myModal.hide(); loadData();
     } catch (err) { UI.showToast(err.message, 'error'); } finally { UI.hideLoading(); }
   }
@@ -183,7 +184,7 @@
     if (!confirm('Delete this savings goal?')) return;
     UI.showLoading();
     try {
-      await Api.del(`/savings-goals/${id}?userId=${Api.getUserId()}`);
+      await Api.del(`/goals/${id}`).catch(() => Api.del(`/savings-goals/${id}`));
       UI.showToast('Goal deleted ✅'); loadData();
     } catch (err) { UI.showToast(err.message, 'error'); } finally { UI.hideLoading(); }
   }

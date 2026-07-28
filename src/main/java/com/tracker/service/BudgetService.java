@@ -44,8 +44,12 @@ public class BudgetService {
             }
         }
 
+        BigDecimal amount = budgetDTO.getBudgetAmount();
+        if (amount == null) amount = budgetDTO.getLimitAmount();
+        if (amount == null) amount = BigDecimal.ZERO;
+
         Budget budget = Budget.builder()
-                .budgetAmount(budgetDTO.getBudgetAmount())
+                .budgetAmount(amount)
                 .month(m)
                 .year(y)
                 .category(category)

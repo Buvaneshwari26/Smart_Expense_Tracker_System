@@ -146,9 +146,12 @@
       const list = Array.isArray(data) ? data : [];
       if (list.length > 0) {
         list.forEach(item => {
-          const util = Math.min(100, item.utilizationPercent || 0);
-          const barColor = item.isExceeded ? 'var(--danger)' : util > 75 ? 'var(--warning)' : 'var(--accent)';
-          const remaining = (item.limitAmount || 0) - (item.spentAmount || 0);
+          const limitAmt = item.limitAmount || item.budgetAmount || 0;
+          const spentAmt = item.spentAmount || 0;
+          const util = Math.min(100, item.utilizationPercent || (limitAmt > 0 ? (spentAmt / limitAmt)*100 : 0));
+          const isExceeded = item.isExceeded || spentAmt > limitAmt;
+          const barColor = isExceeded ? 'var(--danger)' : util > 75 ? 'var(--warning)' : 'var(--accent)';
+          const remaining = limitAmt - spentAmt;
           const actionsCell = isReadOnly ? '' : `<td>
             <button class="btn btn-sm btn-outline-info me-1" onclick='editItem(${JSON.stringify(item).replace(/'/g,"&#39;")})' title="Edit"><i class="bi bi-pencil-fill"></i></button>
             <button class="btn btn-sm btn-outline-danger" onclick="deleteItem(${item.id})" title="Delete"><i class="bi bi-trash-fill"></i></button>
@@ -156,13 +159,13 @@
 
           tbody.innerHTML += `<tr>
             <td style="font-weight:600;">${item.categoryName || 'General'}</td>
-            <td style="font-weight:700;">${UI.formatCurrency(item.limitAmount)}</td>
-            <td style="color:${item.spentAmount > item.limitAmount ? 'var(--danger)' : 'var(--text-primary)'};font-weight:600;">${UI.formatCurrency(item.spentAmount)}</td>
+            <td style="font-weight:700;">${UI.formatCurrency(limitAmt)}</td>
+            <td style="color:${spentAmt > limitAmt ? 'var(--danger)' : 'var(--text-primary)'};font-weight:600;">${UI.formatCurrency(spentAmt)}</td>
             <td style="color:${remaining < 0 ? 'var(--danger)' : 'var(--accent)'};">${UI.formatCurrency(remaining)}</td>
             <td style="width:200px;">
               <div class="d-flex align-items-center justify-content-between mb-1" style="font-size:0.75rem;">
-                <span class="${item.isExceeded ? 'text-danger fw-700' : ''}">${util.toFixed(1)}%</span>
-                ${item.isExceeded ? '<span class="badge badge-danger" style="background:rgba(244,63,94,0.15);color:var(--danger);">EXCEEDED</span>' : ''}
+                <span class="${isExceeded ? 'text-danger fw-700' : ''}">${util.toFixed(1)}%</span>
+                ${isExceeded ? '<span class="badge" style="background:rgba(244,63,94,0.15);color:var(--danger);">EXCEEDED</span>' : ''}
               </div>
               <div class="progress-bar-custom">
                 <div class="fill" style="width:${util}%;background:${barColor};"></div>
@@ -193,7 +196,7 @@
     if (isReadOnly) return;
     document.getElementById('itemId').value = item.id;
     document.getElementById('categoryId').value = item.categoryId;
-    document.getElementById('limitAmount').value = item.limitAmount;
+    document.getElementById('limitAmount').value = item.limitAmount || item.budgetAmount || 0;
     document.getElementById('month').value = item.month;
     document.getElementById('year').value = item.year;
     document.getElementById('modalTitle').textContent = 'Edit Budget';
@@ -205,11 +208,13 @@
     const form = document.getElementById('itemForm');
     if (!form.checkValidity()) { form.reportValidity(); return; }
     const id = document.getElementById('itemId').value;
+    const amountVal = document.getElementById('limitAmount').value;
     const payload = {
       categoryId: document.getElementById('categoryId').value,
-      limitAmount: document.getElementById('limitAmount').value,
-      month: document.getElementById('month').value,
-      year: document.getElementById('year').value
+      budgetAmount: amountVal,
+      limitAmount: amountVal,
+      month: parseInt(document.getElementById('month').value),
+      year: parseInt(document.getElementById('year').value)
     };
     UI.showLoading();
     try {
