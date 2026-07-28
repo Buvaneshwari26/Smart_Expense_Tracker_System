@@ -4,19 +4,16 @@
   <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Smart Expense Tracker</title>
+  <script src="js/auth.js"></script>
   <script>
-    // Redirect to dashboard if already logged in, otherwise go to login
-    const token = localStorage.getItem('accessToken');
-    const userId = localStorage.getItem('userId');
-    if (token && userId && token !== 'undefined' && userId !== 'undefined') {
-      window.location.replace('dashboard.html');
+    if (Auth.isLoggedIn()) {
+      window.location.href = 'dashboard.html';
     } else {
-      localStorage.clear();
-      window.location.replace('login.html');
+      window.location.href = 'login.html';
     }
   </script>
 </head>
-<body>
-  <p>Redirecting...</p>
+<body style="background:#08090f;color:#fff;display:flex;align-items:center;justify-content:center;height:100vh;font-family:sans-serif;">
+  <p>Redirecting to Smart Expense Tracker…</p>
 </body>
 </html>

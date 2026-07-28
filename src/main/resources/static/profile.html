@@ -1,13 +1,17 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-theme="dark">
 <head>
   <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Profile — Smart Expense Tracker</title>
+  <title>My Profile — Smart Expense Tracker</title>
+  <meta name="description" content="View and manage your account profile settings."/>
   <link rel="icon" type="image/x-icon" href="favicon.ico"/>
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"/>
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css"/>
   <link rel="stylesheet" href="css/globals.css"/>
+  <script src="js/api.js"></script>
+  <script src="js/auth.js"></script>
+  <script src="js/ui.js"></script>
 </head>
 <body>
 <button class="sidebar-toggle d-md-none"><i class="bi bi-list"></i></button>
@@ -15,87 +19,77 @@
   <aside class="sidebar">
     <div class="sidebar-brand">
       <div class="logo-icon"><i class="bi bi-wallet2"></i></div>
-      <span class="brand-text">ExpenseTracker</span>
+      <div><div class="brand-text">ExpenseTracker</div><div class="brand-tagline">Smart Finance</div></div>
     </div>
-    <nav class="sidebar-nav" id="sidebar-nav">
-      <!-- Dynamically populated by UI.initSidebar() based on user role -->
-    </nav>
-    <div class="sidebar-footer">
-      <span id="sidebar-username">User</span>
-      <button onclick="Auth.logout()" class="btn btn-sm btn-outline-danger"><i class="bi bi-box-arrow-right"></i> Logout</button>
-    </div>
+    <nav class="sidebar-nav" id="sidebar-nav"></nav>
+    <div class="sidebar-footer"><span id="sidebar-username">User</span></div>
   </aside>
-  <main class="main-content">
-    <div class="d-flex justify-content-between align-items-center mb-4">
-      <div>
-        <h2 class="mb-1">My Profile</h2>
-        <p class="text-secondary">Manage your account settings</p>
-      </div>
-    </div>
 
-    <div class="row g-4">
-      <div class="col-md-6">
-        <div class="glass-card mb-4">
-          <h5 class="mb-4">Profile Information</h5>
-          
-          <div class="d-flex align-items-center gap-3 mb-4">
-            <div class="position-relative">
-              <img id="profilePicPreview" src="" class="rounded-circle border border-secondary" style="width:90px;height:90px;object-fit:cover;" onerror="this.src=UI.DEFAULT_AVATAR">
+  <main class="main-content">
+    <div class="page-content">
+      <div class="page-header">
+        <div class="page-header-title">
+          <h2><i class="bi bi-person-circle me-2" style="color:var(--brand-primary-light);font-size:1.2rem;"></i>My Profile</h2>
+          <p>Manage your account settings, personal details, and profile avatar</p>
+        </div>
+      </div>
+
+      <div class="row g-4">
+        <!-- Profile Card -->
+        <div class="col-lg-4">
+          <div class="glass-card text-center">
+            <div class="position-relative d-inline-block mb-3">
+              <img id="profile-img-preview" src="" class="rounded-circle user-avatar-img" style="width:110px;height:110px;object-fit:cover;border:3px solid var(--brand-primary);box-shadow:var(--shadow-glow);" onerror="this.src=UI.DEFAULT_AVATAR">
+              <label for="avatar-input" class="btn btn-sm btn-glow position-absolute bottom-0 end-0 rounded-circle p-2" title="Change Avatar" style="width:34px;height:34px;display:flex;align-items:center;justify-content:center;cursor:pointer;">
+                <i class="bi bi-camera-fill" style="font-size:0.85rem;"></i>
+              </label>
+              <input type="file" id="avatar-input" accept="image/*" class="d-none" onchange="uploadAvatar(this)">
             </div>
-            <div>
-              <button class="btn btn-sm btn-glow mb-2" onclick="document.getElementById('profilePicInput').click()"><i class="bi bi-upload me-2"></i>Upload Photo</button>
-              <button class="btn btn-sm btn-outline-danger d-block w-100" onclick="removeProfilePic()"><i class="bi bi-trash me-2"></i>Remove</button>
-              <input type="file" id="profilePicInput" accept="image/*" class="d-none" onchange="previewProfilePic(event)">
+            <h4 class="fw-700 mb-1" id="prof-display-name">User</h4>
+            <div class="mb-3"><span class="badge admin" id="prof-role-badge">USER</span></div>
+            <p class="text-muted small" id="prof-email-display"></p>
+
+            <hr style="border-color:var(--glass-border);margin:20px 0;">
+            <div class="d-flex justify-content-between text-start small mb-2">
+              <span class="text-secondary">User ID:</span>
+              <span class="fw-600" id="prof-userid">—</span>
+            </div>
+            <div class="d-flex justify-content-between text-start small">
+              <span class="text-secondary">Account Status:</span>
+              <span class="badge badge-success" style="background:rgba(16,185,129,0.12);color:var(--success);">Active</span>
             </div>
           </div>
-
-          <form id="profileForm" class="glass-form">
-            <div class="mb-3">
-              <label class="form-label">Full Name</label>
-              <input type="text" class="form-control" id="fullName" required>
-            </div>
-            <div class="mb-3">
-              <label class="form-label">Username</label>
-              <input type="text" class="form-control" id="username" required>
-            </div>
-            <div class="mb-3">
-              <label class="form-label">Email</label>
-              <input type="email" class="form-control text-secondary" id="email" disabled>
-              <div class="form-text text-secondary"><i class="bi bi-info-circle"></i> Email cannot be changed</div>
-            </div>
-            <div class="mb-4">
-              <label class="form-label">Phone Number</label>
-              <input type="text" class="form-control" id="phone">
-            </div>
-            <button type="button" class="btn btn-glow w-100" onclick="updateProfile()">Save Changes</button>
-          </form>
-        </div>
-      </div>
-
-      <div class="col-md-6">
-        <div class="glass-card mb-4">
-          <h5 class="mb-4">Change Password</h5>
-          <form id="passwordForm" class="glass-form">
-            <div class="mb-3">
-              <label class="form-label">Current Password</label>
-              <input type="password" class="form-control" id="currentPassword" required>
-            </div>
-            <div class="mb-3">
-              <label class="form-label">New Password</label>
-              <input type="password" class="form-control" id="newPassword" required>
-            </div>
-            <div class="mb-4">
-              <label class="form-label">Confirm New Password</label>
-              <input type="password" class="form-control" id="confirmPassword" required>
-            </div>
-            <button type="button" class="btn btn-outline-warning w-100" onclick="changePassword()">Update Password</button>
-          </form>
         </div>
 
-        <div class="glass-card">
-          <h5 class="mb-4 text-danger">Danger Zone</h5>
-          <p class="text-secondary mb-4">Once you delete your account, there is no going back. Please be certain.</p>
-          <button class="btn btn-danger w-100" onclick="deleteAccount()"><i class="bi bi-trash me-2"></i>Delete Account</button>
+        <!-- Details Form -->
+        <div class="col-lg-8">
+          <div class="glass-card">
+            <h5 class="fw-700 mb-4" style="font-size:1rem;"><i class="bi bi-pencil-square me-2" style="color:var(--accent);"></i>Edit Profile Information</h5>
+            <form id="profile-form" class="glass-form" onsubmit="saveProfile(event)">
+              <div class="row g-3">
+                <div class="col-md-6">
+                  <label class="form-label">Full Name</label>
+                  <input type="text" class="form-control" id="fullName" placeholder="Your full name" required>
+                </div>
+                <div class="col-md-6">
+                  <label class="form-label">Username</label>
+                  <input type="text" class="form-control" id="username" disabled style="opacity:0.7;">
+                </div>
+                <div class="col-md-6">
+                  <label class="form-label">Email Address</label>
+                  <input type="email" class="form-control" id="email" disabled style="opacity:0.7;">
+                </div>
+                <div class="col-md-6">
+                  <label class="form-label">Phone Number</label>
+                  <input type="tel" class="form-control" id="phoneNumber" placeholder="+91 9876543210">
+                </div>
+              </div>
+
+              <div class="mt-4 pt-3 d-flex justify-content-end" style="border-top:1px solid var(--glass-border);">
+                <button type="submit" class="btn btn-glow"><i class="bi bi-save me-2"></i>Save Changes</button>
+              </div>
+            </form>
+          </div>
         </div>
       </div>
     </div>
@@ -103,37 +97,9 @@
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-<script src="js/api.js"></script>
-<script src="js/auth.js"></script>
-<script src="js/ui.js"></script>
 <script>
   Auth.requireAuth();
-  UI.initSidebar();
-
-  let profilePicBase64 = "";
-
-  function previewProfilePic(event) {
-    const file = event.target.files[0];
-    if (!file) return;
-    
-    if (file.size > 2 * 1024 * 1024) {
-      UI.showToast("Image must be smaller than 2MB", "error");
-      return;
-    }
-    
-    const reader = new FileReader();
-    reader.onload = function(e) {
-      profilePicBase64 = e.target.result;
-      document.getElementById('profilePicPreview').src = profilePicBase64;
-    };
-    reader.readAsDataURL(file);
-  }
-
-  function removeProfilePic() {
-    profilePicBase64 = "";
-    document.getElementById('profilePicPreview').src = UI.DEFAULT_AVATAR;
-    document.getElementById('profilePicInput').value = "";
-  }
+  UI.initSidebar('profile.html');
 
   async function loadProfile() {
     UI.showLoading();
@@ -142,102 +108,55 @@
       document.getElementById('fullName').value = data.fullName || '';
       document.getElementById('username').value = data.username || '';
       document.getElementById('email').value = data.email || '';
-      document.getElementById('phone').value = data.phoneNumber || '';
-      document.getElementById('profilePicPreview').src = data.profilePicture || UI.DEFAULT_AVATAR;
-      profilePicBase64 = data.profilePicture || "";
-    } catch (err) {
-      UI.showToast('Failed to load profile: ' + err.message, 'error');
-    } finally {
-      UI.hideLoading();
-    }
+      document.getElementById('phoneNumber').value = data.phoneNumber || '';
+
+      document.getElementById('prof-display-name').textContent = data.fullName || data.username || 'User';
+      document.getElementById('prof-email-display').textContent = data.email || '';
+      document.getElementById('prof-userid').textContent = `#${data.id}`;
+
+      const roleBadge = document.getElementById('prof-role-badge');
+      roleBadge.textContent = data.role || 'USER';
+      roleBadge.className = `badge ${data.role === 'ADMIN' ? 'admin' : data.role === 'ANALYST' ? 'analyst' : 'income'}`;
+
+      const pic = data.profilePicture || UI.DEFAULT_AVATAR;
+      document.getElementById('profile-img-preview').src = pic;
+      if (data.profilePicture) localStorage.setItem('profilePicture', data.profilePicture);
+      if (data.fullName || data.username) localStorage.setItem('fullName', data.fullName || data.username);
+    } catch (err) { UI.showToast(err.message, 'error'); } finally { UI.hideLoading(); }
   }
 
-  async function updateProfile() {
-    const form = document.getElementById('profileForm');
-    if(!form.checkValidity()) { form.reportValidity(); return; }
-
+  async function saveProfile(e) {
+    e.preventDefault();
+    if (Auth.isReadOnly()) { UI.showToast('Read-only mode: modifications restricted.', 'warning'); return; }
     UI.showLoading();
     try {
       const payload = {
         fullName: document.getElementById('fullName').value,
-        username: document.getElementById('username').value,
-        phoneNumber: document.getElementById('phone').value,
-        profilePicture: profilePicBase64
+        phoneNumber: document.getElementById('phoneNumber').value
       };
       await Api.put(`/users/${Api.getUserId()}`, payload);
-      UI.showToast('Profile updated successfully');
-      
-      // Update local storage username & profile picture
-      localStorage.setItem('username', payload.username);
-      if (profilePicBase64) {
-        localStorage.setItem('profilePicture', profilePicBase64);
-      } else {
-        localStorage.removeItem('profilePicture');
-      }
-      
-      // Refresh sidebar elements
-      const imgs = document.querySelectorAll('.user-avatar-img');
-      imgs.forEach(img => img.src = profilePicBase64 || UI.DEFAULT_AVATAR);
-      const nameEl = document.getElementById('sidebar-username');
-      if (nameEl) nameEl.textContent = payload.username;
-    } catch (err) {
-      UI.showToast(err.message, 'error');
-    } finally {
-      UI.hideLoading();
-    }
+      UI.showToast('Profile updated successfully ✅');
+      loadProfile();
+    } catch (err) { UI.showToast(err.message, 'error'); } finally { UI.hideLoading(); }
   }
 
-  async function changePassword() {
-    const form = document.getElementById('passwordForm');
-    if(!form.checkValidity()) { form.reportValidity(); return; }
+  async function uploadAvatar(input) {
+    if (!input.files || !input.files[0]) return;
+    const file = input.files[0];
+    if (file.size > 2 * 1024 * 1024) { UI.showToast('Image size must be under 2MB', 'warning'); return; }
 
-    const curr = document.getElementById('currentPassword').value;
-    const newPw = document.getElementById('newPassword').value;
-    const confirm = document.getElementById('confirmPassword').value;
-
-    if(newPw !== confirm) {
-      UI.showToast('New passwords do not match', 'error');
-      return;
-    }
-
-    UI.showLoading();
-    try {
-      const payload = {
-        currentPassword: curr,
-        newPassword: newPw
-      };
-      await Api.post(`/users/${Api.getUserId()}/change-password`, payload);
-      UI.showToast('Password changed successfully');
-      form.reset();
-    } catch (err) {
-      UI.showToast(err.message, 'error');
-    } finally {
-      UI.hideLoading();
-    }
-  }
-
-  async function deleteAccount() {
-    const password = prompt('To confirm account deletion, please enter your password:');
-    if (password === null) return; // user cancelled
-    if (!password.trim()) {
-      UI.showToast('Password is required to delete your account', 'error');
-      return;
-    }
-
-    if (!confirm('Are you ABSOLUTELY sure? This action will permanently delete your account and logout. This cannot be undone.')) {
-      return;
-    }
-    
-    UI.showLoading();
-    try {
-      await Api.del(`/users/profile?password=${encodeURIComponent(password)}`);
-      alert('Your account has been deleted successfully. You will now be logged out.');
-      Auth.logout();
-    } catch (err) {
-      UI.showToast(err.message || 'Failed to delete account', 'error');
-    } finally {
-      UI.hideLoading();
-    }
+    const reader = new FileReader();
+    reader.onload = async (e) => {
+      const base64 = e.target.result;
+      UI.showLoading();
+      try {
+        await Api.put(`/users/${Api.getUserId()}`, { profilePicture: base64 });
+        localStorage.setItem('profilePicture', base64);
+        document.querySelectorAll('.user-avatar-img').forEach(img => img.src = base64);
+        UI.showToast('Profile avatar updated ✅');
+      } catch (err) { UI.showToast(err.message, 'error'); } finally { UI.hideLoading(); }
+    };
+    reader.readAsDataURL(file);
   }
 
   loadProfile();

@@ -1,36 +1,17 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-theme="dark">
 <head>
   <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Notifications — Smart Expense Tracker</title>
+  <meta name="description" content="View system alerts, budget warnings, and savings goal milestones."/>
   <link rel="icon" type="image/x-icon" href="favicon.ico"/>
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"/>
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css"/>
   <link rel="stylesheet" href="css/globals.css"/>
-  <style>
-    .notification-item {
-      transition: all 0.3s ease;
-      position: relative;
-    }
-    .notification-item.unread {
-      border-left: 4px solid var(--accent, #6366f1) !important;
-      background: rgba(99, 102, 241, 0.05);
-    }
-    .notification-item.read {
-      border-left: 4px solid transparent !important;
-      opacity: 0.8;
-    }
-    .unread-indicator {
-      width: 8px;
-      height: 8px;
-      background-color: var(--accent, #6366f1);
-      border-radius: 50%;
-      display: inline-block;
-      margin-left: 8px;
-      box-shadow: 0 0 8px var(--accent, #6366f1);
-    }
-  </style>
+  <script src="js/api.js"></script>
+  <script src="js/auth.js"></script>
+  <script src="js/ui.js"></script>
 </head>
 <body>
 <button class="sidebar-toggle d-md-none"><i class="bi bi-list"></i></button>
@@ -38,141 +19,92 @@
   <aside class="sidebar">
     <div class="sidebar-brand">
       <div class="logo-icon"><i class="bi bi-wallet2"></i></div>
-      <span class="brand-text">ExpenseTracker</span>
+      <div><div class="brand-text">ExpenseTracker</div><div class="brand-tagline">Smart Finance</div></div>
     </div>
-    <nav class="sidebar-nav" id="sidebar-nav">
-      <!-- Dynamically populated by UI.initSidebar() based on user role -->
-    </nav>
-    <div class="sidebar-footer">
-      <span id="sidebar-username">User</span>
-      <button onclick="Auth.logout()" class="btn btn-sm btn-outline-danger"><i class="bi bi-box-arrow-right"></i> Logout</button>
-    </div>
+    <nav class="sidebar-nav" id="sidebar-nav"></nav>
+    <div class="sidebar-footer"><span id="sidebar-username">User</span></div>
   </aside>
+
   <main class="main-content">
-    <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2 animate-in">
-      <div>
-        <h2 class="mb-1 text-glow">Notifications</h2>
-        <p class="text-secondary">Track budget alerts, savings milestones, and security updates</p>
+    <div class="page-content">
+      <div class="page-header">
+        <div class="page-header-title">
+          <h2><i class="bi bi-bell-fill me-2" style="color:var(--warning);font-size:1.2rem;"></i>Notifications & Alerts</h2>
+          <p>Stay updated on budget limits, financial goals, and security events</p>
+        </div>
+        <div>
+          <button class="btn btn-outline-secondary btn-sm" onclick="markAllAsRead()"><i class="bi bi-check2-all me-1"></i>Mark All as Read</button>
+        </div>
       </div>
-      <div>
-        <button class="btn btn-outline-light" id="btn-mark-all" onclick="markAllAsRead()"><i class="bi bi-check2-all me-2"></i>Mark All Read</button>
+
+      <div class="glass-card">
+        <div class="table-responsive">
+          <table class="glass-table">
+            <thead>
+              <tr><th>Timestamp</th><th>Type</th><th>Message</th><th>Status</th><th>Actions</th></tr>
+            </thead>
+            <tbody id="notif-tbody"></tbody>
+          </table>
+        </div>
+        <div id="notif-pagination" class="mt-4 d-flex justify-content-end"></div>
       </div>
     </div>
-
-    <!-- Alerts Container -->
-    <div id="notifications-container" class="d-flex flex-column gap-3 mb-4">
-      <!-- Skeleton loader initially -->
-    </div>
-
-    <!-- Pagination -->
-    <div id="pagination-container" class="d-flex justify-content-center"></div>
   </main>
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-<script src="js/api.js"></script>
-<script src="js/auth.js"></script>
-<script src="js/ui.js"></script>
 <script>
   Auth.requireAuth();
   UI.initSidebar('notifications.html');
 
-  let currentPage = 0;
-  const pageSize = 10;
-  let notificationsList = [];
-
   async function loadNotifications(page = 0) {
-    currentPage = page;
-    const container = document.getElementById('notifications-container');
-    container.innerHTML = `
-      <div class="glass-card skeleton-loader" style="height:80px;"></div>
-      <div class="glass-card skeleton-loader" style="height:80px;"></div>
-      <div class="glass-card skeleton-loader" style="height:80px;"></div>
-    `;
-
+    UI.showLoading();
     try {
-      const res = await Api.get(`/notifications?page=${page}&size=${pageSize}`);
-      notificationsList = res.content || [];
-      renderNotifications(notificationsList);
-      UI.renderPagination(document.getElementById('pagination-container'), res, loadNotifications);
-      
-      // Toggle mark all button based on unread count
-      const unreadCount = await Api.get('/notifications/unread-count');
-      const btnMarkAll = document.getElementById('btn-mark-all');
-      if (btnMarkAll) btnMarkAll.disabled = unreadCount === 0;
-    } catch (err) {
-      container.innerHTML = `<div class="glass-card text-center text-danger py-4"><i class="bi bi-exclamation-triangle me-2"></i>${err.message || 'Failed to load notifications'}</div>`;
-    }
-  }
-
-  function renderNotifications(items) {
-    const container = document.getElementById('notifications-container');
-    container.innerHTML = '';
-
-    if (items.length === 0) {
-      container.innerHTML = `
-        <div class="glass-card text-center py-5 animate-in">
-          <i class="bi bi-bell-slash fs-1 text-secondary mb-3 d-block"></i>
-          <p class="text-secondary mb-0">No notifications found.</p>
-        </div>
-      `;
-      return;
-    }
-
-    items.forEach(item => {
-      const statusClass = item.read ? 'read' : 'unread';
-      const actionButton = !item.read 
-        ? `<button class="btn btn-sm btn-outline-primary" onclick="markAsRead(${item.id})"><i class="bi bi-check-lg"></i> Mark Read</button>`
-        : '';
-      
-      container.innerHTML += `
-        <div class="glass-card notification-item ${statusClass} p-3 d-flex justify-content-between align-items-center animate-in">
-          <div>
-            <div class="d-flex align-items-center gap-2">
-              <h6 class="mb-1 text-white fw-bold">${item.title}</h6>
-              ${!item.read ? '<span class="unread-indicator"></span>' : ''}
-            </div>
-            <p class="text-secondary mb-1 small">${item.message}</p>
-            <small class="text-secondary" style="font-size: 0.72rem;">${UI.formatDateTime(item.createdAt)}</small>
-          </div>
-          <div>
-            ${actionButton}
-          </div>
-        </div>
-      `;
-    });
+      const data = await Api.get(`/notifications?userId=${Api.getUserId()}&page=${page}&size=10`);
+      const tbody = document.getElementById('notif-tbody');
+      tbody.innerHTML = '';
+      if (data.content && data.content.length > 0) {
+        data.content.forEach(n => {
+          const isRead = n.read || n.isRead;
+          const typeBadge = n.type === 'WARNING' ? 'expense' : n.type === 'SUCCESS' ? 'income' : 'admin';
+          tbody.innerHTML += `<tr style="${isRead ? 'opacity:0.65;' : 'font-weight:600;'}">
+            <td style="font-size:0.82rem;">${UI.formatDateTime(n.timestamp || n.createdDate)}</td>
+            <td><span class="badge ${typeBadge}">${n.type || 'INFO'}</span></td>
+            <td style="font-size:0.875rem;">${n.message}</td>
+            <td>
+              <span class="badge ${isRead ? 'badge-secondary' : 'income'}" style="${isRead ? 'background:rgba(255,255,255,0.08);color:var(--text-muted);' : ''}">${isRead ? 'Read' : 'Unread'}</span>
+            </td>
+            <td>
+              ${!isRead ? `<button class="btn btn-sm btn-outline-info" onclick="markAsRead(${n.id})"><i class="bi bi-check me-1"></i>Read</button>` : '—'}
+            </td>
+          </tr>`;
+        });
+      } else {
+        tbody.innerHTML = '<tr><td colspan="5" class="text-center py-5" style="color:var(--text-muted);"><i class="bi bi-bell-slash d-block mb-2" style="font-size:2rem;opacity:0.4;"></i>No notifications right now</td></tr>';
+      }
+      UI.renderPagination(document.getElementById('notif-pagination'), data, loadNotifications);
+    } catch (err) { UI.showToast(err.message, 'error'); } finally { UI.hideLoading(); }
   }
 
   async function markAsRead(id) {
     UI.showLoading();
     try {
-      await Api.patch(`/notifications/${id}/mark-read`);
-      UI.showToast('Notification marked as read');
-      await loadNotifications(currentPage);
-    } catch (err) {
-      UI.showToast(err.message || 'Failed to update notification', 'error');
-    } finally {
-      UI.hideLoading();
-    }
+      await Api.put(`/notifications/${id}/read`);
+      UI.showToast('Notification marked as read ✅');
+      loadNotifications();
+    } catch (err) { UI.showToast(err.message, 'error'); } finally { UI.hideLoading(); }
   }
 
   async function markAllAsRead() {
-    const unreads = notificationsList.filter(n => !n.read);
-    if (unreads.length === 0) return;
-
     UI.showLoading();
     try {
-      await Promise.all(unreads.map(n => Api.patch(`/notifications/${n.id}/mark-read`)));
-      UI.showToast('All notifications on this page marked as read');
-      await loadNotifications(currentPage);
-    } catch (err) {
-      UI.showToast(err.message || 'Failed to update notifications', 'error');
-    } finally {
-      UI.hideLoading();
-    }
+      await Api.put(`/notifications/user/${Api.getUserId()}/read-all`);
+      UI.showToast('All notifications marked as read ✅');
+      loadNotifications();
+    } catch (err) { UI.showToast(err.message, 'error'); } finally { UI.hideLoading(); }
   }
 
-  loadNotifications();
+  loadNotifications(0);
 </script>
 </body>
 </html>

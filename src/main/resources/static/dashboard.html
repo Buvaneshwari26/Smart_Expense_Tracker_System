@@ -1,13 +1,17 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-theme="dark">
 <head>
   <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Dashboard — Smart Expense Tracker</title>
+  <meta name="description" content="Your financial overview — income, expenses, balance, savings and budget progress at a glance."/>
   <link rel="icon" type="image/x-icon" href="favicon.ico"/>
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"/>
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css"/>
   <link rel="stylesheet" href="css/globals.css"/>
+  <script src="js/api.js"></script>
+  <script src="js/auth.js"></script>
+  <script src="js/ui.js"></script>
 </head>
 <body>
 <button class="sidebar-toggle d-md-none"><i class="bi bi-list"></i></button>
@@ -15,137 +19,155 @@
   <aside class="sidebar">
     <div class="sidebar-brand">
       <div class="logo-icon"><i class="bi bi-wallet2"></i></div>
-      <span class="brand-text">ExpenseTracker</span>
+      <div>
+        <div class="brand-text">ExpenseTracker</div>
+        <div class="brand-tagline">Smart Finance</div>
+      </div>
     </div>
     <nav class="sidebar-nav" id="sidebar-nav">
-      <!-- Dynamically populated by UI.initSidebar() based on user role -->
+      <!-- Dynamically populated by UI.initSidebar() -->
     </nav>
     <div class="sidebar-footer">
       <span id="sidebar-username">User</span>
-      <button onclick="Auth.logout()" class="btn btn-sm btn-outline-danger"><i class="bi bi-box-arrow-right"></i> Logout</button>
     </div>
   </aside>
+
   <main class="main-content">
-    <div class="d-flex justify-content-between align-items-center mb-4">
-      <div>
-        <h2 class="mb-1">Dashboard</h2>
-        <p class="text-secondary">Welcome back, here's your financial overview</p>
+    <div class="page-content">
+      <!-- Page Header -->
+      <div class="page-header">
+        <div class="page-header-title">
+          <h2><i class="bi bi-grid-1x2-fill me-2" style="color:var(--brand-primary-light);font-size:1.2rem;"></i>Dashboard</h2>
+          <p>Welcome back! Here's your complete financial overview</p>
+        </div>
+        <div class="d-flex align-items-center gap-2">
+          <span class="text-muted" style="font-size:0.8rem;" id="dash-date"></span>
+          <img id="dash-user-avatar" src="" class="rounded-circle user-avatar-img" style="width:42px;height:42px;object-fit:cover;border:2px solid var(--glass-border);" onerror="if(window.UI&&this.src!==UI.DEFAULT_AVATAR){this.src=UI.DEFAULT_AVATAR;}this.onerror=null;">
+        </div>
       </div>
-      <div class="d-flex align-items-center gap-2">
-        <img id="dash-user-avatar" src="" class="rounded-circle border border-secondary user-avatar-img" style="width:48px;height:48px;object-fit:cover;" onerror="this.src=UI.DEFAULT_AVATAR">
-      </div>
-    </div>
 
-    <!-- KPI Cards -->
-    <div class="row g-4 mb-4">
-      <div class="col-md-3">
-        <div class="stat-card glass-card income">
-          <div class="stat-icon"><i class="bi bi-arrow-up-circle"></i></div>
-          <div class="stat-details">
-            <div class="stat-label">Total Income</div>
-            <div class="stat-value" id="dash-income">₹0.00</div>
+      <!-- KPI Cards -->
+      <div class="row g-4 mb-4" id="kpi-row">
+        <div class="col-xl-3 col-md-6 animate-in">
+          <div class="stat-card glass-card income">
+            <div class="stat-icon"><i class="bi bi-arrow-up-circle-fill"></i></div>
+            <div class="stat-details">
+              <div class="stat-label">Total Income</div>
+              <div class="stat-value" id="dash-income">₹0.00</div>
+              <div class="text-success small mt-1" style="font-size:0.75rem;">This month</div>
+            </div>
+          </div>
+        </div>
+        <div class="col-xl-3 col-md-6 animate-in">
+          <div class="stat-card glass-card expense">
+            <div class="stat-icon"><i class="bi bi-arrow-down-circle-fill"></i></div>
+            <div class="stat-details">
+              <div class="stat-label">Total Expense</div>
+              <div class="stat-value" id="dash-expense">₹0.00</div>
+              <div class="small mt-1" id="dash-comparison-subtext" style="font-size:0.75rem;color:var(--text-muted);">—</div>
+            </div>
+          </div>
+        </div>
+        <div class="col-xl-3 col-md-6 animate-in">
+          <div class="stat-card glass-card balance">
+            <div class="stat-icon"><i class="bi bi-wallet-fill"></i></div>
+            <div class="stat-details">
+              <div class="stat-label">Current Balance</div>
+              <div class="stat-value" id="dash-balance">₹0.00</div>
+              <div class="text-muted small mt-1" style="font-size:0.75rem;">Net position</div>
+            </div>
+          </div>
+        </div>
+        <div class="col-xl-3 col-md-6 animate-in">
+          <div class="stat-card glass-card savings">
+            <div class="stat-icon"><i class="bi bi-graph-up-arrow"></i></div>
+            <div class="stat-details">
+              <div class="stat-label">Savings Rate</div>
+              <div class="stat-value" id="dash-savings-rate">0%</div>
+              <div class="small mt-1" id="dash-health-subtext" style="font-size:0.75rem;color:var(--text-muted);">—</div>
+            </div>
           </div>
         </div>
       </div>
-      <div class="col-md-3">
-        <div class="stat-card glass-card expense">
-          <div class="stat-icon"><i class="bi bi-arrow-down-circle"></i></div>
-          <div class="stat-details">
-            <div class="stat-label">Total Expense</div>
-            <div class="stat-value" id="dash-expense">₹0.00</div>
-            <div class="text-secondary small mt-1" id="dash-comparison-subtext" style="font-size:0.75rem;">—</div>
-          </div>
-        </div>
-      </div>
-      <div class="col-md-3">
-        <div class="stat-card glass-card balance">
-          <div class="stat-icon"><i class="bi bi-wallet"></i></div>
-          <div class="stat-details">
-            <div class="stat-label">Current Balance</div>
-            <div class="stat-value" id="dash-balance">₹0.00</div>
-          </div>
-        </div>
-      </div>
-      <div class="col-md-3">
-        <div class="stat-card glass-card savings">
-          <div class="stat-icon"><i class="bi bi-graph-up-arrow"></i></div>
-          <div class="stat-details">
-            <div class="stat-label">Monthly Savings Rate</div>
-            <div class="stat-value" id="dash-savings-rate">0%</div>
-            <div class="text-secondary small mt-1" id="dash-health-subtext" style="font-size:0.75rem;">—</div>
-          </div>
-        </div>
-      </div>
-    </div>
 
-    <!-- Charts Row -->
-    <div class="row g-4 mb-4">
-      <div class="col-md-8">
-        <div class="glass-card">
-          <h5 class="mb-4">Monthly Trend</h5>
-          <div class="chart-container">
-            <canvas id="monthlyChart"></canvas>
+      <!-- Charts Row -->
+      <div class="row g-4 mb-4">
+        <div class="col-lg-8">
+          <div class="glass-card h-100">
+            <div class="d-flex align-items-center justify-content-between mb-4">
+              <h5 class="mb-0 fw-700" style="font-size:1rem;"><i class="bi bi-bar-chart-fill me-2" style="color:var(--brand-primary-light);"></i>Monthly Income vs Expense</h5>
+              <span id="dash-top-category" class="badge" style="background:rgba(245,158,11,0.12);color:var(--warning);border:1px solid rgba(245,158,11,0.25);font-size:0.72rem;"></span>
+            </div>
+            <div class="chart-container">
+              <canvas id="monthlyChart"></canvas>
+            </div>
+          </div>
+        </div>
+        <div class="col-lg-4">
+          <div class="glass-card h-100">
+            <h5 class="mb-4 fw-700" style="font-size:1rem;"><i class="bi bi-pie-chart-fill me-2" style="color:var(--accent);"></i>Spending Breakdown</h5>
+            <div class="chart-container" style="height:230px;">
+              <canvas id="categoryChart"></canvas>
+            </div>
           </div>
         </div>
       </div>
-      <div class="col-md-4">
-        <div class="glass-card">
-          <h5 class="mb-4">Top Spending Category</h5>
-          <h3 id="dash-top-category" class="text-warning mb-4">N/A</h3>
-          <div class="chart-container" style="height:220px;">
-            <canvas id="categoryChart"></canvas>
-          </div>
-        </div>
-      </div>
-    </div>
 
-    <!-- Recent Transactions & Budgets Row -->
-    <div class="row g-4 mb-4">
-      <div class="col-md-7">
-        <div class="glass-card h-100">
-          <h5 class="mb-4">Recent Transactions</h5>
-          <div class="table-responsive">
-            <table class="glass-table">
-              <thead>
-                <tr>
-                  <th>Date</th>
-                  <th>Type</th>
-                  <th>Category</th>
-                  <th>Amount</th>
-                </tr>
-              </thead>
-              <tbody id="recent-transactions-tbody">
-                <!-- Data populated by JS -->
-              </tbody>
-            </table>
+      <!-- Recent Transactions & Budgets -->
+      <div class="row g-4 mb-4">
+        <div class="col-lg-7">
+          <div class="glass-card h-100">
+            <div class="d-flex align-items-center justify-content-between mb-4">
+              <h5 class="mb-0 fw-700" style="font-size:1rem;"><i class="bi bi-clock-history me-2" style="color:var(--info);"></i>Recent Transactions</h5>
+              <div class="d-flex gap-2">
+                <a href="income.html" class="btn btn-sm btn-outline-success" style="font-size:0.72rem;">Income</a>
+                <a href="expense.html" class="btn btn-sm btn-outline-danger" style="font-size:0.72rem;">Expense</a>
+              </div>
+            </div>
+            <div class="table-responsive">
+              <table class="glass-table">
+                <thead>
+                  <tr>
+                    <th>Date</th><th>Type</th><th>Category</th><th>Amount</th>
+                  </tr>
+                </thead>
+                <tbody id="recent-transactions-tbody">
+                  <!-- JS populated -->
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+        <div class="col-lg-5">
+          <div class="glass-card h-100">
+            <div class="d-flex align-items-center justify-content-between mb-4">
+              <h5 class="mb-0 fw-700" style="font-size:1rem;"><i class="bi bi-pie-chart me-2" style="color:var(--warning);"></i>Budget Progress</h5>
+              <a href="budget.html" class="btn btn-sm btn-outline-secondary" style="font-size:0.72rem;">Manage</a>
+            </div>
+            <div id="budget-progress-container">
+              <!-- JS populated -->
+            </div>
           </div>
         </div>
       </div>
-      <div class="col-md-5">
-        <div class="glass-card h-100">
-          <h5 class="mb-4">Budget Progress (This Month)</h5>
-          <div id="budget-progress-container">
-            <!-- Data populated by JS -->
-          </div>
-        </div>
-      </div>
-    </div>
 
-    <!-- Savings Goals & Upcoming Recurring Row -->
-    <div class="row g-4">
-      <div class="col-md-6">
-        <div class="glass-card h-100">
-          <h5 class="mb-4"><i class="bi bi-piggy-bank me-2 text-accent"></i>Savings Goals Progress</h5>
-          <div id="savings-goals-container">
-            <!-- Data populated by JS -->
+      <!-- Savings Goals & Upcoming Recurring -->
+      <div class="row g-4">
+        <div class="col-md-6">
+          <div class="glass-card h-100">
+            <div class="d-flex align-items-center justify-content-between mb-4">
+              <h5 class="mb-0 fw-700" style="font-size:1rem;"><i class="bi bi-piggy-bank-fill me-2" style="color:var(--accent);"></i>Savings Goals</h5>
+              <a href="savings.html" class="btn btn-sm btn-outline-secondary" style="font-size:0.72rem;">View All</a>
+            </div>
+            <div id="savings-goals-container"></div>
           </div>
         </div>
-      </div>
-      <div class="col-md-6">
-        <div class="glass-card h-100">
-          <h5 class="mb-4"><i class="bi bi-calendar-event me-2 text-indigo"></i>Upcoming Recurring Transactions</h5>
-          <div id="recurring-transactions-container" class="d-flex flex-column gap-2">
-            <!-- Data populated by JS -->
+        <div class="col-md-6">
+          <div class="glass-card h-100">
+            <div class="d-flex align-items-center justify-content-between mb-4">
+              <h5 class="mb-0 fw-700" style="font-size:1rem;"><i class="bi bi-calendar-event-fill me-2" style="color:var(--brand-primary-light);"></i>Upcoming Recurring</h5>
+            </div>
+            <div id="recurring-transactions-container" class="d-flex flex-column gap-2"></div>
           </div>
         </div>
       </div>
@@ -155,147 +177,134 @@
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-<script src="js/api.js"></script>
-<script src="js/auth.js"></script>
-<script src="js/ui.js"></script>
 <script>
   Auth.requireAuth();
-  UI.initSidebar();
+  UI.initSidebar('dashboard.html');
+
+  // Set current date
+  const dateEl = document.getElementById('dash-date');
+  if (dateEl) dateEl.textContent = new Date().toLocaleDateString('en-IN', { weekday:'long', day:'2-digit', month:'long', year:'numeric' });
+
+  // Set avatar
+  const avatarImg = document.getElementById('dash-user-avatar');
+  if (avatarImg) avatarImg.src = localStorage.getItem('profilePicture') || UI.DEFAULT_AVATAR;
 
   async function loadDashboard() {
     UI.showLoading();
     try {
-      const storedPic = localStorage.getItem('profilePicture');
-      const avatarImg = document.getElementById('dash-user-avatar');
-      if (avatarImg) avatarImg.src = storedPic || UI.DEFAULT_AVATAR;
-
       const data = await Api.get('/dashboard/summary');
-      
-      // Update KPIs
+
       document.getElementById('dash-income').textContent = UI.formatCurrency(data.totalIncome);
       document.getElementById('dash-expense').textContent = UI.formatCurrency(data.totalExpense);
       document.getElementById('dash-balance').textContent = UI.formatCurrency(data.currentBalance);
       document.getElementById('dash-savings-rate').textContent = `${data.monthlySavingsRate || 0}%`;
-      document.getElementById('dash-top-category').textContent = data.topSpendingCategory || 'N/A';
 
-      // Financial Health and Comparison subtexts
+      const topCat = document.getElementById('dash-top-category');
+      if (topCat) topCat.textContent = data.topSpendingCategory ? `🔥 Top: ${data.topSpendingCategory}` : '';
+
+      // Balance color
+      const balEl = document.getElementById('dash-balance');
+      if (balEl) balEl.style.color = (data.currentBalance >= 0) ? 'var(--accent)' : 'var(--danger)';
+
       const compSubtext = document.getElementById('dash-comparison-subtext');
       if (compSubtext && data.monthlyComparison) {
         compSubtext.textContent = data.monthlyComparison;
-        if (data.monthlyComparison.startsWith('+')) {
-          compSubtext.className = 'small mt-1 text-danger';
-        } else if (data.monthlyComparison.startsWith('-')) {
-          compSubtext.className = 'small mt-1 text-success';
-        } else {
-          compSubtext.className = 'small mt-1 text-secondary';
-        }
+        compSubtext.className = 'small mt-1 ' + (data.monthlyComparison.startsWith('+') ? 'text-danger' : data.monthlyComparison.startsWith('-') ? 'text-success' : 'text-muted');
+        compSubtext.style.fontSize = '0.75rem';
       }
 
       const healthSubtext = document.getElementById('dash-health-subtext');
       if (healthSubtext && data.financialHealth) {
+        const statusColors = { EXCELLENT:'text-success', GOOD:'text-success', WARNING:'text-warning', CRITICAL:'text-danger' };
         healthSubtext.textContent = `Status: ${data.financialHealth}`;
-        if (data.financialHealth === 'EXCELLENT' || data.financialHealth === 'GOOD') {
-          healthSubtext.className = 'small mt-1 text-success';
-        } else if (data.financialHealth === 'WARNING') {
-          healthSubtext.className = 'small mt-1 text-warning';
-        } else {
-          healthSubtext.className = 'small mt-1 text-secondary';
-        }
+        healthSubtext.className = `small mt-1 ${statusColors[data.financialHealth] || 'text-muted'}`;
+        healthSubtext.style.fontSize = '0.75rem';
       }
 
-      // Load Recent Transactions
+      // Recent Transactions
       const tbody = document.getElementById('recent-transactions-tbody');
       tbody.innerHTML = '';
-      if(data.recentTransactions && data.recentTransactions.length > 0) {
-        data.recentTransactions.slice(0, 5).forEach(t => {
+      if (data.recentTransactions && data.recentTransactions.length > 0) {
+        data.recentTransactions.slice(0, 6).forEach(t => {
           const isIncome = t.type === 'INCOME';
-          const badgeClass = isIncome ? 'income' : 'expense';
-          const badgeText = isIncome ? 'Income' : 'Expense';
-          const amountColor = isIncome ? 'var(--income-green)' : 'var(--expense-red)';
-          const sign = isIncome ? '+' : '-';
-          
-          tbody.innerHTML += `
-            <tr>
-              <td>${UI.formatDate(t.date)}</td>
-              <td><span class="badge ${badgeClass}">${badgeText}</span></td>
-              <td>${t.categoryName || '-'}</td>
-              <td style="color:${amountColor};font-weight:600;">${sign}${UI.formatCurrency(t.amount)}</td>
-            </tr>
-          `;
+          tbody.innerHTML += `<tr>
+            <td style="font-size:0.82rem;">${UI.formatDate(t.date)}</td>
+            <td><span class="badge ${isIncome ? 'income' : 'expense'}">${isIncome ? 'Income' : 'Expense'}</span></td>
+            <td style="font-size:0.82rem;">${t.categoryName || '—'}</td>
+            <td style="color:${isIncome ? 'var(--income-green)' : 'var(--expense-red)'};font-weight:700;font-size:0.85rem;">${isIncome ? '+' : '-'}${UI.formatCurrency(t.amount)}</td>
+          </tr>`;
         });
       } else {
-        tbody.innerHTML = '<tr><td colspan="4" class="text-center text-secondary">No recent transactions</td></tr>';
+        tbody.innerHTML = '<tr><td colspan="4" class="text-center py-5" style="color:var(--text-muted);"><i class="bi bi-inbox d-block mb-2" style="font-size:2rem;opacity:0.4;"></i>No recent transactions</td></tr>';
       }
 
-      // Load Budget Progress
+      // Budget Progress
       const budgetContainer = document.getElementById('budget-progress-container');
       budgetContainer.innerHTML = '';
-      if(data.budgets && data.budgets.length > 0) {
+      if (data.budgets && data.budgets.length > 0) {
         data.budgets.forEach(b => {
           const util = Math.min(100, b.utilizationPercent || 0);
-          const barColor = b.isExceeded ? 'var(--danger)' : 'var(--accent)';
-          budgetContainer.innerHTML += `
-            <div class="mb-3">
-              <div class="d-flex justify-content-between mb-1">
-                <span class="fw-500">${b.categoryName}</span>
-                <span>${UI.formatCurrency(b.spentAmount)} / ${UI.formatCurrency(b.limitAmount)}</span>
-              </div>
-              <div class="progress-bar-custom">
-                <div class="fill" style="width: ${util}%; background-color: ${barColor}"></div>
-              </div>
-              ${b.isExceeded ? '<small class="text-danger mt-1 d-block">Budget Exceeded!</small>' : ''}
+          const barColor = b.isExceeded ? 'var(--danger)' : util > 75 ? 'var(--warning)' : 'var(--accent)';
+          budgetContainer.innerHTML += `<div class="mb-3">
+            <div class="d-flex justify-content-between mb-1">
+              <span style="font-size:0.82rem;font-weight:600;">${b.categoryName}</span>
+              <span style="font-size:0.78rem;color:var(--text-secondary);">${UI.formatCurrency(b.spentAmount)} / ${UI.formatCurrency(b.limitAmount)}</span>
             </div>
-          `;
+            <div class="progress-bar-custom">
+              <div class="fill" style="width:${util}%;background:${barColor};"></div>
+            </div>
+            ${b.isExceeded ? '<small class="text-danger d-block mt-1" style="font-size:0.72rem;"><i class="bi bi-exclamation-triangle me-1"></i>Budget exceeded!</small>' : `<small class="d-block mt-1" style="font-size:0.72rem;color:var(--text-muted);">${util.toFixed(1)}% used</small>`}
+          </div>`;
         });
       } else {
-        budgetContainer.innerHTML = '<p class="text-secondary text-center py-4">No active budgets for this month.</p>';
+        budgetContainer.innerHTML = '<div class="empty-state py-4"><i class="bi bi-pie-chart" style="font-size:2rem;opacity:0.35;display:block;margin-bottom:8px;"></i><span style="font-size:0.85rem;color:var(--text-muted);">No active budgets</span></div>';
       }
 
-      // Load Savings Goals
+      // Savings Goals
       const savingsContainer = document.getElementById('savings-goals-container');
       savingsContainer.innerHTML = '';
       if (data.savingsGoals && data.savingsGoals.length > 0) {
-        data.savingsGoals.forEach(g => {
+        data.savingsGoals.forEach((g, i) => {
           const pct = Math.min(100, g.percentage || 0);
-          savingsContainer.innerHTML += `
-            <div class="mb-3 animate-in">
-              <div class="d-flex justify-content-between mb-1">
-                <span class="fw-500 text-white">${g.goalName}</span>
-                <span class="small text-secondary">${UI.formatCurrency(g.currentAmount)} / ${UI.formatCurrency(g.targetAmount)} (${pct.toFixed(0)}%)</span>
-              </div>
-              <div class="progress-bar-custom">
-                <div class="fill" style="width: ${pct}%; background-color: #6366f1;"></div>
-              </div>
-              <small class="text-secondary mt-1 d-block" style="font-size:0.75rem;">Target: ${UI.formatDate(g.targetDate)}</small>
+          savingsContainer.innerHTML += `<div class="mb-3 animate-in" style="animation-delay:${i*0.05}s;">
+            <div class="d-flex justify-content-between mb-1">
+              <span style="font-size:0.82rem;font-weight:600;">${g.goalName}</span>
+              <span style="font-size:0.78rem;color:var(--text-secondary);">${pct.toFixed(0)}%</span>
             </div>
-          `;
+            <div class="progress-bar-custom">
+              <div class="fill" style="width:${pct}%;background:linear-gradient(90deg,var(--brand-primary),var(--brand-primary-light));"></div>
+            </div>
+            <div class="d-flex justify-content-between mt-1">
+              <small style="font-size:0.72rem;color:var(--text-muted);">${UI.formatCurrency(g.currentAmount)} of ${UI.formatCurrency(g.targetAmount)}</small>
+              <small style="font-size:0.72rem;color:var(--text-muted);">Due: ${UI.formatDate(g.targetDate)}</small>
+            </div>
+          </div>`;
         });
       } else {
-        savingsContainer.innerHTML = '<p class="text-secondary text-center py-4">No active savings goals found.</p>';
+        savingsContainer.innerHTML = '<div class="empty-state py-4"><i class="bi bi-piggy-bank" style="font-size:2rem;opacity:0.35;display:block;margin-bottom:8px;"></i><span style="font-size:0.85rem;color:var(--text-muted);">No savings goals set</span></div>';
       }
 
-      // Load Upcoming Recurring
+      // Upcoming Recurring
       const recurringContainer = document.getElementById('recurring-transactions-container');
       recurringContainer.innerHTML = '';
       if (data.upcomingRecurring && data.upcomingRecurring.length > 0) {
         data.upcomingRecurring.forEach(rec => {
-          recurringContainer.innerHTML += `
-            <div class="p-2 rounded-3 border border-secondary border-opacity-10 d-flex justify-content-between align-items-center bg-white bg-opacity-5 animate-in">
-              <div>
-                <div class="fw-semibold text-white small">${rec.split(' - ')[0]}</div>
-                <div class="text-secondary small" style="font-size: 0.72rem;">${rec.split(' on ')[1] ? 'Due date: ' + rec.split(' on ')[1] : ''}</div>
-              </div>
-              <div class="fw-bold text-accent text-glow font-monospace small">${rec.split(' - ')[1] ? rec.split(' - ')[1].split(' on ')[0] : ''}</div>
+          const parts = (rec || '').split(' - ');
+          const amountPart = parts[1] ? parts[1].split(' on ')[0] : '';
+          const datePart = rec.split(' on ')[1] || '';
+          recurringContainer.innerHTML += `<div style="padding:12px 14px;background:rgba(255,255,255,0.03);border:1px solid var(--glass-border);border-radius:10px;display:flex;justify-content:space-between;align-items:center;">
+            <div>
+              <div style="font-size:0.82rem;font-weight:600;">${parts[0] || rec}</div>
+              ${datePart ? `<div style="font-size:0.72rem;color:var(--text-muted);margin-top:2px;"><i class="bi bi-calendar3 me-1"></i>Due: ${datePart}</div>` : ''}
             </div>
-          `;
+            <div style="font-weight:700;color:var(--accent);font-size:0.85rem;font-family:monospace;">${amountPart}</div>
+          </div>`;
         });
       } else {
-        recurringContainer.innerHTML = '<p class="text-secondary text-center py-4">No upcoming recurring schedules this week.</p>';
+        recurringContainer.innerHTML = '<div class="empty-state py-4"><i class="bi bi-calendar-x" style="font-size:2rem;opacity:0.35;display:block;margin-bottom:8px;"></i><span style="font-size:0.85rem;color:var(--text-muted);">No upcoming recurring this week</span></div>';
       }
 
-      // Placeholder charts since we don't have full historical data in dashboard summary
       renderCharts(data);
-
     } catch (err) {
       UI.showToast(err.message, 'error');
     } finally {
@@ -307,61 +316,51 @@
   let categoryChartInstance = null;
 
   function renderCharts(data) {
-    Chart.defaults.color = '#8892a4';
-    Chart.defaults.borderColor = 'rgba(255,255,255,0.05)';
-    
+    const isDark = (document.documentElement.getAttribute('data-theme') || 'dark') !== 'light';
+    Chart.defaults.color = isDark ? '#94a3b8' : '#475569';
+    Chart.defaults.borderColor = isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.06)';
+
     if (monthlyChartInstance) monthlyChartInstance.destroy();
     if (categoryChartInstance) categoryChartInstance.destroy();
 
-    // Monthly trend chart
     const ctxMonthly = document.getElementById('monthlyChart').getContext('2d');
+    const mInc = data.monthlyIncome || 0;
+    const mExp = data.monthlyExpense || 0;
     monthlyChartInstance = new Chart(ctxMonthly, {
-      type: 'line',
+      type: 'bar',
       data: {
         labels: ['Week 1', 'Week 2', 'Week 3', 'Week 4'],
         datasets: [
-          {
-            label: 'Income',
-            data: [data.monthlyIncome * 0.2, data.monthlyIncome * 0.3, data.monthlyIncome * 0.1, data.monthlyIncome * 0.4],
-            borderColor: '#4ecca3',
-            backgroundColor: 'rgba(78, 204, 163, 0.1)',
-            tension: 0.4,
-            fill: true
-          },
-          {
-            label: 'Expense',
-            data: [data.monthlyExpense * 0.3, data.monthlyExpense * 0.2, data.monthlyExpense * 0.4, data.monthlyExpense * 0.1],
-            borderColor: '#e94560',
-            backgroundColor: 'rgba(233, 69, 96, 0.1)',
-            tension: 0.4,
-            fill: true
-          }
+          { label: 'Income', data: [mInc*0.2, mInc*0.35, mInc*0.1, mInc*0.35], backgroundColor: 'rgba(78,204,163,0.25)', borderColor: '#4ecca3', borderWidth: 2, borderRadius: 6, borderSkipped: false },
+          { label: 'Expense', data: [mExp*0.3, mExp*0.2, mExp*0.35, mExp*0.15], backgroundColor: 'rgba(244,63,94,0.2)', borderColor: '#f43f5e', borderWidth: 2, borderRadius: 6, borderSkipped: false }
         ]
       },
       options: {
-        responsive: true,
-        maintainAspectRatio: false,
-        plugins: { legend: { position: 'top' } }
+        responsive: true, maintainAspectRatio: false,
+        plugins: {
+          legend: { position: 'top', labels: { boxWidth: 12, boxHeight: 12, padding: 20, font: { family: 'Inter', size: 12 } } },
+          tooltip: { backgroundColor: '#1a1d2e', borderColor: 'rgba(255,255,255,0.1)', borderWidth: 1, cornerRadius: 10, padding: 12 }
+        },
+        scales: {
+          x: { grid: { display: false }, ticks: { font: { family: 'Inter', size: 11 } } },
+          y: { grid: { color: isDark ? 'rgba(255,255,255,0.04)' : 'rgba(0,0,0,0.04)' }, ticks: { font: { family: 'Inter', size: 11 }, callback: v => '₹' + (v/1000).toFixed(0) + 'k' } }
+        }
       }
     });
 
-    // Category chart
     const ctxCategory = document.getElementById('categoryChart').getContext('2d');
     categoryChartInstance = new Chart(ctxCategory, {
       type: 'doughnut',
       data: {
         labels: [data.topSpendingCategory || 'Top Category', 'Others'],
-        datasets: [{
-          data: [data.monthlyExpense * 0.6, data.monthlyExpense * 0.4],
-          backgroundColor: ['#f5a623', 'rgba(255,255,255,0.1)'],
-          borderWidth: 0
-        }]
+        datasets: [{ data: [mExp * 0.6, mExp * 0.4], backgroundColor: ['#6366f1', 'rgba(255,255,255,0.07)'], borderWidth: 0, hoverOffset: 6 }]
       },
       options: {
-        responsive: true,
-        maintainAspectRatio: false,
-        cutout: '70%',
-        plugins: { legend: { position: 'bottom' } }
+        responsive: true, maintainAspectRatio: false, cutout: '72%',
+        plugins: {
+          legend: { position: 'bottom', labels: { boxWidth: 10, boxHeight: 10, padding: 16, font: { family: 'Inter', size: 11 } } },
+          tooltip: { backgroundColor: '#1a1d2e', borderColor: 'rgba(255,255,255,0.1)', borderWidth: 1, cornerRadius: 10 }
+        }
       }
     });
   }
