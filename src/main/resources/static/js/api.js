@@ -25,8 +25,15 @@ const Api = {
     
     if (response.status === 204) return null;
     
-    const data = await response.json();
-    if (!response.ok) throw new Error(data.message || data.data?.message || 'Request failed');
+    let data;
+    try {
+      data = await response.json();
+    } catch {
+      // Non-JSON response (e.g. HTML error page from server)
+      if (!response.ok) throw new Error(`Server error (${response.status})`);
+      return null;
+    }
+    if (!response.ok) throw new Error(data.message || data.data?.message || data.error || `Request failed (${response.status})`);
     return data.data !== undefined ? data.data : data;
   },
   

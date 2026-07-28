@@ -1,5 +1,5 @@
 const UI = {
-  DEFAULT_AVATAR: 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="%238892a4"><circle cx="12" cy="12" r="12" fill="%231e293b"/><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z" fill="%2364748b"/></svg>',
+  DEFAULT_AVATAR: 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyNCAyNCIgZmlsbD0iIzg4OTJhNCI+PGNpcmNsZSBjeD0iMTIiIGN5PSIxMiIgcj0iMTIiIGZpbGw9IiMxZTI5M2IiLz48cGF0aCBkPSJNMTIgMTJjMi4yMSAwIDQtMS43OSA0LTRzLTEuNzktNC00LTQtNCAxLjc5LTQgNCAxLjc5IDQgNCA0em0wIDJjLTIuNjcgMC04IDEuMzQtOCA0djJoMTZ2LTJjMC0yLjY2LTUuMzMtNC04LTR6IiBmaWxsPSIjNjQ3NDhiIi8+PC9zdmc+',
 
   showToast(message, type = 'success') {
     let container = document.querySelector('.toast-container');
@@ -172,7 +172,7 @@ const UI = {
       const displayName = localStorage.getItem('fullName') || user.username || 'User';
       footer.innerHTML = `
         <div class="d-flex align-items-center gap-2" style="max-width: 140px;">
-          <img src="${storedPic}" class="user-avatar-img rounded-circle border border-secondary" style="width:32px;height:32px;object-fit:cover;" onerror="this.src='${this.DEFAULT_AVATAR}'">
+          <img src="${storedPic}" class="user-avatar-img rounded-circle border border-secondary" style="width:32px;height:32px;object-fit:cover;" onerror="this.src=UI.DEFAULT_AVATAR">
           <span id="sidebar-username" class="text-truncate text-white fw-medium">${displayName}</span>
         </div>
         <button onclick="Auth.logout()" class="btn btn-sm btn-outline-danger border-0 p-1" title="Logout"><i class="bi bi-box-arrow-right"></i></button>
