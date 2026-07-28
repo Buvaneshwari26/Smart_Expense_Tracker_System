@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>User Management — Smart Expense Tracker</title>
   <meta name="description" content="Admin User Management — create, update, delete, activate, deactivate, and change roles for all users."/>
+  <link rel="icon" type="image/x-icon" href="favicon.ico"/>
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"/>
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css"/>
   <link rel="stylesheet" href="css/globals.css"/>
@@ -636,7 +637,8 @@
     const u = allUsers.find(x => x.id === userId);
     if (!confirm(`Are you sure you want to ${label} ${u?.username || 'this user'}?`)) return;
     try {
-      await Api.put(`/users/${userId}`, { accountActive: active });
+      const endpoint = active ? `/users/${userId}/activate` : `/users/${userId}/deactivate`;
+      await Api.patch(endpoint);
       UI.showToast(`User ${active ? 'activated' : 'deactivated'} successfully`, 'success');
       await loadUsers(true);   // ← RELOAD after activate/deactivate
     } catch (err) {
@@ -649,7 +651,7 @@
     const u = allUsers.find(x => x.id === userId);
     if (!confirm(`Unlock account for ${u?.username || 'this user'}?`)) return;
     try {
-      await Api.put(`/users/${userId}`, { accountLocked: false });
+      await Api.patch(`/users/${userId}/unlock`);
       UI.showToast('Account unlocked successfully', 'success');
       await loadUsers(true);   // ← RELOAD after unlock
     } catch (err) {

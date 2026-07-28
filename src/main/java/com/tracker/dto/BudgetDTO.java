@@ -14,4 +14,8 @@ public class BudgetDTO {
     private Integer year;
     private LocalDate startDate;
     private LocalDate endDate;
+    private BigDecimal spentAmount;
+    private BigDecimal remainingAmount;
+    private BigDecimal utilizationPercent;
+    private Boolean isExceeded;
 }

@@ -150,12 +150,12 @@ public class AuthService {
                 userRepository.save(user);
                 loginHistoryService.recordLogin(user, "FAILED_LOCK_TRIGGERED");
                 activityLogService.logActivity(user, "ACCOUNT_LOCKED", "Account locked due to 5 failed login attempts");
-                throw new BadRequestException("Account locked due to 5 failed attempts. Please contact admin.");
+                throw new BadRequestException("Account is locked due to multiple failed login attempts. Please contact admin.");
             } else {
                 userRepository.save(user);
                 loginHistoryService.recordLogin(user, "FAILED");
-                activityLogService.logActivity(user, "LOGIN_FAILED", "Failed login attempt (" + currentFailed + "/5)");
-                throw new BadRequestException("Invalid email or password.");
+                activityLogService.logActivity(user, "LOGIN_FAILED", "Failed login attempt");
+                throw new BadRequestException("Invalid username or password");
             }
         } catch (Exception e) {
             loginHistoryService.recordLogin(user, "FAILED");

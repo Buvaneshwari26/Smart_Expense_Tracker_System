@@ -247,4 +247,42 @@ public class UserService {
                 .accountActive(user.getAccountActive() == null || user.getAccountActive())
                 .build();
     }
+
+    // ── Activate / Deactivate / Unlock ────────────────────────────────────────
+
+    @Transactional
+    public UserProfileDTO activateUser(Long id) {
+        User user = userRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("User not found with id: " + id));
+        user.setAccountActive(true);
+        user.setAccountLocked(false);
+        user.setFailedLoginCount(0);
+        User saved = userRepository.save(user);
+        activityLogService.logActivity(saved, "USER_ACTIVATED", "Account activated by admin");
+        log.info("User activated: {}", saved.getEmail());
+        return mapToProfile(saved);
+    }
+
+    @Transactional
+    public UserProfileDTO deactivateUser(Long id) {
+        User user = userRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("User not found with id: " + id));
+        user.setAccountActive(false);
+        User saved = userRepository.save(user);
+        activityLogService.logActivity(saved, "USER_DEACTIVATED", "Account deactivated by admin");
+        log.info("User deactivated: {}", saved.getEmail());
+        return mapToProfile(saved);
+    }
+
+    @Transactional
+    public UserProfileDTO unlockUser(Long id) {
+        User user = userRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("User not found with id: " + id));
+        user.setAccountLocked(false);
+        user.setFailedLoginCount(0);
+        User saved = userRepository.save(user);
+        activityLogService.logActivity(saved, "USER_UNLOCKED", "Account unlocked by admin");
+        log.info("User unlocked: {}", saved.getEmail());
+        return mapToProfile(saved);
+    }
 }

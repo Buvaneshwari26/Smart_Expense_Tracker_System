@@ -41,6 +41,11 @@ public class GlobalResponseHandler implements ResponseBodyAdvice<Object> {
             return body;
         }
 
+        // Do not wrap Spring Resource/StreamingResponseBody (used for file downloads)
+        if (body instanceof org.springframework.core.io.Resource) {
+            return body;
+        }
+
         return ApiResponse.builder()
                 .success(true)
                 .message("Operation completed successfully")

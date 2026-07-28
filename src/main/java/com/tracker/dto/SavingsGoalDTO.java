@@ -3,6 +3,7 @@ package com.tracker.dto;
 import lombok.*;
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 
 @Data @Builder @NoArgsConstructor @AllArgsConstructor
 public class SavingsGoalDTO {
@@ -17,4 +18,6 @@ public class SavingsGoalDTO {
     private BigDecimal remainingAmount;
     private String status;
     private String estimatedCompletionDate;
+    private LocalDateTime createdAt;
+    private LocalDateTime updatedAt;
 }

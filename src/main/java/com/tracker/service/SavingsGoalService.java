@@ -153,6 +153,8 @@ public class SavingsGoalService {
                 .remainingAmount(remainingAmount)
                 .status(status)
                 .estimatedCompletionDate(estCompletion)
+                .createdAt(goal.getCreatedAt())
+                .updatedAt(goal.getUpdatedAt())
                 .build();
     }
 }

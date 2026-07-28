@@ -9,6 +9,10 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.math.BigDecimal;
+import java.math.RoundingMode;
+import java.time.LocalDate;
+import java.time.temporal.TemporalAdjusters;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -18,6 +22,7 @@ import java.util.stream.Collectors;
 public class BudgetService {
 
     private final BudgetRepository budgetRepository;
+    private final ExpenseRepository expenseRepository;
     private final UserService userService;
     private final CategoryService categoryService;
     private final ActivityLogService activityLogService;
@@ -34,8 +39,8 @@ public class BudgetService {
                 m = budgetDTO.getStartDate().getMonthValue();
                 y = budgetDTO.getStartDate().getYear();
             } else {
-                m = java.time.LocalDate.now().getMonthValue();
-                y = java.time.LocalDate.now().getYear();
+                m = LocalDate.now().getMonthValue();
+                y = LocalDate.now().getYear();
             }
         }
 
@@ -50,8 +55,8 @@ public class BudgetService {
         Budget saved = budgetRepository.save(budget);
         log.info("Budget created: {} for user {}", saved.getId(), userId);
 
-        // Record activity log
-        activityLogService.logActivity(user, "BUDGET_CREATE", "Created monthly budget for " + category.getName() + " of ₹" + saved.getBudgetAmount());
+        activityLogService.logActivity(user, "BUDGET_CREATE",
+                "Created monthly budget for " + category.getName() + " of ₹" + saved.getBudgetAmount());
 
         return mapToDTO(saved);
     }
@@ -59,7 +64,9 @@ public class BudgetService {
     @Transactional(readOnly = true)
     public List<BudgetDTO> getBudgetsByUserId(Long userId) {
         userService.getUserEntity(userId);
-        return budgetRepository.findByUserId(userId).stream().map(this::mapToDTO).collect(Collectors.toList());
+        return budgetRepository.findByUserId(userId).stream()
+                .map(this::mapToDTO)
+                .collect(Collectors.toList());
     }
 
     @Transactional(readOnly = true)
@@ -76,7 +83,7 @@ public class BudgetService {
 
         Category category = categoryService.getCategoryEntity(budgetDTO.getCategoryId(), userId);
         budget.setBudgetAmount(budgetDTO.getBudgetAmount());
-        
+
         Integer m = budgetDTO.getMonth();
         Integer y = budgetDTO.getYear();
         if (m == null || y == null) {
@@ -84,19 +91,19 @@ public class BudgetService {
                 m = budgetDTO.getStartDate().getMonthValue();
                 y = budgetDTO.getStartDate().getYear();
             } else {
-                m = java.time.LocalDate.now().getMonthValue();
-                y = java.time.LocalDate.now().getYear();
+                m = LocalDate.now().getMonthValue();
+                y = LocalDate.now().getYear();
             }
         }
-        
+
         budget.setMonth(m);
         budget.setYear(y);
         budget.setCategory(category);
 
         Budget saved = budgetRepository.save(budget);
 
-        // Record activity log
-        activityLogService.logActivity(budget.getUser(), "BUDGET_UPDATE", "Updated budget of ID: " + budgetId + " (amount: ₹" + saved.getBudgetAmount() + ")");
+        activityLogService.logActivity(budget.getUser(), "BUDGET_UPDATE",
+                "Updated budget of ID: " + budgetId + " (amount: ₹" + saved.getBudgetAmount() + ")");
 
         return mapToDTO(saved);
     }
@@ -108,22 +115,47 @@ public class BudgetService {
         budgetRepository.delete(budget);
         log.info("Budget soft-deleted: {} for user {}", budgetId, userId);
 
-        // Record activity log
-        activityLogService.logActivity(budget.getUser(), "BUDGET_DELETE", "Deleted budget of ID: " + budgetId);
+        activityLogService.logActivity(budget.getUser(), "BUDGET_DELETE",
+                "Deleted budget of ID: " + budgetId);
     }
 
+    // ── DTO mapping with spend calculation ────────────────────────────────────
+
     private BudgetDTO mapToDTO(Budget budget) {
-        java.time.LocalDate start = java.time.LocalDate.of(budget.getYear(), budget.getMonth(), 1);
-        java.time.LocalDate end = start.with(java.time.temporal.TemporalAdjusters.lastDayOfMonth());
+        LocalDate start = LocalDate.of(budget.getYear(), budget.getMonth(), 1);
+        LocalDate end   = start.with(TemporalAdjusters.lastDayOfMonth());
+
+        BigDecimal spent = expenseRepository.sumByUserIdAndCategoryIdAndMonthAndYear(
+                budget.getUser().getId(),
+                budget.getCategory().getId(),
+                budget.getMonth(),
+                budget.getYear());
+
+        if (spent == null) spent = BigDecimal.ZERO;
+
+        BigDecimal budgetAmt  = budget.getBudgetAmount() != null ? budget.getBudgetAmount() : BigDecimal.ZERO;
+        BigDecimal remaining  = budgetAmt.subtract(spent);
+        boolean exceeded      = spent.compareTo(budgetAmt) > 0;
+
+        BigDecimal utilization = BigDecimal.ZERO;
+        if (budgetAmt.compareTo(BigDecimal.ZERO) > 0) {
+            utilization = spent.multiply(BigDecimal.valueOf(100))
+                               .divide(budgetAmt, 2, RoundingMode.HALF_UP);
+        }
+
         return BudgetDTO.builder()
                 .id(budget.getId())
                 .categoryId(budget.getCategory().getId())
                 .categoryName(budget.getCategory().getName())
-                .budgetAmount(budget.getBudgetAmount())
+                .budgetAmount(budgetAmt)
                 .month(budget.getMonth())
                 .year(budget.getYear())
                 .startDate(start)
                 .endDate(end)
+                .spentAmount(spent)
+                .remainingAmount(remaining)
+                .utilizationPercent(utilization)
+                .isExceeded(exceeded)
                 .build();
     }
 }

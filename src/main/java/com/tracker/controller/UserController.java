@@ -179,4 +179,34 @@ public class UserController {
             @RequestParam String role) {
         return ResponseEntity.ok(userService.assignRole(id, role));
     }
+
+    /**
+     * PATCH /api/users/{id}/activate — activate a user account (Admin only).
+     */
+    @PatchMapping("/{id}/activate")
+    @PreAuthorize("hasRole('ADMIN')")
+    @Operation(summary = "Activate a user account (Admin only)")
+    public ResponseEntity<UserProfileDTO> activateUser(@PathVariable Long id) {
+        return ResponseEntity.ok(userService.activateUser(id));
+    }
+
+    /**
+     * PATCH /api/users/{id}/deactivate — deactivate a user account (Admin only).
+     */
+    @PatchMapping("/{id}/deactivate")
+    @PreAuthorize("hasRole('ADMIN')")
+    @Operation(summary = "Deactivate a user account (Admin only)")
+    public ResponseEntity<UserProfileDTO> deactivateUser(@PathVariable Long id) {
+        return ResponseEntity.ok(userService.deactivateUser(id));
+    }
+
+    /**
+     * PATCH /api/users/{id}/unlock — unlock a locked user account (Admin only).
+     */
+    @PatchMapping("/{id}/unlock")
+    @PreAuthorize("hasRole('ADMIN')")
+    @Operation(summary = "Unlock a locked user account (Admin only)")
+    public ResponseEntity<UserProfileDTO> unlockUser(@PathVariable Long id) {
+        return ResponseEntity.ok(userService.unlockUser(id));
+    }
 }
