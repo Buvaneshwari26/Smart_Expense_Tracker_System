@@ -77,6 +77,10 @@ function initAuthForms() {
                 appState.username = data.username;
                 localStorage.setItem('userId', data.userId);
                 localStorage.setItem('username', data.username);
+                localStorage.setItem('accessToken', data.accessToken);
+                localStorage.setItem('refreshToken', data.refreshToken);
+                localStorage.setItem('role', data.role);
+                localStorage.setItem('email', data.email);
                 showToast('Login successful', 'success');
                 showApp();
             } else {
@@ -101,8 +105,16 @@ function initAuthForms() {
             });
             const data = await res.json();
             if (res.ok || res.status === 201) {
-                showToast('Registration successful. Please login.', 'success');
-                btnLogin.click();
+                appState.userId = data.userId;
+                appState.username = data.username;
+                localStorage.setItem('userId', data.userId);
+                localStorage.setItem('username', data.username);
+                localStorage.setItem('accessToken', data.accessToken);
+                localStorage.setItem('refreshToken', data.refreshToken);
+                localStorage.setItem('role', data.role);
+                localStorage.setItem('email', data.email);
+                showToast('Registration successful. You are now logged in.', 'success');
+                showApp();
             } else {
                 showToast(data.message || 'Registration failed', 'error');
             }
@@ -114,8 +126,7 @@ function initAuthForms() {
     document.getElementById('btn-logout').addEventListener('click', () => {
         appState.userId = null;
         appState.username = null;
-        localStorage.removeItem('userId');
-        localStorage.removeItem('username');
+        localStorage.clear();
         showAuth();
     });
 }
@@ -185,15 +196,24 @@ function initModals() {
 
 // --- API Handlers ---
 const api = {
+    getHeaders() {
+        const token = localStorage.getItem('accessToken');
+        return {
+            'Content-Type': 'application/json',
+            ...(token ? { 'Authorization': `Bearer ${token}` } : {})
+        };
+    },
     async get(endpoint) {
-        const res = await fetch(`${API_BASE}${endpoint}?userId=${appState.userId}`);
+        const res = await fetch(`${API_BASE}${endpoint}?userId=${appState.userId}`, {
+            headers: this.getHeaders()
+        });
         if(!res.ok) throw new Error('API Error');
         return res.json();
     },
     async post(endpoint, data) {
         const res = await fetch(`${API_BASE}${endpoint}?userId=${appState.userId}`, {
             method: 'POST',
-            headers: {'Content-Type': 'application/json'},
+            headers: this.getHeaders(),
             body: JSON.stringify(data)
         });
         if(!res.ok) throw new Error('API Error');
@@ -201,7 +221,8 @@ const api = {
     },
     async delete(endpoint) {
         const res = await fetch(`${API_BASE}${endpoint}?userId=${appState.userId}`, {
-            method: 'DELETE'
+            method: 'DELETE',
+            headers: this.getHeaders()
         });
         if(!res.ok) throw new Error('API Error');
         return res.text();
@@ -401,10 +422,14 @@ const app = {
             if(end) queryParams.push(`endDate=${end}`);
             
             if(queryParams.length > 0) {
-                const res = await fetch(`${API_BASE}/expenses/filter?userId=${appState.userId}&${queryParams.join('&')}`);
-                appState.expenses = await res.json();
+                const res = await fetch(`${API_BASE}/expenses/search?userId=${appState.userId}&${queryParams.join('&')}`, {
+                    headers: api.getHeaders()
+                });
+                const data = await res.json();
+                appState.expenses = data.content || data;
             } else {
-                appState.expenses = await api.get('/expenses');
+                const data = await api.get('/expenses');
+                appState.expenses = data.content || data;
             }
 
             const tbody = document.getElementById('expenses-table').querySelector('tbody');

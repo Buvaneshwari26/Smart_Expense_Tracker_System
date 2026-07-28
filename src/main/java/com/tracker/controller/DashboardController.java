@@ -20,7 +20,7 @@ public class DashboardController {
 
     private final DashboardService dashboardService;
 
-    @GetMapping
+    @GetMapping("/summary")
     @Operation(summary = "Get full dashboard summary with KPIs, budgets, goals, and recent transactions")
     public ResponseEntity<DashboardSummaryDTO> getDashboard() {
         Long userId = SecurityUtils.getCurrentUserId();
