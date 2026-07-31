@@ -23,9 +23,9 @@ import java.util.Map;
  * User management and profile endpoints.
  *
  * RBAC Summary:
- *  GET  /api/users          → ADMIN, AUDITOR
+ *  GET  /api/users          → ADMIN only
  *  DELETE /api/users/{id}   → ADMIN only
- *  GET  /api/users/{id}     → ADMIN, AUDITOR, or own profile (USER, ANALYST)
+ *  GET  /api/users/{id}     → ADMIN, or own profile (USER, ANALYST)
  *  PUT  /api/users/{id}     → ADMIN or own profile (USER)
  *  POST /api/users/{id}/change-password → own profile only (USER, ADMIN)
  *  GET  /api/users/profile  → any authenticated user
@@ -34,7 +34,7 @@ import java.util.Map;
 @RestController
 @RequestMapping("/api/users")
 @RequiredArgsConstructor
-@Tag(name = "Users", description = "User management (Admin/Auditor) and Profile management")
+@Tag(name = "Users", description = "User profile management and admin-level user access")
 @SecurityRequirement(name = "bearerAuth")
 public class UserController {
 
@@ -104,7 +104,7 @@ public class UserController {
 
     /**
      * PUT /api/users/profile — update the currently logged-in user's profile.
-     * Only USER and ADMIN can update (ANALYST and AUDITOR are read-only).
+     * Only USER and ADMIN can update (ANALYST is read-only).
      */
     @PutMapping("/profile")
     @PreAuthorize("hasAnyRole('ADMIN', 'USER')")
@@ -131,7 +131,7 @@ public class UserController {
 
     /**
      * GET /api/users/{id} — get user by ID.
-     * ADMIN and AUDITOR can access any user; USER/ANALYST can only access their own.
+     * ADMIN can access any user; USER/ANALYST can only access their own.
      */
     @GetMapping("/{id}")
     @Operation(summary = "Get user by ID (Admin full access; own profile otherwise)")

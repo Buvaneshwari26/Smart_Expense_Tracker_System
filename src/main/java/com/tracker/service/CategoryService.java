@@ -97,7 +97,7 @@ public class CategoryService {
                 .orElseThrow(() -> new ResourceNotFoundException("Category not found with id: " + id + " for user id: " + userId));
     }
 
-    /** Fetch a category by ID only (no userId filter) — for ADMIN/AUDITOR read access. */
+    /** Fetch a category by ID only (no userId filter) — for ADMIN read access. */
     @Transactional(readOnly = true)
     public Category getCategoryEntityById(Long id) {
         return categoryRepository.findById(id)
