@@ -5,6 +5,7 @@ import com.tracker.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.CommandLineRunner;
+import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
@@ -12,11 +13,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.List;
 
 /**
- * Initializes the default system Admin user:
- * Email: buvaneshwarip6002@gmail.com
- * Username: buvaneshwarip6002
- * Password: Buvana@1712!Secure
- * Role: ADMIN
+ * Initializes default system Admin user and cleans up legacy database constraints.
  */
 @Slf4j
 @Component
@@ -25,10 +22,26 @@ public class DataInitializer implements CommandLineRunner {
 
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
+    private final JdbcTemplate jdbcTemplate;
 
     @Override
     @Transactional
     public void run(String... args) {
+        // Fix legacy database column constraints for budgets and savings_goals if present
+        try {
+            jdbcTemplate.execute("ALTER TABLE budgets MODIFY COLUMN amount DECIMAL(12,2) NULL, MODIFY COLUMN start_date DATE NULL, MODIFY COLUMN end_date DATE NULL, MODIFY COLUMN period VARCHAR(20) NULL");
+            log.info("Successfully updated legacy constraints on 'budgets' table.");
+        } catch (Exception e) {
+            log.debug("Legacy budgets table modification skipped or already updated: {}", e.getMessage());
+        }
+
+        try {
+            jdbcTemplate.execute("ALTER TABLE savings_goals MODIFY COLUMN name VARCHAR(100) NULL");
+            log.info("Successfully updated legacy constraints on 'savings_goals' table.");
+        } catch (Exception e) {
+            log.debug("Legacy savings_goals table modification skipped or already updated: {}", e.getMessage());
+        }
+
         String adminEmail = "buvaneshwarip6002@gmail.com";
         String adminUsername = "buvaneshwarip6002";
         String rawPassword = "Buvana@1712!Secure";
