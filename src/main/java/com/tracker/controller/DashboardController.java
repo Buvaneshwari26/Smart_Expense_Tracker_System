@@ -35,8 +35,8 @@ public class DashboardController {
     }
 
     @GetMapping("/analyst")
-    @PreAuthorize("hasAnyRole('ADMIN', 'ANALYST')")
-    @Operation(summary = "Get analyst dashboard statistics (Admin and Analyst only)")
+    @PreAuthorize("hasAnyRole('ADMIN', 'USER', 'ANALYST')")
+    @Operation(summary = "Get analyst dashboard statistics (Admin, User, and Analyst)")
     public ResponseEntity<com.tracker.dto.AnalystDashboardDTO> getAnalystDashboard() {
         Long userId = SecurityUtils.getCurrentUserId();
         return ResponseEntity.ok(dashboardService.getAnalystDashboard(userId));
