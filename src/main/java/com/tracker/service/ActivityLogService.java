@@ -54,15 +54,23 @@ public class ActivityLogService {
     }
 
     private ActivityLogDTO mapToDTO(ActivityLog log) {
+        String usernameDisplay = (log.getUser().getUsername() != null
+                && !log.getUser().getUsername().isEmpty())
+                ? log.getUser().getUsername()
+                : log.getUser().getEmail();
+
         return ActivityLogDTO.builder()
                 .id(log.getId())
                 .userId(log.getUser().getId())
                 .userEmail(log.getUser().getEmail())
+                .username(usernameDisplay)          // frontend: log.username
                 .action(log.getAction())
                 .description(log.getDescription())
+                .details(log.getDescription())      // frontend: log.details
                 .ipAddress(log.getIpAddress())
                 .deviceInfo(log.getDeviceInfo())
                 .createdAt(log.getCreatedAt())
+                .timestamp(log.getCreatedAt())      // frontend: log.timestamp
                 .build();
     }
 
