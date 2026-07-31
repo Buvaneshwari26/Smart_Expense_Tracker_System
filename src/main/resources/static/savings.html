@@ -440,10 +440,10 @@
     UI.showLoading();
     try {
       if (id) {
-        await Api.put(`/goals/${id}`, payload).catch(() => Api.put(`/savings-goals/${id}`, payload));
+        await Api.put(`/goals/${id}`, payload);
         UI.showToast('Savings goal updated ✅');
       } else {
-        await Api.post('/goals', payload).catch(() => Api.post('/savings-goals', payload));
+        await Api.post('/goals', payload);
         UI.showToast('Savings goal created ✅');
       }
       myModal.hide();
@@ -462,7 +462,7 @@
     if (!confirm('Are you sure you want to delete this savings goal? This action cannot be undone.')) return;
     UI.showLoading();
     try {
-      await Api.del(`/goals/${id}`).catch(() => Api.del(`/savings-goals/${id}`));
+      await Api.del(`/goals/${id}`);
       UI.showToast('Goal deleted ✅');
       loadData();
     } catch (err) {

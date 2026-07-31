@@ -10,6 +10,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
@@ -23,22 +24,36 @@ public class ActivityLogService {
 
     private final ActivityLogRepository activityLogRepository;
 
-    @Transactional
+    /**
+     * Log system activity in an isolated transaction so that failure to write
+     * an audit log never rolls back or crashes the primary user operation.
+     */
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
     public void logActivity(User user, String action, String description) {
-        String ipAddress = getClientIp();
-        String deviceInfo = getClientDevice();
+        if (user == null || action == null) return;
+        try {
+            String ipAddress = getClientIp();
+            String deviceInfo = getClientDevice();
 
-        ActivityLog logEntry = ActivityLog.builder()
-                .user(user)
-                .action(action)
-                .description(description)
-                .ipAddress(ipAddress)
-                .deviceInfo(deviceInfo)
-                .createdAt(LocalDateTime.now())
-                .build();
+            String safeDesc = description != null ? description : "";
+            if (safeDesc.length() > 950) {
+                safeDesc = safeDesc.substring(0, 950) + "...";
+            }
 
-        activityLogRepository.save(logEntry);
-        log.info("Activity logged: User={} Action={} Desc={}", user.getEmail(), action, description);
+            ActivityLog logEntry = ActivityLog.builder()
+                    .user(user)
+                    .action(action)
+                    .description(safeDesc)
+                    .ipAddress(ipAddress)
+                    .deviceInfo(deviceInfo)
+                    .createdAt(LocalDateTime.now())
+                    .build();
+
+            activityLogRepository.save(logEntry);
+            log.info("Activity logged: User={} Action={} Desc={}", user.getEmail(), action, safeDesc);
+        } catch (Exception e) {
+            log.warn("Failed to log activity for user={}: {}", user.getEmail(), e.getMessage());
+        }
     }
 
     @Transactional(readOnly = true)
@@ -54,23 +69,22 @@ public class ActivityLogService {
     }
 
     private ActivityLogDTO mapToDTO(ActivityLog log) {
-        String usernameDisplay = (log.getUser().getUsername() != null
-                && !log.getUser().getUsername().isEmpty())
+        String usernameDisplay = (log.getUser() != null && log.getUser().getUsername() != null && !log.getUser().getUsername().isEmpty())
                 ? log.getUser().getUsername()
-                : log.getUser().getEmail();
+                : (log.getUser() != null ? log.getUser().getEmail() : "System");
 
         return ActivityLogDTO.builder()
                 .id(log.getId())
-                .userId(log.getUser().getId())
-                .userEmail(log.getUser().getEmail())
-                .username(usernameDisplay)          // frontend: log.username
+                .userId(log.getUser() != null ? log.getUser().getId() : null)
+                .userEmail(log.getUser() != null ? log.getUser().getEmail() : null)
+                .username(usernameDisplay)
                 .action(log.getAction())
                 .description(log.getDescription())
-                .details(log.getDescription())      // frontend: log.details
+                .details(log.getDescription())
                 .ipAddress(log.getIpAddress())
                 .deviceInfo(log.getDeviceInfo())
                 .createdAt(log.getCreatedAt())
-                .timestamp(log.getCreatedAt())      // frontend: log.timestamp
+                .timestamp(log.getCreatedAt())
                 .build();
     }
 

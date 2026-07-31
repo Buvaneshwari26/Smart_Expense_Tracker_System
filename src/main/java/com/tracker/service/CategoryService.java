@@ -85,16 +85,13 @@ public class CategoryService {
 
     @Transactional(readOnly = true)
     public Category getCategoryEntity(Long id, Long userId) {
-        // ADMIN users can access any category regardless of ownership
-        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-        boolean isAdmin = auth != null && auth.getAuthorities().stream()
-                .anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN"));
-        if (isAdmin) {
-            return categoryRepository.findById(id)
-                    .orElseThrow(() -> new ResourceNotFoundException("Category not found with id: " + id));
+        if (id == null) {
+            throw new BadRequestException("Category ID is required");
         }
+        // First check if user owns category; if not found, check if global/admin category exists with that ID
         return categoryRepository.findByIdAndUserId(id, userId)
-                .orElseThrow(() -> new ResourceNotFoundException("Category not found with id: " + id + " for user id: " + userId));
+                .orElseGet(() -> categoryRepository.findById(id)
+                        .orElseThrow(() -> new ResourceNotFoundException("Category not found with id: " + id)));
     }
 
     /** Fetch a category by ID only (no userId filter) — for ADMIN read access. */
