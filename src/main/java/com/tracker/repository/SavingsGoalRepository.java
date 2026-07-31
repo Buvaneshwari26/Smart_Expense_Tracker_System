@@ -11,6 +11,7 @@ import java.util.Optional;
 @Repository
 public interface SavingsGoalRepository extends JpaRepository<SavingsGoal, Long> {
     List<SavingsGoal> findByUserId(Long userId);
+    long countByUserId(Long userId);
     Page<SavingsGoal> findByUserId(Long userId, Pageable pageable);
     Optional<SavingsGoal> findByIdAndUserId(Long id, Long userId);
 }

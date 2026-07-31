@@ -299,4 +299,25 @@ public class UserService {
         log.info("User unlocked: {}", saved.getEmail());
         return mapToProfile(saved);
     }
+
+    @Transactional
+    public UserProfileDTO lockUser(Long id) {
+        User user = userRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("User not found with id: " + id));
+        user.setAccountLocked(true);
+        User saved = userRepository.save(user);
+        activityLogService.logActivity(saved, "USER_LOCKED", "Account locked by admin");
+        log.info("User locked: {}", saved.getEmail());
+        return mapToProfile(saved);
+    }
+
+    @Transactional
+    public void resetPassword(Long id, String newPassword) {
+        validatePasswordStrength(newPassword);
+        User user = getUserEntity(id);
+        user.setPassword(passwordEncoder.encode(newPassword));
+        userRepository.save(user);
+        log.info("Password reset by admin for userId={}", id);
+        activityLogService.logActivity(user, "ADMIN_PASSWORD_RESET", "Password reset by admin");
+    }
 }

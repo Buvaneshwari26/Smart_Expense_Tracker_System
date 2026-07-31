@@ -9,6 +9,7 @@ import java.util.Optional;
 @Repository
 public interface BudgetRepository extends JpaRepository<Budget, Long> {
     List<Budget> findByUserId(Long userId);
+    long countByUserId(Long userId);
     Optional<Budget> findByIdAndUserId(Long id, Long userId);
     List<Budget> findByUserIdAndMonthAndYear(Long userId, Integer month, Integer year);
 }

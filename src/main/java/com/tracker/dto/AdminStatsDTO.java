@@ -17,27 +17,22 @@ import java.math.BigDecimal;
 @Builder
 public class AdminStatsDTO {
 
-    /** Total number of registered users (non-deleted). */
     private long totalUsers;
-
-    /** Number of users whose accountActive flag is true. */
     private long activeUsers;
+    private long inactiveUsers;
+    private long adminUsers;
+    private long analystUsers;
+    private long lockedUsers;
+    private long newUsersThisMonth;
 
-    /** Total count of expense records across all users. */
     private long totalExpenses;
-
-    /** Total count of income records across all users. */
     private long totalIncomes;
-
-    /** Total count of category records across all users. */
     private long totalCategories;
-
-    /** Total count of budget records across all users. */
     private long totalBudgets;
+    private long totalSavingsGoals;
 
-    /** System-wide sum of all expense amounts (may be null when table is empty). */
     private BigDecimal totalExpenseAmount;
-
-    /** System-wide sum of all income amounts (may be null when table is empty). */
     private BigDecimal totalIncomeAmount;
+    private BigDecimal totalSavingsAmount;
+    private BigDecimal totalBudgetAmount;
 }

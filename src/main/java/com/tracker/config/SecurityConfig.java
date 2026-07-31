@@ -22,14 +22,14 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 /**
  * Spring Security configuration for Role-Based Access Control (RBAC).
  *
- * Roles:
- *  ADMIN   — Full system access (CRUD on everything, user management)
+ * Supported Roles:
+ *  ADMIN   — Full system access (CRUD on everything, user management, stats, logs)
  *  USER    — Own data only (CRUD on own profile, expenses, income, budgets, goals)
  *  ANALYST — Read-only (dashboard, reports, expenses, incomes, budgets, categories)
  */
 @Configuration
 @EnableWebSecurity
-@EnableMethodSecurity   // Enables @PreAuthorize / @PostAuthorize on method level
+@EnableMethodSecurity
 @RequiredArgsConstructor
 public class SecurityConfig {
 
@@ -84,31 +84,31 @@ public class SecurityConfig {
                 .requestMatchers(HttpMethod.GET, "/api/dashboard/**").authenticated()
                 .requestMatchers(HttpMethod.GET, "/api/reports/**").authenticated()
 
-                // ── Expenses: ANALYST + AUDITOR = read-only; USER + ADMIN = full CRUD ──
+                // ── Expenses: ANALYST = read-only; USER + ADMIN = full CRUD ─────────
                 .requestMatchers(HttpMethod.GET,    "/api/expenses/**").authenticated()
                 .requestMatchers(HttpMethod.POST,   "/api/expenses/**").hasAnyRole("ADMIN", "USER")
                 .requestMatchers(HttpMethod.PUT,    "/api/expenses/**").hasAnyRole("ADMIN", "USER")
                 .requestMatchers(HttpMethod.DELETE, "/api/expenses/**").hasAnyRole("ADMIN", "USER")
 
-                // ── Incomes: ANALYST + AUDITOR = read-only ──────────────────────────
+                // ── Incomes: ANALYST = read-only ────────────────────────────────────
                 .requestMatchers(HttpMethod.GET,    "/api/incomes/**").authenticated()
                 .requestMatchers(HttpMethod.POST,   "/api/incomes/**").hasAnyRole("ADMIN", "USER")
                 .requestMatchers(HttpMethod.PUT,    "/api/incomes/**").hasAnyRole("ADMIN", "USER")
                 .requestMatchers(HttpMethod.DELETE, "/api/incomes/**").hasAnyRole("ADMIN", "USER")
 
-                // ── Categories: ANALYST + AUDITOR = read-only ───────────────────────
+                // ── Categories: ANALYST = read-only ─────────────────────────────────
                 .requestMatchers(HttpMethod.GET,    "/api/categories/**").authenticated()
                 .requestMatchers(HttpMethod.POST,   "/api/categories/**").hasAnyRole("ADMIN", "USER")
                 .requestMatchers(HttpMethod.PUT,    "/api/categories/**").hasAnyRole("ADMIN", "USER")
                 .requestMatchers(HttpMethod.DELETE, "/api/categories/**").hasRole("ADMIN")
 
-                // ── Budgets: ANALYST + AUDITOR = read-only ──────────────────────────
+                // ── Budgets: ANALYST = read-only ────────────────────────────────────
                 .requestMatchers(HttpMethod.GET,    "/api/budgets/**").authenticated()
                 .requestMatchers(HttpMethod.POST,   "/api/budgets/**").hasAnyRole("ADMIN", "USER")
                 .requestMatchers(HttpMethod.PUT,    "/api/budgets/**").hasAnyRole("ADMIN", "USER")
                 .requestMatchers(HttpMethod.DELETE, "/api/budgets/**").hasAnyRole("ADMIN", "USER")
 
-                // ── Savings Goals: ANALYST = read-only ────────────────────
+                // ── Savings Goals: ANALYST = read-only ──────────────────────────────
                 .requestMatchers(HttpMethod.GET,    "/api/goals/**", "/api/savings-goals/**").authenticated()
                 .requestMatchers(HttpMethod.POST,   "/api/goals/**", "/api/savings-goals/**").hasAnyRole("ADMIN", "USER")
                 .requestMatchers(HttpMethod.PUT,    "/api/goals/**", "/api/savings-goals/**").hasAnyRole("ADMIN", "USER")

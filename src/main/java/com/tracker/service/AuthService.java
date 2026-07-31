@@ -72,11 +72,9 @@ public class AuthService {
         User saved = userRepository.save(user);
         log.info("New user registered: {}", saved.getEmail());
 
-        // Log registration
         activityLogService.logActivity(saved, "REGISTER", "User registered successfully");
         loginHistoryService.recordLogin(saved, "SUCCESS_REGISTRATION");
 
-        // Pass userId and role into token so the JWT carries full user context
         String accessToken = jwtTokenProvider.generateTokenFromEmail(saved.getEmail(), saved.getId(), saved.getRole());
         String refreshToken = createRefreshToken(saved);
 
@@ -87,7 +85,7 @@ public class AuthService {
                 .email(saved.getEmail())
                 .role(saved.getRole())
                 .accessToken(accessToken)
-                .token(accessToken)  // alias for Postman compatibility
+                .token(accessToken)
                 .refreshToken(refreshToken)
                 .tokenType("Bearer")
                 .message("User registered successfully")
@@ -97,7 +95,7 @@ public class AuthService {
     @Transactional
     public AuthResponse login(LoginRequest request) {
         User user = userRepository.findByEmail(request.getEmail())
-                .orElseThrow(() -> new BadRequestException("Invalid email or password"));
+                .orElseThrow(() -> new BadRequestException("Invalid Username or Password"));
 
         if (user.getAccountLocked() != null && user.getAccountLocked()) {
             loginHistoryService.recordLogin(user, "FAILED_LOCKED");
@@ -115,7 +113,6 @@ public class AuthService {
             Authentication authentication = authenticationManager.authenticate(
                     new UsernamePasswordAuthenticationToken(request.getEmail(), request.getPassword()));
 
-            // Success: Reset failed count and save last login time
             user.setFailedLoginCount(0);
             user.setLastLogin(LocalDateTime.now());
             userRepository.save(user);
@@ -135,10 +132,10 @@ public class AuthService {
                     .email(user.getEmail())
                     .role(user.getRole())
                     .accessToken(accessToken)
-                    .token(accessToken)  // alias for Postman compatibility
+                    .token(accessToken)
                     .refreshToken(refreshToken)
                     .tokenType("Bearer")
-                    .message("Login successful")
+                    .message("Login Successful")
                     .build();
 
         } catch (org.springframework.security.authentication.BadCredentialsException e) {
@@ -155,12 +152,12 @@ public class AuthService {
                 userRepository.save(user);
                 loginHistoryService.recordLogin(user, "FAILED");
                 activityLogService.logActivity(user, "LOGIN_FAILED", "Failed login attempt");
-                throw new BadRequestException("Invalid username or password");
+                throw new BadRequestException("Invalid Username or Password");
             }
         } catch (Exception e) {
             loginHistoryService.recordLogin(user, "FAILED");
             activityLogService.logActivity(user, "LOGIN_FAILED", "Login failed: " + e.getMessage());
-            throw new BadRequestException("Authentication failed: " + e.getMessage());
+            throw new BadRequestException("Invalid Username or Password");
         }
     }
 
@@ -176,7 +173,6 @@ public class AuthService {
 
         User user = token.getUser();
         
-        // Secure validation check for refresh token
         if (user.getAccountLocked() != null && user.getAccountLocked()) {
             throw new BadRequestException("User account is locked");
         }
@@ -195,7 +191,7 @@ public class AuthService {
                 .email(user.getEmail())
                 .role(user.getRole())
                 .accessToken(newAccessToken)
-                .token(newAccessToken)  // alias for Postman compatibility
+                .token(newAccessToken)
                 .refreshToken(refreshTokenValue)
                 .tokenType("Bearer")
                 .message("Token refreshed successfully")
