@@ -91,6 +91,7 @@
   Auth.requireAuth();
   UI.initSidebar('category.html');
   const isReadOnly = Auth.isReadOnly();
+  const isAdmin    = Auth.isAdmin();
   if (isReadOnly) {
     document.getElementById('add-cat-btn-wrapper').style.display = 'none';
     const h = document.getElementById('actions-header'); if (h) h.style.display = 'none';
@@ -101,16 +102,18 @@
   async function loadData() {
     UI.showLoading();
     try {
-      const data = await Api.get(`/categories?userId=${Api.getUserId()}`);
+      // No userId param — backend reads userId from JWT
+      const data = await Api.get('/categories');
       const tbody = document.getElementById('table-body');
       tbody.innerHTML = '';
       const list = Array.isArray(data) ? data : [];
       if (list.length > 0) {
         list.forEach(item => {
           const isIncome = item.type === 'INCOME';
+          // ANALYST: no actions; USER: edit only; ADMIN: edit + delete
           const actionsCell = isReadOnly ? '' : `<td>
-            <button class="btn btn-sm btn-outline-info me-1" onclick='editItem(${JSON.stringify(item).replace(/'/g,"&#39;")})' title="Edit"><i class="bi bi-pencil-fill"></i></button>
-            <button class="btn btn-sm btn-outline-danger" onclick="deleteItem(${item.id})" title="Delete"><i class="bi bi-trash-fill"></i></button>
+            <button class="btn btn-sm btn-outline-info me-1" onclick='editItem(${JSON.stringify(item).replace(/'/g,"&#39;")})'  title="Edit"><i class="bi bi-pencil-fill"></i></button>
+            ${isAdmin ? `<button class="btn btn-sm btn-outline-danger" onclick="deleteItem(${item.id})" title="Delete"><i class="bi bi-trash-fill"></i></button>` : ''}
           </td>`;
           tbody.innerHTML += `<tr>
             <td style="font-weight:600;">${item.name}</td>
@@ -128,6 +131,7 @@
 
   function openModal() {
     if (isReadOnly) return;
+    document.getElementById('itemForm').classList.remove('was-validated');
     document.getElementById('itemForm').reset();
     document.getElementById('itemId').value = '';
     document.getElementById('modalTitle').textContent = 'Add Category';
@@ -136,6 +140,7 @@
 
   function editItem(item) {
     if (isReadOnly) return;
+    document.getElementById('itemForm').classList.remove('was-validated');
     document.getElementById('itemId').value = item.id;
     document.getElementById('name').value = item.name;
     document.getElementById('type').value = item.type;
@@ -147,18 +152,22 @@
   async function saveItem() {
     if (isReadOnly) { UI.showToast('Read-only mode.', 'warning'); return; }
     const form = document.getElementById('itemForm');
-    if (!form.checkValidity()) { form.reportValidity(); return; }
+    form.classList.add('was-validated');
+    if (!form.checkValidity()) return;
     const id = document.getElementById('itemId').value;
     const payload = {
-      name: document.getElementById('name').value,
-      type: document.getElementById('type').value,
-      description: document.getElementById('description').value
+      name:        document.getElementById('name').value.trim(),
+      type:        document.getElementById('type').value,
+      description: document.getElementById('description').value.trim() || null
     };
     UI.showLoading();
     try {
-      if (id) { await Api.put(`/categories/${id}?userId=${Api.getUserId()}`, payload); UI.showToast('Category updated ✅'); }
-      else { await Api.post(`/categories?userId=${Api.getUserId()}`, payload); UI.showToast('Category added ✅'); }
-      myModal.hide(); loadData();
+      // No userId param — backend reads from JWT
+      if (id) { await Api.put(`/categories/${id}`, payload); UI.showToast('Category updated ✅'); }
+      else     { await Api.post('/categories', payload);      UI.showToast('Category added ✅'); }
+      myModal.hide();
+      form.classList.remove('was-validated');
+      loadData();
     } catch (err) { UI.showToast(err.message, 'error'); } finally { UI.hideLoading(); }
   }
 
@@ -167,7 +176,8 @@
     if (!confirm('Delete this category? Ensure no expenses or incomes are linked to it.')) return;
     UI.showLoading();
     try {
-      await Api.del(`/categories/${id}?userId=${Api.getUserId()}`);
+      // No userId param — backend reads from JWT
+      await Api.del(`/categories/${id}`);
       UI.showToast('Category deleted ✅'); loadData();
     } catch (err) { UI.showToast(err.message, 'error'); } finally { UI.hideLoading(); }
   }

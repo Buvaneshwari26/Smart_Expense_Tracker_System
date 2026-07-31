@@ -474,7 +474,7 @@
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 <script>
-  Auth.requireAuth('ADMIN');
+  Auth.requireRole('ADMIN');
   UI.initSidebar('admin-users.html');
 
   let addUserModal, editUserModal, roleModal, viewUserModal, resetPasswordModal, deleteModal;

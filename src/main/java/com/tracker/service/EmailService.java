@@ -1,7 +1,7 @@
 package com.tracker.service;
 
-import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
@@ -12,19 +12,30 @@ import jakarta.mail.MessagingException;
 import jakarta.mail.internet.MimeMessage;
 import java.math.BigDecimal;
 
+/**
+ * Email notification service.
+ * JavaMailSender is optional — if mail is not configured the app still works
+ * and warnings are logged instead of throwing exceptions.
+ */
 @Slf4j
 @Service
-@RequiredArgsConstructor
 public class EmailService {
 
-    private final JavaMailSender mailSender;
+    /** Injected lazily — null when spring.mail is not configured or has invalid credentials. */
+    @Autowired(required = false)
+    private JavaMailSender mailSender;
 
     @Value("${spring.mail.username:no-reply@expensetracker.com}")
     private String fromEmail;
 
+    // ─────────────────────────────────────────────────────────────────────────
+    // Public methods
+    // ─────────────────────────────────────────────────────────────────────────
+
     @Async
     public void sendBudgetExceededAlert(String toEmail, String username, String categoryName,
-                                         BigDecimal budgetAmount, BigDecimal spent) {
+                                        BigDecimal budgetAmount, BigDecimal spent) {
+        if (!isMailConfigured()) return;
         try {
             MimeMessage message = mailSender.createMimeMessage();
             MimeMessageHelper helper = new MimeMessageHelper(message, true, "UTF-8");
@@ -34,13 +45,15 @@ public class EmailService {
             helper.setText(buildBudgetAlertHtml(username, categoryName, budgetAmount, spent), true);
             mailSender.send(message);
             log.info("Budget exceeded alert sent to {}", toEmail);
-        } catch (MessagingException e) {
-            log.error("Failed to send budget alert email to {}: {}", toEmail, e.getMessage());
+        } catch (MessagingException | RuntimeException e) {
+            log.warn("Failed to send budget alert email to {}: {}", toEmail, e.getMessage());
         }
     }
 
     @Async
-    public void sendSavingsGoalAchievedAlert(String toEmail, String username, String goalName, BigDecimal targetAmount) {
+    public void sendSavingsGoalAchievedAlert(String toEmail, String username, String goalName,
+                                             BigDecimal targetAmount) {
+        if (!isMailConfigured()) return;
         try {
             MimeMessage message = mailSender.createMimeMessage();
             MimeMessageHelper helper = new MimeMessageHelper(message, true, "UTF-8");
@@ -50,13 +63,47 @@ public class EmailService {
             helper.setText(buildSavingsGoalHtml(username, goalName, targetAmount), true);
             mailSender.send(message);
             log.info("Savings goal achieved alert sent to {}", toEmail);
-        } catch (MessagingException e) {
-            log.error("Failed to send savings goal email to {}: {}", toEmail, e.getMessage());
+        } catch (MessagingException | RuntimeException e) {
+            log.warn("Failed to send savings goal email to {}: {}", toEmail, e.getMessage());
         }
     }
 
+    @Async
+    public void sendPasswordResetEmail(String toEmail, String username, String resetLink) {
+        if (!isMailConfigured()) return;
+        try {
+            MimeMessage message = mailSender.createMimeMessage();
+            MimeMessageHelper helper = new MimeMessageHelper(message, true, "UTF-8");
+            helper.setFrom(fromEmail);
+            helper.setTo(toEmail);
+            helper.setSubject("🔐 Password Reset Request");
+            helper.setText(buildPasswordResetHtml(username, resetLink), true);
+            mailSender.send(message);
+            log.info("Password reset email sent to {}", toEmail);
+        } catch (MessagingException | RuntimeException e) {
+            log.warn("Failed to send password reset email to {}: {}", toEmail, e.getMessage());
+        }
+    }
+
+    // ─────────────────────────────────────────────────────────────────────────
+    // Helpers
+    // ─────────────────────────────────────────────────────────────────────────
+
+    private boolean isMailConfigured() {
+        if (mailSender == null) {
+            log.debug("Mail sender not configured — skipping email notification");
+            return false;
+        }
+        // Also skip if the username is still the placeholder value
+        if ("your-email@gmail.com".equals(fromEmail) || fromEmail == null || fromEmail.isBlank()) {
+            log.debug("Mail credentials not configured — skipping email notification");
+            return false;
+        }
+        return true;
+    }
+
     private String buildBudgetAlertHtml(String username, String categoryName,
-                                         BigDecimal budgetAmount, BigDecimal spent) {
+                                        BigDecimal budgetAmount, BigDecimal spent) {
         return """
             <html><body style="font-family:Arial,sans-serif;background:#1a1a2e;color:#e0e0e0;padding:20px;">
               <div style="max-width:600px;margin:auto;background:#16213e;border-radius:12px;padding:30px;">
@@ -88,5 +135,20 @@ public class EmailService {
               </div>
             </body></html>
             """.formatted(username, goalName, targetAmount);
+    }
+
+    private String buildPasswordResetHtml(String username, String resetLink) {
+        return """
+            <html><body style="font-family:Arial,sans-serif;background:#1a1a2e;color:#e0e0e0;padding:20px;">
+              <div style="max-width:600px;margin:auto;background:#16213e;border-radius:12px;padding:30px;">
+                <h2 style="color:#6366f1;">🔐 Password Reset</h2>
+                <p>Hi <strong>%s</strong>,</p>
+                <p>Click the button below to reset your password. This link expires in 15 minutes.</p>
+                <a href="%s" style="display:inline-block;margin:20px 0;padding:12px 28px;background:#6366f1;color:#fff;border-radius:8px;text-decoration:none;font-weight:bold;">Reset Password</a>
+                <p>If you did not request this, ignore this email.</p>
+                <p style="color:#888;font-size:12px;">This is an automated notification from Smart Expense Tracker.</p>
+              </div>
+            </body></html>
+            """.formatted(username, resetLink);
     }
 }

@@ -128,10 +128,14 @@
 
   async function loadCategories() {
     try {
-      const data = await Api.get(`/categories?userId=${Api.getUserId()}`);
+      const data = await Api.get('/categories');
       const cats = Array.isArray(data) ? data.filter(c => c.type === 'EXPENSE') : [];
-      document.getElementById('categoryId').innerHTML = '<option value="">Select Category</option>' +
+      const sel = document.getElementById('categoryId');
+      sel.innerHTML = '<option value="">Select Category</option>' +
         cats.map(c => `<option value="${c.id}">${c.name}</option>`).join('');
+      if (cats.length === 0) {
+        sel.innerHTML = '<option value="">No expense categories — create one first</option>';
+      }
     } catch (err) { console.error('Failed to load categories', err); }
   }
 
@@ -140,7 +144,7 @@
     try {
       const val = document.getElementById('monthPicker').value || currentMonthStr;
       const [year, month] = val.split('-');
-      const data = await Api.get(`/budgets/user/${Api.getUserId()}?year=${year}&month=${parseInt(month)}`);
+      const data = await Api.get(`/budgets/user/${Api.getUserId()}?year=${parseInt(year)}&month=${parseInt(month)}`);
       const tbody = document.getElementById('table-body');
       tbody.innerHTML = '';
       const list = Array.isArray(data) ? data : [];
@@ -208,9 +212,12 @@
     const form = document.getElementById('itemForm');
     if (!form.checkValidity()) { form.reportValidity(); return; }
     const id = document.getElementById('itemId').value;
-    const amountVal = document.getElementById('limitAmount').value;
+    const amountVal = parseFloat(document.getElementById('limitAmount').value);
+    const catId = parseInt(document.getElementById('categoryId').value);
+    if (!catId || isNaN(catId)) { UI.showToast('Please select a category', 'warning'); return; }
+    if (isNaN(amountVal) || amountVal <= 0) { UI.showToast('Please enter a valid amount', 'warning'); return; }
     const payload = {
-      categoryId: document.getElementById('categoryId').value,
+      categoryId: catId,
       budgetAmount: amountVal,
       limitAmount: amountVal,
       month: parseInt(document.getElementById('month').value),
@@ -218,8 +225,8 @@
     };
     UI.showLoading();
     try {
-      if (id) { await Api.put(`/budgets/${id}?userId=${Api.getUserId()}`, payload); UI.showToast('Budget updated ✅'); }
-      else { await Api.post(`/budgets?userId=${Api.getUserId()}`, payload); UI.showToast('Budget created ✅'); }
+      if (id) { await Api.put(`/budgets/${id}`, payload); UI.showToast('Budget updated ✅'); }
+      else { await Api.post('/budgets', payload); UI.showToast('Budget created ✅'); }
       myModal.hide(); loadData();
     } catch (err) { UI.showToast(err.message, 'error'); } finally { UI.hideLoading(); }
   }
@@ -229,7 +236,7 @@
     if (!confirm('Delete this budget?')) return;
     UI.showLoading();
     try {
-      await Api.del(`/budgets/${id}?userId=${Api.getUserId()}`);
+      await Api.del(`/budgets/${id}`);
       UI.showToast('Budget deleted ✅'); loadData();
     } catch (err) { UI.showToast(err.message, 'error'); } finally { UI.hideLoading(); }
   }

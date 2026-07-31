@@ -2,12 +2,12 @@ package com.tracker.exception;
 
 import com.tracker.dto.ApiResponse;
 import io.jsonwebtoken.JwtException;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
-import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -48,6 +48,30 @@ public class GlobalExceptionHandler {
         ErrorDetails errorDetails = new ErrorDetails(LocalDateTime.now(), "Validation Failed", validationErrors);
         return new ResponseEntity<>(
                 new ApiResponse<>(false, "Validation Failed", errorDetails), HttpStatus.BAD_REQUEST);
+    }
+
+    @ExceptionHandler(DataIntegrityViolationException.class)
+    public ResponseEntity<ApiResponse<ErrorDetails>> handleDataIntegrityViolation(
+            DataIntegrityViolationException exception, WebRequest request) {
+        String msg = "A record with the same key already exists. Please check for duplicates.";
+        if (exception.getRootCause() != null) {
+            String rootMsg = exception.getRootCause().getMessage();
+            if (rootMsg != null && rootMsg.toLowerCase().contains("duplicate")) {
+                msg = "Duplicate entry: a record with the same key already exists.";
+            }
+        }
+        ErrorDetails errorDetails = new ErrorDetails(LocalDateTime.now(), msg, request.getDescription(false));
+        return new ResponseEntity<>(
+                new ApiResponse<>(false, msg, errorDetails), HttpStatus.CONFLICT);
+    }
+
+    @ExceptionHandler(IllegalArgumentException.class)
+    public ResponseEntity<ApiResponse<ErrorDetails>> handleIllegalArgumentException(
+            IllegalArgumentException exception, WebRequest request) {
+        ErrorDetails errorDetails = new ErrorDetails(
+                LocalDateTime.now(), exception.getMessage(), request.getDescription(false));
+        return new ResponseEntity<>(
+                new ApiResponse<>(false, exception.getMessage(), errorDetails), HttpStatus.BAD_REQUEST);
     }
 
     // ── Security Exception Handlers ──────────────────────────────────────────
@@ -103,10 +127,15 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(Exception.class)
     public ResponseEntity<ApiResponse<ErrorDetails>> handleGlobalException(
             Exception exception, WebRequest request) {
+        org.slf4j.LoggerFactory.getLogger(GlobalExceptionHandler.class)
+                .error("Unhandled exception at {}: ", request.getDescription(false), exception);
+        String safeMessage = (exception.getMessage() != null)
+                ? exception.getMessage()
+                : "An unexpected error occurred. Please try again.";
         ErrorDetails errorDetails = new ErrorDetails(
-                LocalDateTime.now(), exception.getMessage(), request.getDescription(false));
+                LocalDateTime.now(), safeMessage, request.getDescription(false));
         return new ResponseEntity<>(
-                new ApiResponse<>(false, exception.getMessage(), errorDetails),
+                new ApiResponse<>(false, safeMessage, errorDetails),
                 HttpStatus.INTERNAL_SERVER_ERROR);
     }
 }

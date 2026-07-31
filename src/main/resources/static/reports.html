@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Reports & Analytics — Smart Expense Tracker</title>
+  <title>Reports &amp; Analytics — Smart Expense Tracker</title>
   <meta name="description" content="Detailed financial analytics, reports, and data exports."/>
   <link rel="icon" type="image/x-icon" href="favicon.ico"/>
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"/>
@@ -29,15 +29,18 @@
     <div class="page-content">
       <div class="page-header">
         <div class="page-header-title">
-          <h2><i class="bi bi-graph-up-arrow me-2" style="color:var(--brand-primary-light);font-size:1.2rem;"></i>Reports & Financial Analytics</h2>
+          <h2><i class="bi bi-graph-up-arrow me-2" style="color:var(--brand-primary-light);font-size:1.2rem;"></i>Reports &amp; Financial Analytics</h2>
           <p>Analyze spending trends, view breakdown, and export financial data</p>
         </div>
         <div class="d-flex gap-2">
-          <button class="btn btn-outline-success btn-sm" onclick="Api.download(`/expenses/export/excel?userId=${Api.getUserId()}`, 'expense_report.xlsx')">
+          <button class="btn btn-outline-success btn-sm" id="btn-excel-export" onclick="exportData('excel')">
             <i class="bi bi-file-earmark-excel me-1"></i>Excel Report
           </button>
-          <button class="btn btn-outline-danger btn-sm" onclick="Api.download(`/expenses/export/pdf?userId=${Api.getUserId()}`, 'expense_report.pdf')">
+          <button class="btn btn-outline-danger btn-sm" id="btn-pdf-export" onclick="exportData('pdf')">
             <i class="bi bi-file-earmark-pdf me-1"></i>PDF Report
+          </button>
+          <button class="btn btn-glow btn-sm" onclick="generateReport()">
+            <i class="bi bi-arrow-clockwise me-1"></i>Refresh
           </button>
         </div>
       </div>
@@ -73,8 +76,9 @@
           <div class="stat-card glass-card income">
             <div class="stat-icon"><i class="bi bi-arrow-up-circle-fill"></i></div>
             <div class="stat-details">
-              <div class="stat-label">Reported Income</div>
+              <div class="stat-label">Total Income</div>
               <div class="stat-value" id="rep-income">₹0.00</div>
+              <div class="small mt-1" id="rep-income-monthly" style="font-size:0.75rem;color:var(--text-muted);">Monthly: ₹0.00</div>
             </div>
           </div>
         </div>
@@ -82,8 +86,9 @@
           <div class="stat-card glass-card expense">
             <div class="stat-icon"><i class="bi bi-arrow-down-circle-fill"></i></div>
             <div class="stat-details">
-              <div class="stat-label">Reported Expense</div>
+              <div class="stat-label">Total Expense</div>
               <div class="stat-value" id="rep-expense">₹0.00</div>
+              <div class="small mt-1" id="rep-expense-monthly" style="font-size:0.75rem;color:var(--text-muted);">Monthly: ₹0.00</div>
             </div>
           </div>
         </div>
@@ -93,16 +98,17 @@
             <div class="stat-details">
               <div class="stat-label">Net Savings</div>
               <div class="stat-value" id="rep-net">₹0.00</div>
+              <div class="small mt-1" id="rep-savings-rate" style="font-size:0.75rem;color:var(--text-muted);">Savings Rate: 0%</div>
             </div>
           </div>
         </div>
       </div>
 
       <!-- Charts -->
-      <div class="row g-4">
+      <div class="row g-4 mb-4">
         <div class="col-lg-8">
           <div class="glass-card">
-            <h5 class="mb-4 fw-700" style="font-size:1rem;"><i class="bi bi-bar-chart-line-fill me-2" style="color:var(--brand-primary-light);"></i>Income vs Expense Trend</h5>
+            <h5 class="mb-4 fw-700" style="font-size:1rem;"><i class="bi bi-bar-chart-line-fill me-2" style="color:var(--brand-primary-light);"></i>6-Month Income vs Expense Trend</h5>
             <div class="chart-container">
               <canvas id="trendChart"></canvas>
             </div>
@@ -117,6 +123,24 @@
           </div>
         </div>
       </div>
+
+      <!-- Recent Transactions Table -->
+      <div class="glass-card">
+        <div class="d-flex align-items-center justify-content-between mb-4">
+          <h5 class="mb-0 fw-700" style="font-size:1rem;"><i class="bi bi-list-ul me-2" style="color:var(--info);"></i>Recent Transactions</h5>
+          <span id="rep-transaction-count" class="badge" style="background:rgba(99,102,241,0.15);color:#818cf8;border:1px solid rgba(99,102,241,0.25);">0 records</span>
+        </div>
+        <div class="table-responsive">
+          <table class="glass-table">
+            <thead>
+              <tr><th>Date</th><th>Type</th><th>Category</th><th>Description</th><th>Amount</th></tr>
+            </thead>
+            <tbody id="rep-transactions-tbody">
+              <tr><td colspan="5" class="text-center py-4" style="color:var(--text-muted);">Click "Generate Report" to load data</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
     </div>
   </main>
 </div>
@@ -127,7 +151,7 @@
   Auth.requireAuth();
   UI.initSidebar('reports.html');
 
-  // Set default dates
+  // Set default dates (current month)
   const now = new Date();
   const firstDay = new Date(now.getFullYear(), now.getMonth(), 1).toISOString().split('T')[0];
   const today = now.toISOString().split('T')[0];
@@ -137,22 +161,75 @@
   let trendChartInstance = null;
   let breakdownChartInstance = null;
 
+  function exportData(type) {
+    const format = type === 'excel' ? 'EXCEL' : 'PDF';
+    const start = document.getElementById('startDate').value;
+    const end = document.getElementById('endDate').value;
+    const reportType = document.getElementById('reportType').value;
+    const extension = format === 'EXCEL' ? 'xlsx' : 'pdf';
+    const filename = `financial_report.${extension}`;
+    let url = `/reports/export?format=${format}&type=${reportType}`;
+    if (start) url += `&startDate=${start}`;
+    if (end) url += `&endDate=${end}`;
+    Api.download(url, filename).catch(err => UI.showToast('Export failed: ' + (err.message || 'Server error'), 'error'));
+  }
+
   async function generateReport() {
     UI.showLoading();
     try {
+      // Fetch dashboard summary for KPI stats
       const summary = await Api.get('/dashboard/summary');
+
       document.getElementById('rep-income').textContent = UI.formatCurrency(summary.totalIncome);
       document.getElementById('rep-expense').textContent = UI.formatCurrency(summary.totalExpense);
-      const net = (summary.totalIncome || 0) - (summary.totalExpense || 0);
+      document.getElementById('rep-income-monthly').textContent = 'Monthly: ' + UI.formatCurrency(summary.monthlyIncome || 0);
+      document.getElementById('rep-expense-monthly').textContent = 'Monthly: ' + UI.formatCurrency(summary.monthlyExpense || 0);
+
+      const net = (parseFloat(summary.totalIncome) || 0) - (parseFloat(summary.totalExpense) || 0);
       const netEl = document.getElementById('rep-net');
       netEl.textContent = UI.formatCurrency(net);
       netEl.style.color = net >= 0 ? 'var(--accent)' : 'var(--danger)';
+      document.getElementById('rep-savings-rate').textContent = `Savings Rate: ${summary.monthlySavingsRate || 0}%`;
 
-      renderCharts(summary);
-    } catch (err) { UI.showToast(err.message, 'error'); } finally { UI.hideLoading(); }
+      // Recent transactions from summary
+      const recent = summary.recentTransactions || [];
+      const tbody = document.getElementById('rep-transactions-tbody');
+      const type = document.getElementById('reportType').value;
+      const filtered = type === 'ALL' ? recent : recent.filter(t => t.type === type);
+      document.getElementById('rep-transaction-count').textContent = filtered.length + ' records';
+
+      if (filtered.length > 0) {
+        tbody.innerHTML = filtered.map(t => {
+          const isIncome = t.type === 'INCOME';
+          return `<tr>
+            <td style="font-size:0.82rem;">${UI.formatDate(t.date)}</td>
+            <td><span class="badge ${isIncome ? 'income' : 'expense'}">${isIncome ? 'Income' : 'Expense'}</span></td>
+            <td style="font-size:0.82rem;">${t.categoryName || '—'}</td>
+            <td style="font-size:0.82rem;color:var(--text-secondary);">${t.description || '—'}</td>
+            <td style="font-weight:700;color:${isIncome ? 'var(--income-green)' : 'var(--expense-red)'};">${isIncome ? '+' : '-'}${UI.formatCurrency(t.amount)}</td>
+          </tr>`;
+        }).join('');
+      } else {
+        tbody.innerHTML = '<tr><td colspan="5" class="text-center py-4" style="color:var(--text-muted);">No transactions found for the selected filters</td></tr>';
+      }
+
+      // Load analyst trend data for charts
+      try {
+        const analystData = await Api.get('/dashboard/analyst');
+        renderCharts(summary, analystData);
+      } catch (e) {
+        // Fallback: render with summary data only
+        renderCharts(summary, null);
+      }
+
+    } catch (err) {
+      UI.showToast(err.message || 'Failed to load report data', 'error');
+    } finally {
+      UI.hideLoading();
+    }
   }
 
-  function renderCharts(summary) {
+  function renderCharts(summary, analystData) {
     const isDark = (document.documentElement.getAttribute('data-theme') || 'dark') !== 'light';
     Chart.defaults.color = isDark ? '#94a3b8' : '#475569';
     Chart.defaults.borderColor = isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.06)';
@@ -160,33 +237,117 @@
     if (trendChartInstance) trendChartInstance.destroy();
     if (breakdownChartInstance) breakdownChartInstance.destroy();
 
+    // Build 6-month trend labels and data
+    let labels, incomeData, expenseData;
+    if (analystData && analystData.monthlyTrends && analystData.monthlyTrends.length > 0) {
+      const trends = analystData.monthlyTrends;
+      labels = trends.map(t => t.month);
+      incomeData = trends.map(t => parseFloat(t.income || 0));
+      expenseData = trends.map(t => parseFloat(t.expense || 0));
+    } else {
+      // Fallback to last 6 months with current month real data
+      const months = [];
+      for (let i = 5; i >= 0; i--) {
+        const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
+        months.push(d.toLocaleString('en-IN', { month: 'short', year: '2-digit' }));
+      }
+      labels = months;
+      const mInc = parseFloat(summary.monthlyIncome || 0);
+      const mExp = parseFloat(summary.monthlyExpense || 0);
+      incomeData = [0, 0, 0, 0, 0, mInc];
+      expenseData = [0, 0, 0, 0, 0, mExp];
+    }
+
     const ctxTrend = document.getElementById('trendChart').getContext('2d');
     trendChartInstance = new Chart(ctxTrend, {
       type: 'line',
       data: {
-        labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'],
+        labels,
         datasets: [
-          { label: 'Income', data: [45000, 52000, 48000, 61000, 55000, summary.totalIncome || 65000], borderColor: '#4ecca3', backgroundColor: 'rgba(78,204,163,0.1)', fill: true, tension: 0.4 },
-          { label: 'Expense', data: [32000, 28000, 35000, 42000, 31000, summary.totalExpense || 39000], borderColor: '#f43f5e', backgroundColor: 'rgba(244,63,94,0.1)', fill: true, tension: 0.4 }
+          {
+            label: 'Income',
+            data: incomeData,
+            borderColor: '#4ecca3',
+            backgroundColor: 'rgba(78,204,163,0.1)',
+            fill: true,
+            tension: 0.4,
+            pointBackgroundColor: '#4ecca3',
+            pointRadius: 4
+          },
+          {
+            label: 'Expense',
+            data: expenseData,
+            borderColor: '#f43f5e',
+            backgroundColor: 'rgba(244,63,94,0.1)',
+            fill: true,
+            tension: 0.4,
+            pointBackgroundColor: '#f43f5e',
+            pointRadius: 4
+          }
         ]
       },
       options: {
-        responsive: true, maintainAspectRatio: false,
-        plugins: { legend: { position: 'top' } },
-        scales: { y: { ticks: { callback: v => '₹' + (v/1000).toFixed(0) + 'k' } } }
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+          legend: { position: 'top', labels: { boxWidth: 12, padding: 20, font: { family: 'Inter', size: 12 } } },
+          tooltip: { backgroundColor: '#1a1d2e', borderColor: 'rgba(255,255,255,0.1)', borderWidth: 1, cornerRadius: 10, padding: 12 }
+        },
+        scales: {
+          y: {
+            grid: { color: isDark ? 'rgba(255,255,255,0.04)' : 'rgba(0,0,0,0.04)' },
+            ticks: { callback: v => '₹' + (v >= 1000 ? (v/1000).toFixed(0) + 'k' : v) }
+          },
+          x: { grid: { display: false } }
+        }
       }
     });
+
+    // Category breakdown chart
+    let catLabels = ['No Data'];
+    let catData = [1];
+    let catColors = ['rgba(255,255,255,0.1)'];
+
+    if (analystData && analystData.categoryAnalysis && analystData.categoryAnalysis.length > 0) {
+      const cats = analystData.categoryAnalysis.slice(0, 8);
+      catLabels = cats.map(c => c.categoryName);
+      catData = cats.map(c => parseFloat(c.totalSpent || 0));
+      catColors = ['#6366f1','#4ecca3','#f59e0b','#3b82f6','#ec4899','#8b5cf6','#10b981','#ef4444'];
+    } else if (summary.topSpendingCategory) {
+      catLabels = [summary.topSpendingCategory, 'Others'];
+      const mExp = parseFloat(summary.monthlyExpense || 0);
+      catData = [mExp * 0.6, mExp * 0.4];
+      catColors = ['#6366f1', 'rgba(255,255,255,0.07)'];
+    }
 
     const ctxBreakdown = document.getElementById('breakdownChart').getContext('2d');
     breakdownChartInstance = new Chart(ctxBreakdown, {
       type: 'doughnut',
       data: {
-        labels: [summary.topSpendingCategory || 'Food', 'Rent', 'Utilities', 'Shopping', 'Others'],
-        datasets: [{ data: [35, 25, 15, 15, 10], backgroundColor: ['#6366f1', '#4ecca3', '#f59e0b', '#3b82f6', '#ec4899'], borderWidth: 0 }]
+        labels: catLabels,
+        datasets: [{
+          data: catData,
+          backgroundColor: catColors.slice(0, catLabels.length),
+          borderWidth: 0,
+          hoverOffset: 6
+        }]
       },
       options: {
-        responsive: true, maintainAspectRatio: false, cutout: '70%',
-        plugins: { legend: { position: 'bottom' } }
+        responsive: true,
+        maintainAspectRatio: false,
+        cutout: '70%',
+        plugins: {
+          legend: { position: 'bottom', labels: { boxWidth: 10, padding: 12, font: { family: 'Inter', size: 11 } } },
+          tooltip: {
+            backgroundColor: '#1a1d2e',
+            borderColor: 'rgba(255,255,255,0.1)',
+            borderWidth: 1,
+            cornerRadius: 10,
+            callbacks: {
+              label: ctx => ` ${ctx.label}: ${UI.formatCurrency(ctx.raw)}`
+            }
+          }
+        }
       }
     });
   }
